@@ -5,19 +5,18 @@ project(hgbp)
 set(CMAKE_CXX_FLAGS "-std=c++0x ")
 
 
-include_directories("/usr/include/eigen3")
+find_package( Eigen3 REQUIRED )
+if(EIGEN3_FOUND)
+  include_directories( ${EIGEN3_INCLUDE_DIR} )
+endif(EIGEN3_FOUND)
+add_definitions(-Wno-deprecated-declarations)
 
 
-set( EXTERNAL_LIBS
-    boost_system
-    boost_filesystem )
-
-set( SOURCES
-            src/GaussianBeam.cpp )
+set( SOURCES )
 
 
-add_library(GBP ${SOURCES})
-target_link_libraries(GBP ${EXTERNAL_LIBS})
+#add_library(GBP ${SOURCES})
+#target_link_libraries(GBP ${EXTERNAL_LIBS})
 
 
 add_subdirectory( testing )

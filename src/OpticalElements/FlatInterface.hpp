@@ -9,16 +9,17 @@
 
 #include "Interface.hpp"
 
-class FlatInterface : public Interface
+template<typename T>
+class FlatInterface : public Interface<T>
 {
   public:
     Eigen::Matrix<double,2,2> getRTMatrix() const;
 
 };
 
-inline
+template<typename T>
 Eigen::Matrix<double,2,2>
-FlatInterface::getRTMatrix() const
+FlatInterface<T>::getRTMatrix() const
 {
   Eigen::Matrix<double,2,2> mat;
 

@@ -10,13 +10,17 @@
 #include "OpticalElement.hpp"
 
 
+template<typename LengthUnitType>
 class OpticalSystem
 {
+  protected:
+    //quantity<LengthUnitType> positions;
+    //OpticalElementInterface* elements;
+
   public:
     void addElement( OpticalElementInterface *elem, U position );
-
     GaussianBeam transform( const GaussianBeam& beam );
-}
+};
 
 
 #endif // include protector

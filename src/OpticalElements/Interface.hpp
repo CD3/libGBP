@@ -9,7 +9,8 @@
 
 #include "IdealElement.hpp"
 
-class Interface : public IdealElement
+template<typename T>
+class Interface : public IdealElement<T>
 {
   public:
     // reimplement the wavelength scale factor

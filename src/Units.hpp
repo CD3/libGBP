@@ -17,6 +17,7 @@ namespace boost
 {
 namespace units
 {
+  /** @brief namespace for unit types */
   namespace t
   {
     typedef si::dimensionless dimensionless;
@@ -51,12 +52,29 @@ namespace units
     typedef divide_typeof_helper < joule, centimeter_squared >::type radiant_exposure;
     typedef divide_typeof_helper < watt,  centimeter_squared >::type irradiance;      
   }
+  /** @brief namespace for unit instances*/
+  namespace i
+  {
+    BOOST_UNITS_STATIC_CONSTANT( nanometer, t::nanometer );
+    BOOST_UNITS_STATIC_CONSTANT( nm,         t::nanometer );
+
+    BOOST_UNITS_STATIC_CONSTANT( micrometer, t::micrometer );
+    BOOST_UNITS_STATIC_CONSTANT( um,         t::micrometer );
+
+    BOOST_UNITS_STATIC_CONSTANT( millimeter, t::millimeter );
+    BOOST_UNITS_STATIC_CONSTANT( mm,         t::millimeter );
+
+    BOOST_UNITS_STATIC_CONSTANT( centimeter, t::centimeter );
+    BOOST_UNITS_STATIC_CONSTANT( cm,         t::centimeter );
+
+  }
 }
 }
 
 
 using namespace boost;
 using namespace boost::units;
+using namespace boost::units::i;
  
 
 

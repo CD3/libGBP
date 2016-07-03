@@ -11,6 +11,7 @@
 #include <complex>
 #include "Units.hpp"
 #include "Constants.hpp"
+#include "OpticalElement.hpp"
 
 using std::complex;
 
@@ -23,6 +24,7 @@ class GaussianBeam
     quantity<t::centimeter> waistPosition; ///< position of the beam waist
     quantity<t::centimeter> waistDiameter; ///< diameter of the beam waist
     quantity<t::watt> power; ///< total power in the beam
+    quantity<t::centimeter> currentPosition; ///< the current position in the beam.
 
   public:
 
@@ -61,6 +63,13 @@ class GaussianBeam
     quantity<T> getPower() const { return quantity<T>(this->power); } ///< returns power in specified units
     inline quantity<t::watt> getPower() const { return this->getPower<t::watt>(); } ///< returns power in default units (t::watt)
 
+    // currentPosition getters and setters
+    template<typename T>
+    void setCurrentPosition(T v) { this->currentPosition = quantity<t::centimeter>(v); } ///< performs unit conversion and sets currentPosition
+    template<typename T>
+    quantity<T> getCurrentPosition() const { return quantity<T>(this->currentPosition); } ///< returns currentPosition in specified units
+    inline quantity<t::centimeter> getCurrentPosition() const { return this->getCurrentPosition<t::centimeter>(); } ///< returns currentPosition in internal units (t::centimeter)
+
 
     // calculated parameters
 
@@ -77,21 +86,42 @@ class GaussianBeam
     inline quantity<t::milliradian> getDivergence() const { return this->getDivergence<t::milliradian>(); } ///< returns divergence in default units ()
 
     template<typename T,typename U>
-    quantity<T> getDiameter(U) const; ///< computes and returns diameter in specified units
+    quantity<T>              getDiameter(U   ) const; ///< computes and returns diameter in specified units
     template<typename U>
-    quantity<t::centimeter> getDiameter(U z) const { return this->getDiameter<t::centimeter>(z); } ///< returns diameter in default units (t::centimeter)
+    quantity<t::centimeter>  getDiameter(U z ) const { return this->getDiameter<t::centimeter>(z); } ///< returns diameter in default units (t::centimeter)
+    template<typename T>
+    quantity<T>              getDiameter(    ) const { return this->getDiameter<T>(this->currentPosition);} ///< computes and returns diameter, in specified units, at the current position
+    quantity<t::centimeter>  getDiameter(    ) const { return this->getDiameter<t::centimeter>(this->currentPosition); } ///< returns diameter in default units (t::centimeter) at the current position
 
     template<typename T,typename U>
-    quantity<T> getRadiusOfCurvature(U) const; ///< computes and returns radius of curvature in specified units
+    quantity<T>              getRadiusOfCurvature(U   ) const; ///< computes and returns radius of curvature in specified units
     template<typename U>
-    quantity<t::centimeter> getRadiusOfCurvature(U z) const { return this->getRadiusOfCurvature<t::centimeter>(z); } ///< returns radiuus of curvature in default units (t::centimeter)
+    quantity<t::centimeter>  getRadiusOfCurvature(U z ) const { return this->getRadiusOfCurvature<t::centimeter>(z); } ///< returns radiuus of curvature in default units (t::centimeter)
+    template<typename T>
+    quantity<T>              getRadiusOfCurvature(    ) const { return this->getRadiusOfCurvature<T>(this->currentPosition);} ///< computes and returns radius of curvature, in specified units, at the current position
+    quantity<t::centimeter>  getRadiusOfCurvature(    ) const { return this->getRadiusOfCurvature<t::centimeter>(this->currentPosition); } ///< returns radius of curvature in default units (t::centimeter) at the current position
 
     template<typename T, typename U>
-    quantity<T,complex<double> > getComplexBeamParameter(U) const; ///< computes and returns complex beam parameter in specified units
+    quantity<T,complex<double> >               getComplexBeamParameter(U   ) const; ///< computes and returns complex beam parameter in specified units
     template<typename U>
-    quantity<t::centimeter, complex<double> > getComplexBeamParameter(U z) const { return this->getComplexBeamParameter<t::centimeter>(z); } ///< returns complex beam parameter in default units (t::centimeter, complex<double> )
+    quantity<t::centimeter, complex<double> >  getComplexBeamParameter(U z ) const { return this->getComplexBeamParameter<t::centimeter>(z); } ///< returns complex beam parameter in default units (t::centimeter, complex<double> )
+    template<typename T>
+    quantity<T,complex<double> >               getComplexBeamParameter(    ) const { return this->getComplexBeamParameter<T>(this->currentPosition);} ///< computes and returns complex beam parameter, in specified units, at the current position
+    quantity<t::centimeter, complex<double> >  getComplexBeamParameter(    ) const { return this->getComplexBeamParameter<t::centimeter>(this->currentPosition); } ///< returns complex beam parameter in default units (t::centimeter) at the current position
+
+    template<typename T,typename U>
+    quantity<T>              getRelativeWaistPosition(U   ) const; ///< computes and returns the relative waist position in specified units
+    template<typename U>
+    quantity<t::centimeter>  getRelativeWaistPosition(U z ) const { return this->getRelativeWaistPosition<t::centimeter>(z); } ///< returns relative waist position in default units (t::centimeter)
+    template<typename T>
+    quantity<T>              getRelativeWaistPosition(    ) const { return this->getRelativeWaistPosition<T>(this->currentPosition);} ///< computes and returns relative waist position, in specified units, at the current position
+    quantity<t::centimeter>  getRelativeWaistPosition(    ) const { return this->getRelativeWaistPosition<t::centimeter>(this->currentPosition); } ///< returns relative waist position in default units (t::centimeter) at the current position
 
 
+    template<typename T, typename U>
+    void transform( OpticalElementInterface<T>* elem, U z );
+    template<typename T>
+    void transform( OpticalElementInterface<T>* elem ) { this->transform( elem, this->currentPosition ); }
 };
 
 template<typename T>
@@ -113,7 +143,6 @@ quantity<T> GaussianBeam::getRayleighRange() const
 template<typename T>
 quantity<T> GaussianBeam::getDivergence() const
 {
-
   auto val = (4/M_PI)*(this->getWavelength<t::nanometer>()/this->getWaistDiameter<t::nanometer>())*t::radian();
 
   return quantity<T>(val);
@@ -122,9 +151,9 @@ quantity<T> GaussianBeam::getDivergence() const
 template<typename T,typename U>
 quantity<T> GaussianBeam::getDiameter(U z) const
 {
-  quantity<t::meter> dz = z - this->getWaistPosition<t::meter>();
+  quantity<T> dz = this->getRelativeWaistPosition<T>(z);
 
-  auto val = this->getWaistDiameter<t::meter>()*root<2>( 1 + pow<2>(dz/this->getRayleighRange<t::meter>()) );
+  auto val = this->getWaistDiameter<T>()*root<2>( 1 + pow<2>(dz/this->getRayleighRange<T>()) );
 
   return quantity<T>(val);
 }
@@ -132,9 +161,9 @@ quantity<T> GaussianBeam::getDiameter(U z) const
 template<typename T,typename U>
 quantity<T> GaussianBeam::getRadiusOfCurvature(U z) const
 {
-  quantity<t::meter> dz = z - this->getWaistPosition<t::meter>();
+  quantity<T> dz = this->getRelativeWaistPosition<T>(z);
 
-  auto val = dz*( 1 + pow<2>(this->getRayleighRange<t::meter>()/dz) );
+  auto val = dz*( 1 + pow<2>(this->getRayleighRange<T>()/dz) );
 
   return quantity<T>(val);
 }
@@ -142,16 +171,61 @@ quantity<T> GaussianBeam::getRadiusOfCurvature(U z) const
 template<typename T,typename U>
 quantity<T,complex<double> > GaussianBeam::getComplexBeamParameter(U z) const
 {
-  quantity<t::meter> dz = z - this->getWaistPosition<t::meter>();
+  quantity<T> dz = this->getRelativeWaistPosition<T>(z);
 
   double real,imag;
 
   real = dz.value();
-  imag = this->getRayleighRange<t::meter>().value();
+  imag = this->getRayleighRange<T>().value();
 
-  auto val = complex<double>(real,imag)*t::meter();
+  auto val = complex<double>(real,imag)*T();
 
   return quantity<T,complex<double> >(val);
+}
+
+template<typename T,typename U>
+quantity<T> GaussianBeam::getRelativeWaistPosition(U z) const
+{
+  quantity<T> val = quantity<T>(z) - this->getWaistPosition<T>();
+
+  return val;
+}
+
+template<typename T, typename U>
+void GaussianBeam::transform( OpticalElementInterface<T>* elem, U z )
+{
+  this->setWavelength( this->getWavelength()*elem->getWavelengthScaleFactor() );
+  this->setPower(      this->getPower()     *(1.-elem->getPowerLoss()) );
+
+  complex<double> qi = this->getComplexBeamParameter<T>(z).value();
+  auto RTM = elem->getRTMatrix();
+  double A = RTM(0,0);
+  double B = RTM(0,1);
+  double C = RTM(1,0);
+  double D = RTM(1,1);
+
+  complex<double> qf = (A*qi + B)/(C*qi + D);
+
+  // q = x + i y = z - i z_R
+  //
+  // z : distance to the beam waist
+  // z_R : the rayleigh range
+  //
+  // The real part of q is the distance to the beam waist, so its actually \Delta z = z - z_0, where
+  // z is the position that q_i is evaluated at.
+  //
+  // So, z_0 = z - Re{q}
+  //
+  // The imaginary part of q is the rayliegh range, z_R = \pi \omega_0^2 / \lambda
+  //
+  // So, \omega_0 = \sqrt{ z_R \lambda / \pi }
+  // and d = 2 \omega_0
+  //
+  // CAREFUL! Make sure to get the units right.
+
+  this->setWaistPosition( quantity<T>(z) - qf.real()*T() );
+  this->setWaistDiameter( 2*sqrt(qf.imag()*this->getWavelength<T>().value()/M_PI)*T() );
+
 }
 
 #endif // include protector

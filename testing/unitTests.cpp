@@ -8,9 +8,6 @@
 
 
 #include "GaussianBeam.hpp"
-#include "OpticalElements/ThinLens.hpp"
-#include "OpticalElements/FlatInterface.hpp"
-#include "OpticalElements/SphericalInterface.hpp"
 
 SCENARIO( "GaussianBeam can be configured", "[GaussianBeam]" )
 {
@@ -126,10 +123,12 @@ SCENARIO( "Complex Beam Parameter Calculations", "[GaussianBeam]" )
   }
 }
 
+#include "OpticalElements/ThinLens.hpp"
+
 SCENARIO( "Thin lens class calculations", "[OpticalElements]" )
 {
-  WHEN("lens is created using centimeter as internal units") {
-  ThinLens< t::centimeter > lens;
+  WHEN("lens is created") {
+  ThinLens<t::centimeter> lens;
 
     AND_WHEN("focal length is set to 10 cm") {
       lens.setFocalLength( 10*t::centimeter() );
@@ -169,10 +168,12 @@ SCENARIO( "Thin lens class calculations", "[OpticalElements]" )
   }
 }
 
+#include "OpticalElements/FlatInterface.hpp"
+
 SCENARIO( "Flat interface class calculations", "[OpticalElements]" )
 {
   WHEN("interface is created") {
-  FlatInterface interface;
+  FlatInterface<t::centimeter> interface;
 
     AND_WHEN("the initial refractive index is set to 1") {
       interface.setInitialRefractiveIndex(1);
@@ -224,9 +225,11 @@ SCENARIO( "Flat interface class calculations", "[OpticalElements]" )
   }
 }
 
+#include "OpticalElements/SphericalInterface.hpp"
+
 SCENARIO( "Spherical interface class calculations", "[OpticalElements]" )
 {
-  WHEN("interface is created with centimeter for as the default unit") {
+  WHEN("interface is created") {
   SphericalInterface<t::centimeter> interface;
 
     AND_WHEN("the initial refractive index is set to 1") {
@@ -276,3 +279,43 @@ SCENARIO( "Spherical interface class calculations", "[OpticalElements]" )
     }
   }
 }
+
+#include "GaussianBeam.hpp"
+#include "OpticalElements/ThinLens.hpp"
+
+TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements]" )
+{
+  SECTION("Thin lens examples") {
+    GaussianBeam beam;
+
+    beam.setWavelength(    532*nm );
+    beam.setWaistDiameter( 0.01*mm );
+    beam.setWaistPosition( 0*cm );
+
+    SECTION("a 10 mm lens") {
+
+      ThinLens<t::centimeter> lens;
+      lens.setFocalLength( 10*mm );
+
+      CHECK( beam.getWavelength().value() == Approx(532) );
+      CHECK( beam.getWaistPosition().value() == Approx(0) );
+      CHECK( beam.getWaistDiameter().value() == Approx(10e-4) );
+      CHECK( beam.getDivergence().value() == Approx(2*33.868) );
+
+      auto d = beam.getDiameter(100*mm);
+
+      beam.transform( &lens, 100*mm );
+
+      CHECK( beam.getDiameter(100*mm).value() == Approx( d.value() ) );
+
+      CHECK( beam.getWavelength().value() == Approx(532) );
+      CHECK( beam.getRelativeWaistPosition<t::millimeter>(100*mm).value() == Approx(-11.111) );
+      CHECK( beam.getWaistPosition<t::millimeter>().value() == Approx(100 + 11.111) );
+      CHECK( beam.getWaistDiameter<t::millimeter>().value() == Approx(0.00111) );
+      CHECK( beam.getRayleighRange<t::millimeter>().value() == Approx(0.001823) );
+    }
+  }
+}
+
+
+

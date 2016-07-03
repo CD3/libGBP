@@ -9,28 +9,28 @@
 
 #include "IdealElement.hpp"
 
-template<typename LengthUnitType>
-class ThinLens : IdealElement
+template<typename T>
+class ThinLens : public IdealElement<T>
 {
   public:
     // the required interface
     Eigen::Matrix<double,2,2> getRTMatrix() const;
 
   protected:
-    quantity<LengthUnitType> focalLength;
+    quantity<T> focalLength;
 
   public:
     // focalLength getters and setters
-    template<typename T>
-    void setFocalLength(T v) { this->focalLength = quantity<LengthUnitType>(v); } ///< performs unit conversion and sets focalLength
-    template<typename T>
-    quantity<T> getFocalLength() const { return quantity<T>(this->focalLength); } ///< returns focalLength in specified units
-    inline quantity<LengthUnitType> getFocalLength() const { return this->getFocalLength<LengthUnitType>(); } ///< returns focalLength in internal units (LengthUnitType)
+    template<typename U>
+    void setFocalLength(U v) { this->focalLength = quantity<T>(v); } ///< performs unit conversion and sets focalLength
+    template<typename U>
+    quantity<U> getFocalLength() const { return quantity<U>(this->focalLength); } ///< returns focalLength in specified units
+    inline quantity<T> getFocalLength() const { return this->getFocalLength<T>(); } ///< returns focalLength in internal units (T)
 };
 
-template<typename LengthUnitType>
+template<typename T>
 Eigen::Matrix<double,2,2>
-ThinLens<LengthUnitType>::getRTMatrix() const
+ThinLens<T>::getRTMatrix() const
 {
   Eigen::Matrix<double,2,2> mat;
 
