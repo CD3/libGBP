@@ -283,7 +283,7 @@ SCENARIO( "Spherical interface class calculations", "[OpticalElements]" )
 #include "GaussianBeam.hpp"
 #include "OpticalElements/ThinLens.hpp"
 
-TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements]" )
+TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
 {
   SECTION("Thin lens examples") {
     GaussianBeam beam;
@@ -314,6 +314,118 @@ TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements]" )
       CHECK( beam.getWaistDiameter<t::millimeter>().value() == Approx(0.00111) );
       CHECK( beam.getRayleighRange<t::millimeter>().value() == Approx(0.001823) );
     }
+  }
+
+  SECTION( "Ramrod example worksheet" )
+  {
+    GaussianBeam beam;
+
+    SECTION( "Problem 1" )
+    {
+      beam.setWavelength(    444*nm );
+      beam.setWaistDiameter( 2.5*mm );
+      beam.setWaistPosition(   0*cm );
+      beam.setPower(         800*mW );
+
+      ThinLens<t::centimeter> lens;
+      lens.setFocalLength( 120*mm );
+
+      //std::cout << "1.a "<<quantity<t::irradiance>( beam.getPower() / (M_PI*pow<2>(beam.getDiameter(15*cm))/4.)) << std::endl;
+      std::cout << "1.b "<<beam.getDiameter(15*cm) << std::endl;
+      std::cout << "1.c "<<beam.getRadiusOfCurvature(15*cm) << std::endl;
+      beam.transform( &lens, 15*cm );
+      std::cout << "1.d "<<beam.getRadiusOfCurvature(15*cm) << std::endl;
+      std::cout << "1.e "<<beam.getWaistPosition() << std::endl;
+      std::cout << "1.f "<<beam.getWaistDiameter() << std::endl;
+
+
+    }
+  }
+}
+
+
+
+#include "GaussianBeam.hpp"
+#include "BeamConfigurator.hpp"
+
+TEST_CASE( "BeamConfigurator Tests" )
+{
+  BeamConfigurator config;
+
+  SECTION("Internal Units")
+  {
+    config.setWavelength(532*nm).setDivergence(2.5*mrad);
+
+    CHECK( config.getWavelength<t::nanometer>().value().value() == Approx(532) );
+    CHECK( config.getDivergence<t::milliradian>().value().value() == Approx(2.5) );
+  }
+
+  SECTION("Unit Conversions")
+  {
+    config.setWavelength(0.532*um).setDivergence(0.0025*rad);
+
+    CHECK( config.getWavelength<t::nanometer>().value().value() == Approx(532) );
+    CHECK( config.getDivergence<t::milliradian>().value().value() == Approx(2.5) );
+
+    config.setWavelength(0.444*um).setDivergence(0.001*rad);
+
+    CHECK( config.getWavelength<t::nanometer>().value().value() == Approx(444) );
+    CHECK( config.getDivergence<t::milliradian>().value().value() == Approx(1) );
+  }
+
+  SECTION("Arrays")
+  {
+    config.setWavelength(0.532*um);
+    config.setPosition(1.0*cm).setDiameter(2.0*mm);
+    config.setPosition(10.*cm).setDiameter(4.0*mm);
+
+    CHECK( config.Wavelength.size() == 1 );
+    CHECK( config.Position.size() == 2 );
+    CHECK( config.Diameter.size() == 2 );
+
+    CHECK( config.getWavelength<t::nanometer>().value().value() == Approx(532) );
+    CHECK( config.getPosition<t::centimeter>().value().value() == Approx(1) );
+    CHECK( config.getPosition<t::centimeter>(0).value().value() == Approx(1) );
+    CHECK( config.getPosition<t::centimeter>(1).value().value() == Approx(10) );
+    CHECK( config.getDiameter<t::centimeter>().value().value() == Approx(0.2) );
+    CHECK( config.getDiameter<t::centimeter>(0).value().value() == Approx(0.2) );
+    CHECK( config.getDiameter<t::centimeter>(1).value().value() == Approx(0.4) );
+  }
+
+  SECTION("Beam configuration")
+  {
+    GaussianBeam beam;
+
+    config.setWavelength(532*nm);
+    config.setDivergence(10*mrad);
+    config.setDiameter(2.5000*mm).setPosition(0.0*meter);
+
+    config.configure(beam);
+
+    CHECK( beam.getWavelength().value() == Approx(532) );
+    CHECK( beam.getWaistDiameter<t::millimeter>().value() == Approx( 2*0.033868 ) );
+    CHECK( beam.getRayleighRange<t::millimeter>().value() == Approx( 6.77357) );
+    CHECK( beam.getRadiusOfCurvature<t::millimeter>().value() == Approx( 250.09 ) );
+    CHECK( beam.getWaistPosition<t::millimeter>().value() == Approx( -249.908 ) );
+
+  }
+
+  SECTION("Beam configuration, offset position")
+  {
+    GaussianBeam beam;
+
+    config.setWavelength(532*nm);
+    config.setDivergence(10*mrad);
+    config.setDiameter(2.5000*mm).setPosition(1.2*meter);
+
+    config.configure(beam);
+
+    CHECK( beam.getWavelength().value() == Approx(532) );
+    CHECK( beam.getWaistDiameter<t::millimeter>().value() == Approx( 2*0.033868 ) );
+    CHECK( beam.getRayleighRange<t::millimeter>().value() == Approx( 6.77357) );
+    CHECK( beam.getRadiusOfCurvature<t::millimeter>().value() == Approx( 250.09 ) );
+    CHECK( beam.getWaistPosition<t::millimeter>().value() == Approx( 1200-249.908 ) );
+
   }
 }
 

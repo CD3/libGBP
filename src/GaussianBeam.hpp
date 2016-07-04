@@ -9,11 +9,15 @@
 
 #include <iostream>
 #include <complex>
+
+#include <boost/property_tree/ptree.hpp>
+
 #include "Units.hpp"
 #include "Constants.hpp"
 #include "OpticalElement.hpp"
 
 using std::complex;
+using boost::property_tree::ptree;
 
 class GaussianBeam
 {
@@ -27,6 +31,7 @@ class GaussianBeam
     quantity<t::centimeter> currentPosition; ///< the current position in the beam.
 
   public:
+    void configure( const ptree& config );
 
     // frequency getters and setters
     template<typename T>
@@ -123,6 +128,10 @@ class GaussianBeam
     template<typename T>
     void transform( OpticalElementInterface<T>* elem ) { this->transform( elem, this->currentPosition ); }
 };
+
+void GaussianBeam::configure(const ptree& config)
+{
+}
 
 template<typename T>
 quantity<T> GaussianBeam::getFreeSpaceWavelength() const

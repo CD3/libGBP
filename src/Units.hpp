@@ -47,10 +47,15 @@ namespace units
     typedef make_scaled_unit< radian, scale<10, static_rational<-3> > >::type	milliradian;
 
     typedef si::energy    joule;
+
     typedef si::power     watt;
+    typedef make_scaled_unit< watt, scale<10, static_rational<-3> > >::type	milliwatt;
 
     typedef divide_typeof_helper < joule, centimeter_squared >::type radiant_exposure;
+    typedef radiant_exposure joule_per_centimeter_squared;
+
     typedef divide_typeof_helper < watt,  centimeter_squared >::type irradiance;      
+    typedef irradiance watt_per_centimeter_squared;
   }
   /** @brief namespace for unit instances*/
   namespace i
@@ -66,6 +71,20 @@ namespace units
 
     BOOST_UNITS_STATIC_CONSTANT( centimeter, t::centimeter );
     BOOST_UNITS_STATIC_CONSTANT( cm,         t::centimeter );
+
+    BOOST_UNITS_STATIC_CONSTANT( meter, t::meter );
+    BOOST_UNITS_STATIC_CONSTANT( m,     t::meter );
+
+
+
+    BOOST_UNITS_STATIC_CONSTANT( milliwatt, t::milliwatt );
+    BOOST_UNITS_STATIC_CONSTANT( mW,        t::milliwatt );
+
+
+    BOOST_UNITS_STATIC_CONSTANT( milliradian, t::milliradian );
+    BOOST_UNITS_STATIC_CONSTANT( mrad,        t::milliradian );
+    BOOST_UNITS_STATIC_CONSTANT( radian, t::radian );
+    BOOST_UNITS_STATIC_CONSTANT( rad,    t::radian );
 
   }
 }
