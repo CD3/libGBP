@@ -58,19 +58,25 @@ SCENARIO( "GaussianBeam can be configured", "[GaussianBeam]" )
 
     WHEN("the wavelength is set to 0.633 um") {
       beam.setWavelength( 0.633*t::micrometer() );
+
       AND_WHEN("the beam waist diameter is set to 2 mm") {
         beam.setWaistDiameter( 2*t::millimeter() );
+
+
         THEN("the rayleigh range is 4.96302157 m") {
           CHECK( beam.getRayleighRange<t::meter>().value() == Approx(4.96302157) );
         }
-        AND_THEN("the half divergence is 0.20149 mrad") {
+        THEN("the half divergence is 0.20149 mrad") {
           CHECK( beam.getDivergence<t::milliradian>().value()/2 == Approx(0.20149) );
+        }
+        THEN("the radius of curvature at 10 m is 12.46315831 m") {
+              CHECK( beam.getRadiusOfCurvature<t::meter>( 10.*t::meter() ).value() == Approx(12.46315831) );
         }
         AND_WHEN("the beam waist position is set to 2 m") {
           beam.setWaistPosition( 2*t::meter() );
           THEN("the diameter at 12 m is 4.498820 mm") {
             CHECK( beam.getDiameter<t::millimeter>( 12.*t::meter() ).value() == Approx(4.498820) );
-        }
+          }
           AND_THEN("the radius of curvature at 12 m is 12.46315831 m") {
             CHECK( beam.getRadiusOfCurvature<t::meter>( 12.*t::meter() ).value() == Approx(12.46315831) );
           }
@@ -405,7 +411,7 @@ TEST_CASE( "BeamConfigurator Tests" )
     CHECK( beam.getWavelength().value() == Approx(532) );
     CHECK( beam.getWaistDiameter<t::millimeter>().value() == Approx( 2*0.033868 ) );
     CHECK( beam.getRayleighRange<t::millimeter>().value() == Approx( 6.77357) );
-    CHECK( beam.getRadiusOfCurvature<t::millimeter>().value() == Approx( 250.09 ) );
+    CHECK( beam.getRadiusOfCurvature<t::millimeter>(0*mm).value() == Approx( 250.09 ) );
     CHECK( beam.getWaistPosition<t::millimeter>().value() == Approx( -249.908 ) );
 
   }
@@ -423,7 +429,7 @@ TEST_CASE( "BeamConfigurator Tests" )
     CHECK( beam.getWavelength().value() == Approx(532) );
     CHECK( beam.getWaistDiameter<t::millimeter>().value() == Approx( 2*0.033868 ) );
     CHECK( beam.getRayleighRange<t::millimeter>().value() == Approx( 6.77357) );
-    CHECK( beam.getRadiusOfCurvature<t::millimeter>().value() == Approx( 250.09 ) );
+    CHECK( beam.getRadiusOfCurvature<t::millimeter>(1200*mm).value() == Approx( 250.09 ) );
     CHECK( beam.getWaistPosition<t::millimeter>().value() == Approx( 1200-249.908 ) );
 
   }
