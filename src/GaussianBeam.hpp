@@ -31,7 +31,6 @@ class GaussianBeam
     quantity<t::centimeter> currentPosition; ///< the current position in the beam.
 
   public:
-    void configure( const ptree& config );
 
     // frequency getters and setters
     template<typename T>
@@ -129,9 +128,6 @@ class GaussianBeam
     void transform( OpticalElementInterface<T>* elem ) { this->transform( elem, this->currentPosition ); }
 };
 
-void GaussianBeam::configure(const ptree& config)
-{
-}
 
 template<typename T>
 quantity<T> GaussianBeam::getFreeSpaceWavelength() const

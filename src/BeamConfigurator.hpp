@@ -5,6 +5,17 @@
   * @brief A class that can configure a GaussianBeam based on various scenarios.
   * @author C.D. Clark III
   * @date 07/04/16
+  *
+  * The beam configurator class manages configuring a GaussianBeam instance for a variety of situations so that the GaussianBeam
+  * class can remain simple. The GaussianBeam class only allows the beam configuration to be specified by setting waist diameter,
+  * the waist position, and the wavelength. Other common beam parameters (such as divergence) can be calculated, but they cannot
+  * be set.
+  *
+  * Basically, three parameters must be known to characterize a Gaussian beam, and several sets of 3 parameters are commonly used.
+  * For example, if the wavelength and divergence are known, then the beam waist diameter can be calculated. If the diameter at
+  * a given position is also known, then the beam waist position can also be determined.
+  *
+  * Rather than allow for all of the configuration posibilities in the GaussianBeam class, they are handled here.
   */
 #include <vector>
 #include "GaussianBeam.hpp"
