@@ -22,6 +22,7 @@ add_executable(${testName} ${testSrc})
 
 #Link to Boost libraries AND your targets and dependencies
 target_link_libraries(${testName} ${EXTRA_LIBS} ${LIBS} )
+target_compile_features( ${testName} PRIVATE cxx_auto_type)
 
 #Move testing binaries into a testDIr directory
 set_target_properties(${testName} PROPERTIES 

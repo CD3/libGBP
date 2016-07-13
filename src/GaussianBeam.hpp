@@ -26,7 +26,7 @@ class GaussianBeam
     quantity<t::hertz> frequency; ///< frequency of the light
     quantity<t::nanometer> wavelength; ///< wavelength of light in the propagation medium
     quantity<t::centimeter> waistPosition; ///< position of the beam waist
-    quantity<t::centimeter> waistDiameter; ///< diameter of the beam waist
+    quantity<t::centimeter> waistDiameter; ///< diameter (1/e^2) of the beam waist
     quantity<t::watt> power; ///< total power in the beam
     quantity<t::centimeter> currentPosition; ///< the current position in the beam.
 
@@ -75,6 +75,7 @@ class GaussianBeam
     inline quantity<t::centimeter> getCurrentPosition() const { return this->getCurrentPosition<t::centimeter>(); } ///< returns currentPosition in internal units (t::centimeter)
 
 
+
     // calculated parameters
 
     template<typename T>
@@ -96,6 +97,18 @@ class GaussianBeam
     template<typename T>
     quantity<T>              getDiameter(    ) const { return this->getDiameter<T>(this->currentPosition);} ///< computes and returns diameter, in specified units, at the current position
     quantity<t::centimeter>  getDiameter(    ) const { return this->getDiameter<t::centimeter>(this->currentPosition); } ///< returns diameter in default units (t::centimeter) at the current position
+
+    template<typename T,typename U>
+    quantity<T>              getRadius(U   ) const; ///< computes and returns radius in specified units
+    template<typename U>
+    quantity<t::centimeter>  getRadius(U z ) const { return this->getRadius<t::centimeter>(z); } ///< returns radius in default units (t::centimeter)
+    template<typename T>
+    quantity<T>              getRadius(    ) const { return this->getRadius<T>(this->currentPosition);} ///< computes and returns radius, in specified units, at the current position
+    quantity<t::centimeter>  getRadius(    ) const { return this->getRadius<t::centimeter>(this->currentPosition); } ///< returns radius in default units (t::centimeter) at the current position
+
+    template<typename T>
+    quantity<T> getWaistRadius() const; ///< computes and returns waist radius in specified units
+    inline quantity<t::centimeter> getWaistRadius() const { return this->getWaistRadius<t::centimeter>(); } ///< returns waist radius in default units (t::centimeter)
 
     template<typename T,typename U>
     quantity<T>              getRadiusOfCurvature(U   ) const; ///< computes and returns radius of curvature in specified units
@@ -121,6 +134,23 @@ class GaussianBeam
     quantity<T>              getRelativeWaistPosition(    ) const { return this->getRelativeWaistPosition<T>(this->currentPosition);} ///< computes and returns relative waist position, in specified units, at the current position
     quantity<t::centimeter>  getRelativeWaistPosition(    ) const { return this->getRelativeWaistPosition<t::centimeter>(this->currentPosition); } ///< returns relative waist position in default units (t::centimeter) at the current position
 
+    template<typename T,typename U>
+    quantity<T>                      getArea(U   ) const; ///< computes and returns area in specified units
+    template<typename U>
+    quantity<t::centimeter_squared>  getArea(U z ) const { return this->getArea<t::centimeter_squared>(z); } ///< returns area in default units (t::centimeter)
+    template<typename T>
+    quantity<T>                      getArea(    ) const { return this->getArea<T>(this->currentPosition);} ///< computes and returns area, in specified units, at the current position
+    quantity<t::centimeter_squared>  getArea(    ) const { return this->getArea<t::centimeter_squared>(this->currentPosition); } ///< returns area in default units (t::centimeter_squared) at the current position
+
+    template<typename T,typename U>
+    quantity<T>                               getPeakIrradiance(U   ) const; ///< computes and returns peak irradiance in specified units
+    template<typename U>
+    quantity<t::watt_per_centimeter_squared>  getPeakIrradiance(U z ) const { return this->getPeakIrradiance<t::watt_per_centimeter_squared>(z); } ///< returns peak irradiance in default units (t::centimeter)
+    template<typename T>
+    quantity<T>                               getPeakIrradiance(    ) const { return this->getPeakIrradiance<T>(this->currentPosition);} ///< computes and returns peak irradiance, in specified units, at the current position
+    quantity<t::watt_per_centimeter_squared>  getPeakIrradiance(    ) const { return this->getPeakIrradiance<t::watt_per_centimeter_squared>(this->currentPosition); } ///< returns peak irradiance in default units (t::centimeter) at the current position
+
+
 
     template<typename T, typename U>
     void transform( OpticalElementInterface<T>* elem, U z );
@@ -140,7 +170,7 @@ quantity<T> GaussianBeam::getFreeSpaceWavelength() const
 template<typename T>
 quantity<T> GaussianBeam::getRayleighRange() const
 {
-  auto val = M_PI*pow<2>(this->getWaistDiameter<T>()/2.)/this->getWavelength<T>();
+  auto val = M_PI*pow<2>(this->getWaistRadius<T>())/this->getWavelength<T>();
 
   return quantity<T>(val);
 }
@@ -159,6 +189,22 @@ quantity<T> GaussianBeam::getDiameter(U z) const
   quantity<T> dz = this->getRelativeWaistPosition<T>(z);
 
   auto val = this->getWaistDiameter<T>()*root<2>( 1 + pow<2>(dz/this->getRayleighRange<T>()) );
+
+  return quantity<T>(val);
+}
+
+template<typename T,typename U>
+quantity<T> GaussianBeam::getRadius(U z) const
+{
+  auto val = this->getDiameter<T>(z)/2.;
+
+  return quantity<T>(val);
+}
+
+template<typename T>
+quantity<T> GaussianBeam::getWaistRadius() const
+{
+  auto val = this->getWaistDiameter<T>()/2.;
 
   return quantity<T>(val);
 }
@@ -196,12 +242,27 @@ quantity<T> GaussianBeam::getRelativeWaistPosition(U z) const
   return val;
 }
 
+template<typename T,typename U>
+quantity<T> GaussianBeam::getArea(U z) const
+{
+  auto val = M_PI*pow<2>(this->getRadius(z));
+
+  return quantity<T>(val);
+}
+
+template<typename T,typename U>
+quantity<T> GaussianBeam::getPeakIrradiance(U z) const
+{
+  auto val = 2.*this->getPower()/this->getArea(z); // NOTE: area is the 1/e^2 area
+
+  return quantity<T>(val);
+}
+
+
+
 template<typename T, typename U>
 void GaussianBeam::transform( OpticalElementInterface<T>* elem, U z )
 {
-  this->setWavelength( this->getWavelength()*elem->getWavelengthScaleFactor() );
-  this->setPower(      this->getPower()     *(1.-elem->getPowerLoss()) );
-
   complex<double> qi = this->getComplexBeamParameter<T>(z).value();
   auto RTM = elem->getRTMatrix();
   double A = RTM(0,0);
@@ -227,6 +288,10 @@ void GaussianBeam::transform( OpticalElementInterface<T>* elem, U z )
   // and d = 2 \omega_0
   //
   // CAREFUL! Make sure to get the units right.
+  //
+
+  this->setWavelength( this->getWavelength()*elem->getWavelengthScaleFactor() );
+  this->setPower(      this->getPower()     *(1.-elem->getPowerLoss()) );
 
   this->setWaistPosition( quantity<T>(z) - qf.real()*T() );
   this->setWaistDiameter( 2*sqrt(qf.imag()*this->getWavelength<T>().value()/M_PI)*T() );

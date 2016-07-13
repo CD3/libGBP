@@ -48,6 +48,7 @@ struct BeamConfigurator
   ADD_ATTRIBUTE(      Position , t::centimeter  , 2);
   ADD_ATTRIBUTE( WaistPosition , t::centimeter  , 1);
   ADD_ATTRIBUTE( WaistDiameter , t::centimeter  , 1);
+  ADD_ATTRIBUTE(         Power , t::watt        , 1);
 
   void configure( GaussianBeam* beam );
   void configure( GaussianBeam& beam ){ this->configure( &beam ); }
@@ -56,6 +57,10 @@ struct BeamConfigurator
 void
 BeamConfigurator::configure( GaussianBeam* beam )
 {
+  if(this->hasPower())
+  {
+    beam->setPower( this->getPower<t::watt>().value() );
+  }
 
   if(this->hasWavelength())
   {

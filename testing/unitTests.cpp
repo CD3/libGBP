@@ -9,7 +9,10 @@
 
 #include "GaussianBeam.hpp"
 
-SCENARIO( "GaussianBeam can be configured", "[GaussianBeam]" )
+#define WRITE2(a,b) std::cout<< a << " " << b << std::endl
+#define WRITE3(a,b,c) std::cout<< a << " " << b << " " << c << std::endl
+
+SCENARIO( "GaussianBeam configuration", "[GaussianBeam]" )
 {
   GIVEN("An uninitialized GaussianBeam instance")
   {
@@ -55,7 +58,6 @@ SCENARIO( "GaussianBeam can be configured", "[GaussianBeam]" )
       }
     }
 
-
     WHEN("the wavelength is set to 0.633 um") {
       beam.setWavelength( 0.633*t::micrometer() );
 
@@ -76,6 +78,7 @@ SCENARIO( "GaussianBeam can be configured", "[GaussianBeam]" )
           beam.setWaistPosition( 2*t::meter() );
           THEN("the diameter at 12 m is 4.498820 mm") {
             CHECK( beam.getDiameter<t::millimeter>( 12.*t::meter() ).value() == Approx(4.498820) );
+            CHECK( beam.getRadius<t::millimeter>( 12.*t::meter() ).value() == Approx(4.498820/2) );
           }
           AND_THEN("the radius of curvature at 12 m is 12.46315831 m") {
             CHECK( beam.getRadiusOfCurvature<t::meter>( 12.*t::meter() ).value() == Approx(12.46315831) );
@@ -88,13 +91,27 @@ SCENARIO( "GaussianBeam can be configured", "[GaussianBeam]" )
       beam.setWavelength( 532*t::nanometer() );
       AND_WHEN("the waist diameter is set to 20 um") {
         beam.setWaistDiameter( 20.*t::micrometer() );
+        THEN("the waist diameter is 20e-6 m"){
+          CHECK( beam.getWaistDiameter<t::meter>().value() == Approx(20e-6) );
+          CHECK( beam.getWaistDiameter<t::meter>().value() == Approx(10e-6) );
+        }
+
         AND_WHEN("the waist position is set to 10 m") {
           beam.setWaistPosition( 10.*t::meter() );
-          THEN("the real complex beam parameter at 18 m is 800 + 0.059052 i cm") {
+          THEN("the complex beam parameter at 18 m is 800 + 0.059052 i cm") {
             auto q = beam.getComplexBeamParameter(18*t::meter());
             CHECK( q.value().real() == Approx(800) );
             CHECK( q.value().imag() == Approx(0.059052) );
-
+          }
+          THEN("the beam divergence is 33.18 mrad") {
+            CHECK( beam.getDivergence<t::milliradian>( ).value() == Approx(33.86818) );
+          }
+          THEN("the beam diameter at 18 m is 270.94538 mm") {
+            CHECK( beam.getDiameter<t::millimeter>( 18*m ).value() == Approx(270.94538) );
+            CHECK( beam.getRadius<t::millimeter>( 18*m ).value() == Approx(270.94538/2) );
+          }
+          THEN("the beam area at 18 m is 576.571779025 cm^2") {
+            CHECK( beam.getArea<t::centimeter_squared>( 18*m ).value() == Approx(576.571779025) );
           }
         }
       }
@@ -288,11 +305,15 @@ SCENARIO( "Spherical interface class calculations", "[OpticalElements]" )
 
 #include "GaussianBeam.hpp"
 #include "OpticalElements/ThinLens.hpp"
+#include "OpticalElements/SphericalInterface.hpp"
+#include "BeamConfigurator.hpp"
 
 TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
 {
+  GaussianBeam beam;
+  BeamConfigurator config;
+
   SECTION("Thin lens examples") {
-    GaussianBeam beam;
 
     beam.setWavelength(    532*nm );
     beam.setWaistDiameter( 0.01*mm );
@@ -322,9 +343,68 @@ TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
     }
   }
 
+  SECTION("Spherical surface examples") {
+
+    config.setWavelength( 532*nm );
+    config.setPower( 10*mW );
+    config.setPosition( 0*cm ).setDiameter( 2*0.5*mm ).setDivergence( 2*0.75*mrad);
+    config.configure(beam);
+
+    CHECK( beam.getWavelength<t::micrometer>().value()      == Approx(0.532) );
+    CHECK( beam.getPower<t::watt>().value()                 == Approx(0.01) );
+
+    CHECK( beam.getRadius<t::millimeter>(0*cm).value()      == Approx(0.5) );
+    CHECK( beam.getRadius<t::millimeter>(10*cm).value()     == Approx(0.56793) );
+
+    CHECK( beam.getWaistPosition<t::millimeter>().value()   == Approx(-594.822) );
+    CHECK( beam.getWaistRadius<t::millimeter>().value()     == Approx(0.225788) );
+    CHECK( beam.getRayleighRange<t::millimeter>().value()   == Approx(301.05042) );
+
+    SECTION("a 10 mm surface") {
+
+      SphericalInterface<t::centimeter> surface;
+      surface.setRadiusOfCurvature( 10*mm );
+
+      SECTION("a 1 <--> 1 refractive index") {
+
+        surface.setInitialRefractiveIndex( 1 );
+        surface.setFinalRefractiveIndex( 1 );
+
+        beam.transform( &surface, 10*cm );
+
+        CHECK( beam.getWavelength<t::micrometer>().value()      == Approx(0.532) );
+        CHECK( beam.getPower<t::watt>().value()                 == Approx(0.01) );
+
+        CHECK( beam.getRadius<t::millimeter>(0*cm).value()      == Approx(0.5) );
+        CHECK( beam.getRadius<t::millimeter>(10*cm).value()     == Approx(0.56793) );
+
+        CHECK( beam.getWaistPosition<t::millimeter>().value()   == Approx(-594.822) );
+        CHECK( beam.getWaistDiameter<t::millimeter>().value()/2 == Approx(0.225788) );
+
+      }
+
+      SECTION("a 1 <--> 2 refractive index") {
+
+        surface.setInitialRefractiveIndex( 1 );
+        surface.setFinalRefractiveIndex( 2 );
+
+        beam.transform( &surface, 100*mm );
+
+        CHECK( beam.getWaistPosition<t::millimeter>().value()   == Approx(100+20.2447486566) );
+        CHECK( beam.getRayleighRange<t::millimeter>().value()   == Approx(0.10759247802) );
+
+        CHECK( beam.getWaistRadius<t::millimeter>().value()     == Approx(0.00301826) );
+        CHECK( beam.getRadius<t::millimeter>(10*cm).value()     == Approx(0.56793) );   // beam diameter at position of the surface should not change
+
+        CHECK( beam.getWavelength<t::micrometer>().value()      == Approx(0.532/2) );
+        CHECK( beam.getPower<t::watt>().value()                 == Approx(0.01) );
+
+      }
+    }
+  }
+
   SECTION( "Ramrod example worksheet" )
   {
-    GaussianBeam beam;
 
     SECTION( "Problem 1" )
     {
@@ -336,20 +416,64 @@ TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
       ThinLens<t::centimeter> lens;
       lens.setFocalLength( 120*mm );
 
-      //std::cout << "1.a "<<quantity<t::irradiance>( beam.getPower() / (M_PI*pow<2>(beam.getDiameter(15*cm))/4.)) << std::endl;
-      std::cout << "1.b "<<beam.getDiameter(15*cm) << std::endl;
-      std::cout << "1.c "<<beam.getRadiusOfCurvature(15*cm) << std::endl;
+      quantity<t::centimeter> lensPosition = 15*cm;
+
+      WRITE2( "waist diameter ", beam.getWaistDiameter() );
+      WRITE3( "1.a ",beam.getPeakIrradiance(lensPosition).value()," W/cm^2" );
+      WRITE2( "1.b ",beam.getDiameter(lensPosition) );
+      WRITE2( "1.c ",beam.getRadiusOfCurvature(lensPosition) );
       beam.transform( &lens, 15*cm );
-      std::cout << "1.d "<<beam.getRadiusOfCurvature(15*cm) << std::endl;
-      std::cout << "1.e "<<beam.getWaistPosition() << std::endl;
-      std::cout << "1.f "<<beam.getWaistDiameter() << std::endl;
+      WRITE2( "1.d ", beam.getRadiusOfCurvature(lensPosition) );
+      WRITE2( "1.e ", beam.getWaistPosition() );
+      auto irr = beam.getPower() / ((M_PI/4)*beam.getWaistDiameter()*beam.getWaistDiameter());
+      WRITE2( "waist diameter ",beam.getWaistDiameter() );
+      WRITE2( "1.f ", irr.value() );
+      WRITE3( "1.f ", beam.getPeakIrradiance( beam.getWaistPosition() ).value(), "W/cm^2" );
+
+
+    }
+
+    SECTION( "Problem 2" )
+    {
+
+      
+      beam.setPower(         5*mW );
+      BeamConfigurator config;
+
+      config.setWavelength( 532*nm );
+      config.setPosition(0*cm).setDiameter(3*mm).setDivergence(2*mrad);
+
+      config.configure( beam );
+
+
+      SphericalInterface<t::centimeter> cornea;
+      cornea.setRadiusOfCurvature( 6.1*mm );
+      cornea.setInitialRefractiveIndex( 1.0    );
+      cornea.setFinalRefractiveIndex(   1.3369 );
+
+      std::cout<<std::endl;
+      WRITE2( "2.a", beam.getWaistPosition() );
+      WRITE2( "2.b", beam.getRadiusOfCurvature(0*cm) );
+
+      beam.transform( &cornea, 0*cm );
+
+      WRITE2( "--wavelength", beam.getWavelength() );
+      WRITE2( "--RoC", beam.getRadiusOfCurvature(0*cm) );
+      WRITE2( "--Diam (at cornea)", beam.getDiameter(0*cm) );
+      WRITE2( "--z_0", beam.getWaistPosition() );
+      WRITE2( "--w_0", beam.getWaistDiameter() );
+      WRITE2( "2.c", beam.getDiameter(2.44*cm) );
+      WRITE2( "2.d", beam.getDiameter(2.44*cm) );
+      WRITE2( "2.e", beam.getRadiusOfCurvature(2.44*cm) );
+      WRITE3( "2.f", beam.getPeakIrradiance(2.44*cm).value(), "W/cm^2" );
+
+
+      
 
 
     }
   }
 }
-
-
 
 #include "GaussianBeam.hpp"
 #include "BeamConfigurator.hpp"
