@@ -75,23 +75,19 @@ class GaussianBeam(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, GaussianBeam, name)
     __repr__ = _swig_repr
-    def getFrequency(self): return _py_libGBP.GaussianBeam_getFrequency(self)
-    def getWavelength(self): return _py_libGBP.GaussianBeam_getWavelength(self)
-    def getWaistPosition(self): return _py_libGBP.GaussianBeam_getWaistPosition(self)
-    def getWaistDiameter(self): return _py_libGBP.GaussianBeam_getWaistDiameter(self)
-    def getPower(self): return _py_libGBP.GaussianBeam_getPower(self)
-    def getCurrentPosition(self): return _py_libGBP.GaussianBeam_getCurrentPosition(self)
-    def getFreeSpaceWavelength(self): return _py_libGBP.GaussianBeam_getFreeSpaceWavelength(self)
-    def getRayleighRange(self): return _py_libGBP.GaussianBeam_getRayleighRange(self)
-    def getDivergence(self): return _py_libGBP.GaussianBeam_getDivergence(self)
-    def getDiameter(self): return _py_libGBP.GaussianBeam_getDiameter(self)
-    def getRadius(self): return _py_libGBP.GaussianBeam_getRadius(self)
-    def getWaistRadius(self): return _py_libGBP.GaussianBeam_getWaistRadius(self)
-    def getRadiusOfCurvature(self): return _py_libGBP.GaussianBeam_getRadiusOfCurvature(self)
-    def getComplexBeamParameter(self): return _py_libGBP.GaussianBeam_getComplexBeamParameter(self)
-    def getRelativeWaistPosition(self): return _py_libGBP.GaussianBeam_getRelativeWaistPosition(self)
-    def getArea(self): return _py_libGBP.GaussianBeam_getArea(self)
-    def getPeakIrradiance(self): return _py_libGBP.GaussianBeam_getPeakIrradiance(self)
+    def setFrequencyDP(self, *args): return _py_libGBP.GaussianBeam_setFrequencyDP(self, *args)
+    def getFrequencyDP(self): return _py_libGBP.GaussianBeam_getFrequencyDP(self)
+    def setWavelengthDP(self, *args): return _py_libGBP.GaussianBeam_setWavelengthDP(self, *args)
+    def getWavelengthDP(self): return _py_libGBP.GaussianBeam_getWavelengthDP(self)
+    def setWaistPositionDP(self, *args): return _py_libGBP.GaussianBeam_setWaistPositionDP(self, *args)
+    def getWaistPositionDP(self): return _py_libGBP.GaussianBeam_getWaistPositionDP(self)
+    def setWaistDiameterDP(self, *args): return _py_libGBP.GaussianBeam_setWaistDiameterDP(self, *args)
+    def getWaistDiameterDP(self): return _py_libGBP.GaussianBeam_getWaistDiameterDP(self)
+    def setPowerDP(self, *args): return _py_libGBP.GaussianBeam_setPowerDP(self, *args)
+    def getPowerDP(self): return _py_libGBP.GaussianBeam_getPowerDP(self)
+    def setCurrentPositionDP(self, *args): return _py_libGBP.GaussianBeam_setCurrentPositionDP(self, *args)
+    def getCurrentPositionDP(self): return _py_libGBP.GaussianBeam_getCurrentPositionDP(self)
+    def getFreeSpaceWavelengthDP(self): return _py_libGBP.GaussianBeam_getFreeSpaceWavelengthDP(self)
     def __init__(self): 
         this = _py_libGBP.new_GaussianBeam()
         try: self.this.append(this)
@@ -100,6 +96,75 @@ class GaussianBeam(_object):
     __del__ = lambda self : None;
 GaussianBeam_swigregister = _py_libGBP.GaussianBeam_swigregister
 GaussianBeam_swigregister(GaussianBeam)
+
+import pint
+ureg = pint.UnitRegistry()
+Q_   = ureg.Quantity
+
+@ureg.wraps( None, (None,ureg('hertz')), True )
+def setFrequency (self,v):
+  return self.setFrequencyDP(v)
+GaussianBeam.setFrequency  = setFrequency 
+
+@ureg.wraps( ureg('hertz'), None, True )
+def getFrequency (self):
+  return self.getFrequencyDP()
+GaussianBeam.getFrequency = getFrequency 
+
+@ureg.wraps( None, (None,ureg('nanometer')), True )
+def setWavelength (self,v):
+  return self.setWavelengthDP(v)
+GaussianBeam.setWavelength  = setWavelength 
+
+@ureg.wraps( ureg('nanometer'), None, True )
+def getWavelength (self):
+  return self.getWavelengthDP()
+GaussianBeam.getWavelength = getWavelength 
+
+@ureg.wraps( None, (None,ureg('centimeter')), True )
+def setWaistPosition (self,v):
+  return self.setWaistPositionDP(v)
+GaussianBeam.setWaistPosition  = setWaistPosition 
+
+@ureg.wraps( ureg('centimeter'), None, True )
+def getWaistPosition (self):
+  return self.getWaistPositionDP()
+GaussianBeam.getWaistPosition = getWaistPosition 
+
+@ureg.wraps( None, (None,ureg('centimeter')), True )
+def setWaistDiameter (self,v):
+  return self.setWaistDiameterDP(v)
+GaussianBeam.setWaistDiameter  = setWaistDiameter 
+
+@ureg.wraps( ureg('centimeter'), None, True )
+def getWaistDiameter (self):
+  return self.getWaistDiameterDP()
+GaussianBeam.getWaistDiameter = getWaistDiameter 
+
+@ureg.wraps( None, (None,ureg('watt')), True )
+def setPower (self,v):
+  return self.setPowerDP(v)
+GaussianBeam.setPower  = setPower 
+
+@ureg.wraps( ureg('watt'), None, True )
+def getPower (self):
+  return self.getPowerDP()
+GaussianBeam.getPower = getPower 
+
+@ureg.wraps( None, (None,ureg('centimeter')), True )
+def setCurrentPosition (self,v):
+  return self.setCurrentPositionDP(v)
+GaussianBeam.setCurrentPosition  = setCurrentPosition 
+
+@ureg.wraps( ureg('centimeter'), None, True )
+def getCurrentPosition (self):
+  return self.getCurrentPositionDP()
+GaussianBeam.getCurrentPosition = getCurrentPosition 
+
+@ureg.wraps( ureg('nanometer'), None, True )
+def getFreeSpaceWavelength (self):
+  return self.getFreeSpaceWavelengthDP()
+GaussianBeam.getFreeSpaceWavelength = getFreeSpaceWavelength 
 
 # This file is compatible with both classic and new-style classes.
 

@@ -2936,16 +2936,8 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 
 #define SWIGTYPE_p_GaussianBeam swig_types[0]
 #define SWIGTYPE_p_char swig_types[1]
-#define SWIGTYPE_p_quantityT_t__centimeter_complexT_double_t_t swig_types[2]
-#define SWIGTYPE_p_quantityT_t__centimeter_squared_t swig_types[3]
-#define SWIGTYPE_p_quantityT_t__centimeter_t swig_types[4]
-#define SWIGTYPE_p_quantityT_t__hertz_t swig_types[5]
-#define SWIGTYPE_p_quantityT_t__milliradian_t swig_types[6]
-#define SWIGTYPE_p_quantityT_t__nanometer_t swig_types[7]
-#define SWIGTYPE_p_quantityT_t__watt_per_centimeter_squared_t swig_types[8]
-#define SWIGTYPE_p_quantityT_t__watt_t swig_types[9]
-static swig_type_info *swig_types[11];
-static swig_module_info swig_module = {swig_types, 10, 0, 0, 0, 0};
+static swig_type_info *swig_types[3];
+static swig_module_info swig_module = {swig_types, 2, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3044,377 +3036,403 @@ namespace swig {
 
 #include "GaussianBeam.hpp"
 
+
+#include <string>
+
+
+#include <complex> 
+
+
+SWIGINTERN int
+SWIG_AsVal_double (PyObject *obj, double *val)
+{
+  int res = SWIG_TypeError;
+  if (PyFloat_Check(obj)) {
+    if (val) *val = PyFloat_AsDouble(obj);
+    return SWIG_OK;
+  } else if (PyInt_Check(obj)) {
+    if (val) *val = PyInt_AsLong(obj);
+    return SWIG_OK;
+  } else if (PyLong_Check(obj)) {
+    double v = PyLong_AsDouble(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = v;
+      return SWIG_OK;
+    } else {
+      PyErr_Clear();
+    }
+  }
+#ifdef SWIG_PYTHON_CAST_MODE
+  {
+    int dispatch = 0;
+    double d = PyFloat_AsDouble(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = d;
+      return SWIG_AddCast(SWIG_OK);
+    } else {
+      PyErr_Clear();
+    }
+    if (!dispatch) {
+      long v = PyLong_AsLong(obj);
+      if (!PyErr_Occurred()) {
+	if (val) *val = v;
+	return SWIG_AddCast(SWIG_AddCast(SWIG_OK));
+      } else {
+	PyErr_Clear();
+      }
+    }
+  }
+#endif
+  return res;
+}
+
+SWIGINTERN void GaussianBeam_setFrequencyDP(GaussianBeam *self,double v){ self->setFrequency( v*hertz); }
+SWIGINTERN double GaussianBeam_getFrequencyDP(GaussianBeam *self){ return quantity_cast<double>( self->getFrequency() ); }
+
+  #define SWIG_From_double   PyFloat_FromDouble 
+
+SWIGINTERN void GaussianBeam_setWavelengthDP(GaussianBeam *self,double v){ self->setWavelength( v*nanometer); }
+SWIGINTERN double GaussianBeam_getWavelengthDP(GaussianBeam *self){ return quantity_cast<double>( self->getWavelength() ); }
+SWIGINTERN void GaussianBeam_setWaistPositionDP(GaussianBeam *self,double v){ self->setWaistPosition( v*centimeter); }
+SWIGINTERN double GaussianBeam_getWaistPositionDP(GaussianBeam *self){ return quantity_cast<double>( self->getWaistPosition() ); }
+SWIGINTERN void GaussianBeam_setWaistDiameterDP(GaussianBeam *self,double v){ self->setWaistDiameter( v*centimeter); }
+SWIGINTERN double GaussianBeam_getWaistDiameterDP(GaussianBeam *self){ return quantity_cast<double>( self->getWaistDiameter() ); }
+SWIGINTERN void GaussianBeam_setPowerDP(GaussianBeam *self,double v){ self->setPower( v*watt); }
+SWIGINTERN double GaussianBeam_getPowerDP(GaussianBeam *self){ return quantity_cast<double>( self->getPower() ); }
+SWIGINTERN void GaussianBeam_setCurrentPositionDP(GaussianBeam *self,double v){ self->setCurrentPosition( v*centimeter); }
+SWIGINTERN double GaussianBeam_getCurrentPositionDP(GaussianBeam *self){ return quantity_cast<double>( self->getCurrentPosition() ); }
+SWIGINTERN double GaussianBeam_getFreeSpaceWavelengthDP(GaussianBeam *self){ return quantity_cast<double>( self->getFreeSpaceWavelength() ); }
 #ifdef __cplusplus
 extern "C" {
 #endif
-SWIGINTERN PyObject *_wrap_GaussianBeam_getFrequency(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_setFrequencyDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
+  double arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::hertz > result;
+  PyObject * obj1 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getFrequency",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:GaussianBeam_setFrequencyDP",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getFrequency" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_setFrequencyDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getFrequency();
-  resultobj = SWIG_NewPointerObj((new quantity< t::hertz >(static_cast< const quantity< t::hertz >& >(result))), SWIGTYPE_p_quantityT_t__hertz_t, SWIG_POINTER_OWN |  0 );
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "GaussianBeam_setFrequencyDP" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  GaussianBeam_setFrequencyDP(arg1,arg2);
+  resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_GaussianBeam_getWavelength(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_getFrequencyDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::nanometer > result;
+  double result;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getWavelength",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getFrequencyDP",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getWavelength" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getFrequencyDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getWavelength();
-  resultobj = SWIG_NewPointerObj((new quantity< t::nanometer >(static_cast< const quantity< t::nanometer >& >(result))), SWIGTYPE_p_quantityT_t__nanometer_t, SWIG_POINTER_OWN |  0 );
+  result = (double)GaussianBeam_getFrequencyDP(arg1);
+  resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_GaussianBeam_getWaistPosition(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_setWavelengthDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
+  double arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::centimeter > result;
+  PyObject * obj1 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getWaistPosition",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:GaussianBeam_setWavelengthDP",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getWaistPosition" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_setWavelengthDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getWaistPosition();
-  resultobj = SWIG_NewPointerObj((new quantity< t::centimeter >(static_cast< const quantity< t::centimeter >& >(result))), SWIGTYPE_p_quantityT_t__centimeter_t, SWIG_POINTER_OWN |  0 );
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "GaussianBeam_setWavelengthDP" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  GaussianBeam_setWavelengthDP(arg1,arg2);
+  resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_GaussianBeam_getWaistDiameter(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_getWavelengthDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::centimeter > result;
+  double result;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getWaistDiameter",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getWavelengthDP",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getWaistDiameter" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getWavelengthDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getWaistDiameter();
-  resultobj = SWIG_NewPointerObj((new quantity< t::centimeter >(static_cast< const quantity< t::centimeter >& >(result))), SWIGTYPE_p_quantityT_t__centimeter_t, SWIG_POINTER_OWN |  0 );
+  result = (double)GaussianBeam_getWavelengthDP(arg1);
+  resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_GaussianBeam_getPower(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_setWaistPositionDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
+  double arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::watt > result;
+  PyObject * obj1 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getPower",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:GaussianBeam_setWaistPositionDP",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getPower" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_setWaistPositionDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getPower();
-  resultobj = SWIG_NewPointerObj((new quantity< t::watt >(static_cast< const quantity< t::watt >& >(result))), SWIGTYPE_p_quantityT_t__watt_t, SWIG_POINTER_OWN |  0 );
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "GaussianBeam_setWaistPositionDP" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  GaussianBeam_setWaistPositionDP(arg1,arg2);
+  resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_GaussianBeam_getCurrentPosition(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_getWaistPositionDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::centimeter > result;
+  double result;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getCurrentPosition",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getWaistPositionDP",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getCurrentPosition" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getWaistPositionDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getCurrentPosition();
-  resultobj = SWIG_NewPointerObj((new quantity< t::centimeter >(static_cast< const quantity< t::centimeter >& >(result))), SWIGTYPE_p_quantityT_t__centimeter_t, SWIG_POINTER_OWN |  0 );
+  result = (double)GaussianBeam_getWaistPositionDP(arg1);
+  resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_GaussianBeam_getFreeSpaceWavelength(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_setWaistDiameterDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
+  double arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::nanometer > result;
+  PyObject * obj1 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getFreeSpaceWavelength",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:GaussianBeam_setWaistDiameterDP",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getFreeSpaceWavelength" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_setWaistDiameterDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getFreeSpaceWavelength();
-  resultobj = SWIG_NewPointerObj((new quantity< t::nanometer >(static_cast< const quantity< t::nanometer >& >(result))), SWIGTYPE_p_quantityT_t__nanometer_t, SWIG_POINTER_OWN |  0 );
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "GaussianBeam_setWaistDiameterDP" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  GaussianBeam_setWaistDiameterDP(arg1,arg2);
+  resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_GaussianBeam_getRayleighRange(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_getWaistDiameterDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::centimeter > result;
+  double result;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getRayleighRange",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getWaistDiameterDP",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getRayleighRange" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getWaistDiameterDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getRayleighRange();
-  resultobj = SWIG_NewPointerObj((new quantity< t::centimeter >(static_cast< const quantity< t::centimeter >& >(result))), SWIGTYPE_p_quantityT_t__centimeter_t, SWIG_POINTER_OWN |  0 );
+  result = (double)GaussianBeam_getWaistDiameterDP(arg1);
+  resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_GaussianBeam_getDivergence(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_setPowerDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
+  double arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::milliradian > result;
+  PyObject * obj1 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getDivergence",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:GaussianBeam_setPowerDP",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getDivergence" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_setPowerDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getDivergence();
-  resultobj = SWIG_NewPointerObj((new quantity< t::milliradian >(static_cast< const quantity< t::milliradian >& >(result))), SWIGTYPE_p_quantityT_t__milliradian_t, SWIG_POINTER_OWN |  0 );
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "GaussianBeam_setPowerDP" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  GaussianBeam_setPowerDP(arg1,arg2);
+  resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_GaussianBeam_getDiameter(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_getPowerDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::centimeter > result;
+  double result;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getDiameter",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getPowerDP",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getDiameter" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getPowerDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getDiameter();
-  resultobj = SWIG_NewPointerObj((new quantity< t::centimeter >(static_cast< const quantity< t::centimeter >& >(result))), SWIGTYPE_p_quantityT_t__centimeter_t, SWIG_POINTER_OWN |  0 );
+  result = (double)GaussianBeam_getPowerDP(arg1);
+  resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_GaussianBeam_getRadius(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_setCurrentPositionDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
+  double arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::centimeter > result;
+  PyObject * obj1 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getRadius",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:GaussianBeam_setCurrentPositionDP",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getRadius" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_setCurrentPositionDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getRadius();
-  resultobj = SWIG_NewPointerObj((new quantity< t::centimeter >(static_cast< const quantity< t::centimeter >& >(result))), SWIGTYPE_p_quantityT_t__centimeter_t, SWIG_POINTER_OWN |  0 );
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "GaussianBeam_setCurrentPositionDP" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  GaussianBeam_setCurrentPositionDP(arg1,arg2);
+  resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_GaussianBeam_getWaistRadius(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_getCurrentPositionDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::centimeter > result;
+  double result;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getWaistRadius",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getCurrentPositionDP",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getWaistRadius" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getCurrentPositionDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getWaistRadius();
-  resultobj = SWIG_NewPointerObj((new quantity< t::centimeter >(static_cast< const quantity< t::centimeter >& >(result))), SWIGTYPE_p_quantityT_t__centimeter_t, SWIG_POINTER_OWN |  0 );
+  result = (double)GaussianBeam_getCurrentPositionDP(arg1);
+  resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_GaussianBeam_getRadiusOfCurvature(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_GaussianBeam_getFreeSpaceWavelengthDP(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   GaussianBeam *arg1 = (GaussianBeam *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  quantity< t::centimeter > result;
+  double result;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getRadiusOfCurvature",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getFreeSpaceWavelengthDP",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getRadiusOfCurvature" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getFreeSpaceWavelengthDP" "', argument " "1"" of type '" "GaussianBeam *""'"); 
   }
   arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getRadiusOfCurvature();
-  resultobj = SWIG_NewPointerObj((new quantity< t::centimeter >(static_cast< const quantity< t::centimeter >& >(result))), SWIGTYPE_p_quantityT_t__centimeter_t, SWIG_POINTER_OWN |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_GaussianBeam_getComplexBeamParameter(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  GaussianBeam *arg1 = (GaussianBeam *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  quantity< t::centimeter,complex< double > > result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getComplexBeamParameter",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getComplexBeamParameter" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
-  }
-  arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getComplexBeamParameter();
-  resultobj = SWIG_NewPointerObj((new quantity< t::centimeter,complex< double > >(static_cast< const quantity< t::centimeter,complex< double > >& >(result))), SWIGTYPE_p_quantityT_t__centimeter_complexT_double_t_t, SWIG_POINTER_OWN |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_GaussianBeam_getRelativeWaistPosition(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  GaussianBeam *arg1 = (GaussianBeam *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  quantity< t::centimeter > result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getRelativeWaistPosition",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getRelativeWaistPosition" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
-  }
-  arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getRelativeWaistPosition();
-  resultobj = SWIG_NewPointerObj((new quantity< t::centimeter >(static_cast< const quantity< t::centimeter >& >(result))), SWIGTYPE_p_quantityT_t__centimeter_t, SWIG_POINTER_OWN |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_GaussianBeam_getArea(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  GaussianBeam *arg1 = (GaussianBeam *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  quantity< t::centimeter_squared > result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getArea",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getArea" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
-  }
-  arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getArea();
-  resultobj = SWIG_NewPointerObj((new quantity< t::centimeter_squared >(static_cast< const quantity< t::centimeter_squared >& >(result))), SWIGTYPE_p_quantityT_t__centimeter_squared_t, SWIG_POINTER_OWN |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_GaussianBeam_getPeakIrradiance(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  GaussianBeam *arg1 = (GaussianBeam *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  quantity< t::watt_per_centimeter_squared > result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:GaussianBeam_getPeakIrradiance",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_GaussianBeam, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GaussianBeam_getPeakIrradiance" "', argument " "1"" of type '" "GaussianBeam const *""'"); 
-  }
-  arg1 = reinterpret_cast< GaussianBeam * >(argp1);
-  result = ((GaussianBeam const *)arg1)->getPeakIrradiance();
-  resultobj = SWIG_NewPointerObj((new quantity< t::watt_per_centimeter_squared >(static_cast< const quantity< t::watt_per_centimeter_squared >& >(result))), SWIGTYPE_p_quantityT_t__watt_per_centimeter_squared_t, SWIG_POINTER_OWN |  0 );
+  result = (double)GaussianBeam_getFreeSpaceWavelengthDP(arg1);
+  resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
   return NULL;
@@ -3464,23 +3482,19 @@ SWIGINTERN PyObject *GaussianBeam_swigregister(PyObject *SWIGUNUSEDPARM(self), P
 
 static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
-	 { (char *)"GaussianBeam_getFrequency", _wrap_GaussianBeam_getFrequency, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getWavelength", _wrap_GaussianBeam_getWavelength, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getWaistPosition", _wrap_GaussianBeam_getWaistPosition, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getWaistDiameter", _wrap_GaussianBeam_getWaistDiameter, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getPower", _wrap_GaussianBeam_getPower, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getCurrentPosition", _wrap_GaussianBeam_getCurrentPosition, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getFreeSpaceWavelength", _wrap_GaussianBeam_getFreeSpaceWavelength, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getRayleighRange", _wrap_GaussianBeam_getRayleighRange, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getDivergence", _wrap_GaussianBeam_getDivergence, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getDiameter", _wrap_GaussianBeam_getDiameter, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getRadius", _wrap_GaussianBeam_getRadius, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getWaistRadius", _wrap_GaussianBeam_getWaistRadius, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getRadiusOfCurvature", _wrap_GaussianBeam_getRadiusOfCurvature, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getComplexBeamParameter", _wrap_GaussianBeam_getComplexBeamParameter, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getRelativeWaistPosition", _wrap_GaussianBeam_getRelativeWaistPosition, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getArea", _wrap_GaussianBeam_getArea, METH_VARARGS, NULL},
-	 { (char *)"GaussianBeam_getPeakIrradiance", _wrap_GaussianBeam_getPeakIrradiance, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_setFrequencyDP", _wrap_GaussianBeam_setFrequencyDP, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_getFrequencyDP", _wrap_GaussianBeam_getFrequencyDP, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_setWavelengthDP", _wrap_GaussianBeam_setWavelengthDP, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_getWavelengthDP", _wrap_GaussianBeam_getWavelengthDP, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_setWaistPositionDP", _wrap_GaussianBeam_setWaistPositionDP, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_getWaistPositionDP", _wrap_GaussianBeam_getWaistPositionDP, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_setWaistDiameterDP", _wrap_GaussianBeam_setWaistDiameterDP, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_getWaistDiameterDP", _wrap_GaussianBeam_getWaistDiameterDP, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_setPowerDP", _wrap_GaussianBeam_setPowerDP, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_getPowerDP", _wrap_GaussianBeam_getPowerDP, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_setCurrentPositionDP", _wrap_GaussianBeam_setCurrentPositionDP, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_getCurrentPositionDP", _wrap_GaussianBeam_getCurrentPositionDP, METH_VARARGS, NULL},
+	 { (char *)"GaussianBeam_getFreeSpaceWavelengthDP", _wrap_GaussianBeam_getFreeSpaceWavelengthDP, METH_VARARGS, NULL},
 	 { (char *)"new_GaussianBeam", _wrap_new_GaussianBeam, METH_VARARGS, NULL},
 	 { (char *)"delete_GaussianBeam", _wrap_delete_GaussianBeam, METH_VARARGS, NULL},
 	 { (char *)"GaussianBeam_swigregister", GaussianBeam_swigregister, METH_VARARGS, NULL},
@@ -3492,50 +3506,18 @@ static PyMethodDef SwigMethods[] = {
 
 static swig_type_info _swigt__p_GaussianBeam = {"_p_GaussianBeam", "GaussianBeam *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_quantityT_t__centimeter_complexT_double_t_t = {"_p_quantityT_t__centimeter_complexT_double_t_t", "quantity< t::centimeter,complex< double > > *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_quantityT_t__centimeter_squared_t = {"_p_quantityT_t__centimeter_squared_t", "quantity< t::centimeter_squared > *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_quantityT_t__centimeter_t = {"_p_quantityT_t__centimeter_t", "quantity< t::centimeter > *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_quantityT_t__hertz_t = {"_p_quantityT_t__hertz_t", "quantity< t::hertz > *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_quantityT_t__milliradian_t = {"_p_quantityT_t__milliradian_t", "quantity< t::milliradian > *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_quantityT_t__nanometer_t = {"_p_quantityT_t__nanometer_t", "quantity< t::nanometer > *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_quantityT_t__watt_per_centimeter_squared_t = {"_p_quantityT_t__watt_per_centimeter_squared_t", "quantity< t::watt_per_centimeter_squared > *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_quantityT_t__watt_t = {"_p_quantityT_t__watt_t", "quantity< t::watt > *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
   &_swigt__p_GaussianBeam,
   &_swigt__p_char,
-  &_swigt__p_quantityT_t__centimeter_complexT_double_t_t,
-  &_swigt__p_quantityT_t__centimeter_squared_t,
-  &_swigt__p_quantityT_t__centimeter_t,
-  &_swigt__p_quantityT_t__hertz_t,
-  &_swigt__p_quantityT_t__milliradian_t,
-  &_swigt__p_quantityT_t__nanometer_t,
-  &_swigt__p_quantityT_t__watt_per_centimeter_squared_t,
-  &_swigt__p_quantityT_t__watt_t,
 };
 
 static swig_cast_info _swigc__p_GaussianBeam[] = {  {&_swigt__p_GaussianBeam, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_quantityT_t__centimeter_complexT_double_t_t[] = {  {&_swigt__p_quantityT_t__centimeter_complexT_double_t_t, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_quantityT_t__centimeter_squared_t[] = {  {&_swigt__p_quantityT_t__centimeter_squared_t, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_quantityT_t__centimeter_t[] = {  {&_swigt__p_quantityT_t__centimeter_t, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_quantityT_t__hertz_t[] = {  {&_swigt__p_quantityT_t__hertz_t, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_quantityT_t__milliradian_t[] = {  {&_swigt__p_quantityT_t__milliradian_t, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_quantityT_t__nanometer_t[] = {  {&_swigt__p_quantityT_t__nanometer_t, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_quantityT_t__watt_per_centimeter_squared_t[] = {  {&_swigt__p_quantityT_t__watt_per_centimeter_squared_t, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_quantityT_t__watt_t[] = {  {&_swigt__p_quantityT_t__watt_t, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_GaussianBeam,
   _swigc__p_char,
-  _swigc__p_quantityT_t__centimeter_complexT_double_t_t,
-  _swigc__p_quantityT_t__centimeter_squared_t,
-  _swigc__p_quantityT_t__centimeter_t,
-  _swigc__p_quantityT_t__hertz_t,
-  _swigc__p_quantityT_t__milliradian_t,
-  _swigc__p_quantityT_t__nanometer_t,
-  _swigc__p_quantityT_t__watt_per_centimeter_squared_t,
-  _swigc__p_quantityT_t__watt_t,
 };
 
 

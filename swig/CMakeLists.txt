@@ -135,6 +135,23 @@ if( BUILD_SWIG_WRAPPERS )
     endif(WIN32)
     target_link_libraries( py_libGBP ${PYTHON_LIBRARY} ${PYTHON_LIBRARIES} )
 
+
+    add_custom_command( OUTPUT  "${CMAKE_BINARY_DIR}/python-unitTests"
+                        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/unitTests/python"
+                        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                        "${CMAKE_CURRENT_SOURCE_DIR}/unitTests/python"
+                        "${CMAKE_BINARY_DIR}/python-unitTests"
+                        COMMAND ${CMAKE_COMMAND} -E copy
+                        "${CMAKE_CURRENT_BINARY_DIR}/py_libGBP.py"
+                        "${CMAKE_BINARY_DIR}/python-unitTests/"
+                        COMMAND ${CMAKE_COMMAND} -E copy
+                        "${CMAKE_CURRENT_BINARY_DIR}/_py_libGBP.so"
+                        "${CMAKE_BINARY_DIR}/python-unitTests/"
+                        COMMENT "copying python unit tests files" )
+                      add_custom_target( copyPythonUnitTests ALL DEPENDS "${CMAKE_BINARY_DIR}/python-unitTests" py_libGBP)
+
+
+
   endif(PYTHON_WRAPPERS AND PYTHONLIBS_FOUND)
 
 endif( BUILD_SWIG_WRAPPERS )

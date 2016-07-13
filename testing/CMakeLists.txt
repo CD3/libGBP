@@ -34,3 +34,4 @@ add_test(NAME ${testName}
          WORKING_DIRECTORY ${testDir}
          COMMAND ${testDir}/${testName} )
 endforeach(testSrc)
+

@@ -61,6 +61,11 @@ namespace units
   /** @brief namespace for unit instances*/
   namespace i
   {
+    BOOST_UNITS_STATIC_CONSTANT( hertz, t::hertz );
+    BOOST_UNITS_STATIC_CONSTANT( hz,    t::hertz );
+
+
+
     BOOST_UNITS_STATIC_CONSTANT( nanometer, t::nanometer );
     BOOST_UNITS_STATIC_CONSTANT( nm,         t::nanometer );
 
@@ -80,6 +85,9 @@ namespace units
 
     BOOST_UNITS_STATIC_CONSTANT( milliwatt, t::milliwatt );
     BOOST_UNITS_STATIC_CONSTANT( mW,        t::milliwatt );
+
+    BOOST_UNITS_STATIC_CONSTANT( watt,      t::watt );
+    BOOST_UNITS_STATIC_CONSTANT( W,         t::watt );
 
 
     BOOST_UNITS_STATIC_CONSTANT( milliradian, t::milliradian );
