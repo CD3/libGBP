@@ -467,9 +467,62 @@ TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
       WRITE2( "2.e", beam.getRadiusOfCurvature(2.44*cm) );
       WRITE3( "2.f", beam.getPeakIrradiance(2.44*cm).value(), "W/cm^2" );
 
+    }
+
+    SECTION( "Problem 2 Details" )
+    {
 
       
+      beam.setPower(         5*mW );
+      BeamConfigurator config;
 
+      config.setWavelength( 532*nm );
+      config.setPosition(0*cm).setDiameter(3*mm).setDivergence(2*mrad);
+
+      config.configure( beam );
+
+
+      SphericalInterface<t::centimeter> cornea;
+      cornea.setRadiusOfCurvature( 6.1*mm );
+      cornea.setInitialRefractiveIndex( 1.0    );
+      cornea.setFinalRefractiveIndex(   1.3369 );
+
+
+      WRITE2( "START", "--" );
+      WRITE2( "L", beam.getWavelength() );
+      WRITE2( "w(z)", beam.getRadius(0*cm) );
+      WRITE2( "w0", beam.getWaistRadius() );
+      WRITE2( "R", beam.getRadiusOfCurvature(0*cm) );
+      WRITE2( "z", beam.getRelativeWaistPosition(0*cm) );
+      WRITE2( "zR", beam.getRayleighRange() );
+      WRITE2( "q", beam.getComplexBeamParameter(0*cm) );
+      WRITE2( "--","--" );
+
+      auto RTM = cornea.getRTMatrix();
+
+      WRITE2( "n1", cornea.getInitialRefractiveIndex() );
+      WRITE2( "n2", cornea.getFinalRefractiveIndex() );
+      WRITE2( "f", -1/RTM(1,0) );
+      WRITE2( "A", RTM(0,0) );
+      WRITE2( "B", RTM(0,1) );
+      WRITE2( "C", RTM(1,0) );
+      WRITE2( "D", RTM(1,1) );
+      WRITE2( "--","--" );
+
+      beam.transform( &cornea, 0*cm );
+
+      WRITE2( "Lp", beam.getWavelength() );
+      WRITE2( "w(z)p", beam.getRadius(0*cm) );
+      WRITE2( "w0p", beam.getWaistRadius() );
+      WRITE2( "Rp", beam.getRadiusOfCurvature(0*cm) );
+      WRITE2( "zp", beam.getRelativeWaistPosition(0*cm) );
+      WRITE2( "zRp", beam.getRayleighRange() );
+      WRITE2( "qp", beam.getComplexBeamParameter(0*cm) );
+
+      WRITE2( "d (distance to beam waist from retina)", beam.getRelativeWaistPosition(2.44*cm) );
+
+
+      WRITE2( "END", "--" );
 
     }
   }
@@ -561,3 +614,58 @@ TEST_CASE( "BeamConfigurator Tests" )
 
 
 
+#include "GaussianBeam.hpp"
+#include "OpticalElements/ThinLens.hpp"
+#include "OpticalElements/SphericalInterface.hpp"
+#include "OpticalSystem.hpp"
+
+TEST_CASE( "Optical Systems" )
+{
+  GaussianBeam beam;
+  OpticalSystem<t::centimeter> system;
+
+  std::shared_ptr< ThinLens<t::centimeter> > lens;
+
+  lens.reset( new ThinLens<t::centimeter>() );
+  lens->setFocalLength( 100*mm );
+
+  system.addElement( lens, 0*cm );
+
+  lens.reset( new ThinLens<t::centimeter>() );
+  lens->setFocalLength( 200*mm );
+
+  system.addElement( lens, 10*cm );
+
+  CHECK( system.getElements().size() == 2 );
+  auto elem = system.getElements().begin();
+  CHECK( elem->first.value() == Approx(0) );
+  elem++;
+  CHECK( elem->first.value() == Approx(10) );
+
+  lens.reset( new ThinLens<t::centimeter>() );
+  lens->setFocalLength( 20*mm );
+
+  system.addElement( lens, 10*mm );
+
+  CHECK( system.getElements().size() == 3 );
+  elem = system.getElements().begin();
+  CHECK( elem->first.value() == Approx(0) );
+  elem++;
+  CHECK( elem->first.value() == Approx(1) );
+  elem++;
+  CHECK( elem->first.value() == Approx(10) );
+
+
+  beam.setWavelength(0.532*um);
+  beam.setWaistDiameter(10*um);
+  beam.setWaistPosition(-10*cm);
+
+  GaussianBeam beam2 = system.transform( beam );
+
+  std::cout << "beam.getWaistPosition(): " << beam.getWaistPosition() << std::endl;
+  std::cout << "beam2.getWaistPosition(): " << beam2.getWaistPosition() << std::endl;
+
+  //CHECK( beam2.getDiameter(0.0*cm).value() == Approx( beam.getDiameter(0.0*cm).value() ) );
+
+
+}

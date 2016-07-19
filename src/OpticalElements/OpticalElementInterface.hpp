@@ -1,7 +1,7 @@
-#ifndef OpticalElement_hpp
-#define OpticalElement_hpp
+#ifndef OpticalElementInterface_hpp
+#define OpticalElementInterface_hpp
 
-/** @file OpticalElement.hpp
+/** @file OpticalElementInterface.hpp
   * @brief Definition of the optical element interface.
   * @author C.D. Clark III
   * @date 06/29/16

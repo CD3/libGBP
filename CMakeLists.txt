@@ -16,6 +16,11 @@ if(EIGEN3_FOUND)
 endif(EIGEN3_FOUND)
 add_definitions(-Wno-deprecated-declarations)
 
+find_package( Boost REQUIRED )
+if(Boost_FOUND)
+  include_directories( ${Boost_INCLUDE_DIR} )
+endif(Boost_FOUND)
+
 find_package(Doxygen)
 
 set( SOURCES )

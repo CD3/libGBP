@@ -9,4 +9,4 @@ let g:dispatch="cd ".s:build_dir."; ninja test"
 
 map <F9> :Dispatch<CR>
 
-
+:CMake

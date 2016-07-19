@@ -1,7 +1,7 @@
 #ifndef OpticalElements_IdealElement_hpp
 #define OpticalElements_IdealElement_hpp
 
-#include "../OpticalElement.hpp"
+#include "OpticalElementInterface.hpp"
 
 /** @file IdealElement.hpp
   * @brief Base class for "ideal" elements. Ideal elements have zero power loss and do not change the wavelength.
