@@ -45,13 +45,14 @@ class GaussianBeam
     SpotSize SpotSizeMode = SpotSize::E2;
 
   public:
-    
 
-    // ATTRIBUTES (GETTER AND SETTER)
-    //
-    // this macro creates one setter and two getters for a member quantity.
-    // units are handled automatically by the compiler magic (requires C++11 compiler).
-#define SETTER_AND_GETTER(name)\
+    // MACROS
+
+    /**
+     * this macro creates one setter and two getters for a member quantity.
+     * units are handled automatically by the compiler magic (requires C++11 compiler).
+     */
+#define DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(name)\
     typedef decltype(name) name##Type;\
     typedef name##Type::unit_type name##Unit;\
     template<typename T>\
@@ -60,20 +61,11 @@ class GaussianBeam
     quantity<T> get##name() const       { return quantity<T>(this->name); }\
     inline name##Type get##name() const { return this->get##name<name##Unit>(); }
 
-    SETTER_AND_GETTER(Frequency);
-    SETTER_AND_GETTER(Wavelength);
-    SETTER_AND_GETTER(WaistPosition);
-    SETTER_AND_GETTER(Power);
-    SETTER_AND_GETTER(CurrentPosition);
-
-#undef SETTER_AND_GETTER
-
-    GaussianBeam::SpotSize setSpotSizeMode(SpotSize m) {this->SpotSizeMode = m;}
-    GaussianBeam::SpotSize getSpotSizeMode() const {return this->SpotSizeMode;}
-
-    // SPECIAL ATTRIBUTES
-    // base setter and getter only declared, not defined.
-#define SETTER_AND_GETTER(name, U)\
+    /**
+     * setters and getters for SpotSizeMode (SSM) dependent attributes
+     * the base setter and getter are only declared, not defined.
+     */
+#define SSM_DEPENDENT_ATTRIBUTE_SETTER_AND_GETTER(name, U)\
     typedef U name##Unit;\
     typedef quantity<U> name##Type;\
     template<typename T>\
@@ -87,32 +79,16 @@ class GaussianBeam
     inline name##Type get##name(SpotSize mode) const { return this->get##name<name##Unit>(mode); }\
     inline name##Type get##name() const { return this->get##name<name##Unit>(); }
 
-
-
-    SETTER_AND_GETTER( WaistRadius,   decltype(WaistRadius)::unit_type );
-    SETTER_AND_GETTER( WaistDiameter, WaistRadiusUnit );
-
-#undef SETTER_AND_GETTER
-
-
-
-
-
-    // CALCULATED PARAMETERS
-#define CALCULATED_GETTER( name, U )\
+    /** defines base getter for a derived parameter (parameter that is calculated from member variables)
+     */
+#define DEFAULT_DERIVED_GETTER( name, U )\
     typedef U name##Unit;\
     typedef quantity<U> name##Type;\
     template<typename T>\
     quantity<T> get##name() const;\
     quantity<U> get##name() const {return this->get##name<U>(); }
 
-    CALCULATED_GETTER( FreeSpaceWavelength, WavelengthUnit );
-    CALCULATED_GETTER( RayleighRange, WaistRadiusUnit );
-
-
-#undef CALCULATED_GETTER
-
-#define CALCULATED_GETTER( name, U )\
+#define SSM_DEPENDENT_DERIVED_GETTER( name, U )\
     typedef U name##Unit;\
     typedef quantity<U> name##Type;\
     template<typename T>\
@@ -122,12 +98,10 @@ class GaussianBeam
     quantity<U> get##name(SpotSize mode) const {return this->get##name<U>(); }\
     quantity<U> get##name() const {return this->get##name<U>(); }
 
-    CALCULATED_GETTER( Divergence, t::milliradian );
-
-#undef CALCULATED_GETTER
-
-    // Z-DEPENDENT CALCULATED PARAMETERS
-#define CALCULATED_GETTER( name, U )\
+    /**
+     * getter for derived parameters that depend on z
+     */
+#define Z_DEPENDENT_DERIVED_GETTER( name, U )\
     typedef U name##Unit;\
     typedef quantity<U> name##Type;\
     template<typename T, typename V>\
@@ -138,16 +112,40 @@ class GaussianBeam
     quantity<U> get##name(V z) const {return this->get##name<U>(z); }\
     quantity<U> get##name(   ) const {return this->get##name<U>( ); }
 
-    CALCULATED_GETTER( Radius, WaistRadiusUnit );
-    CALCULATED_GETTER( Diameter, WaistRadiusUnit );
-    CALCULATED_GETTER( RadiusOfCurvature, WaistPositionUnit );
-    CALCULATED_GETTER( RelativeWaistPosition, WaistPositionUnit );
-    CALCULATED_GETTER( Area, t::centimeter_squared );
-    CALCULATED_GETTER( PeakIrradiance, t::watt_per_centimeter_squared );
 
 
-#undef GETTER
 
+
+
+    // DECLARATIONS
+
+    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Frequency);
+    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Wavelength);
+    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(WaistPosition);
+    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Power);
+    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(CurrentPosition);
+
+    GaussianBeam::SpotSize setSpotSizeMode(SpotSize m) {this->SpotSizeMode = m;}
+    GaussianBeam::SpotSize getSpotSizeMode() const {return this->SpotSizeMode;}
+
+    SSM_DEPENDENT_ATTRIBUTE_SETTER_AND_GETTER( WaistRadius,   decltype(WaistRadius)::unit_type );
+    SSM_DEPENDENT_ATTRIBUTE_SETTER_AND_GETTER( WaistDiameter, WaistRadiusUnit );
+
+    DEFAULT_DERIVED_GETTER( FreeSpaceWavelength, WavelengthUnit );
+    DEFAULT_DERIVED_GETTER( RayleighRange, WaistRadiusUnit );
+
+    SSM_DEPENDENT_DERIVED_GETTER( Divergence, t::milliradian );
+
+    Z_DEPENDENT_DERIVED_GETTER( Radius, WaistRadiusUnit );
+    Z_DEPENDENT_DERIVED_GETTER( Diameter, WaistRadiusUnit );
+    Z_DEPENDENT_DERIVED_GETTER( RadiusOfCurvature, WaistPositionUnit );
+    Z_DEPENDENT_DERIVED_GETTER( RelativeWaistPosition, WaistPositionUnit );
+    Z_DEPENDENT_DERIVED_GETTER( Area, t::centimeter_squared );
+    Z_DEPENDENT_DERIVED_GETTER( PeakIrradiance, t::watt_per_centimeter_squared );
+
+
+
+    // SPECIAL CASES
 #define U t::centimeter
     typedef U ComplexBeamParameterUnit;
     typedef quantity<U,complex<double> > ComplexBeamParameterType;
@@ -160,6 +158,9 @@ class GaussianBeam
     quantity<U,complex<double> >   getComplexBeamParameter(   ) const {return this->getComplexBeamParameter<U>( ); }
 #undef U
 
+
+
+    // OTHER METHODS
 
     template<typename T, typename U>
     void transform( OpticalElementInterface<T>* elem, U z );
