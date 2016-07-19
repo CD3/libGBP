@@ -46,6 +46,9 @@ class GaussianBeam
 
   public:
     
+
+    // ATTRIBUTES (GETTER AND SETTER)
+    //
     // this macro creates one setter and two getters for a member quantity.
     // units are handled automatically by the compiler magic (requires C++11 compiler).
 #define SETTER_AND_GETTER(name)\
@@ -65,21 +68,37 @@ class GaussianBeam
 
 #undef SETTER_AND_GETTER
 
-    // the waist radius functions need to be handled the spot size mode
-    typedef decltype(WaistRadius) WaistRadiusType;
-    typedef WaistRadiusType::unit_type WaistRadiusUnit;
-    template<typename T>
-    void setWaistRadius(T v) { double scale = this->SpotSizeMode == SpotSize::E ? 2 : 1; this->WaistRadius = scale*WaistRadiusType(v);}
-    template<typename T>
-    quantity<T> getWaistRadius() const       { double scale = this->SpotSizeMode == SpotSize::E ? 1/sqrt(2.) : 1; return scale*quantity<T>(this->WaistRadius);}
-    inline WaistRadiusType getWaistRadius() const { return this->getWaistRadius<WaistRadiusUnit>();}
-
     GaussianBeam::SpotSize setSpotSizeMode(SpotSize m) {this->SpotSizeMode = m;}
     GaussianBeam::SpotSize getSpotSizeMode() const {return this->SpotSizeMode;}
 
+    // SPECIAL ATTRIBUTES
+    // base setter and getter only declared, not defined.
+#define SETTER_AND_GETTER(name, U)\
+    typedef U name##Unit;\
+    typedef quantity<U> name##Type;\
+    template<typename T>\
+    void set##name(T v, SpotSize mode);\
+    template<typename T>\
+    void set##name(T v){ this->set##name(v,this->SpotSizeMode);}\
+    template<typename T>\
+    quantity<T> get##name(SpotSize mode) const;\
+    template<typename T>\
+    quantity<T> get##name() const {return this->get##name<T>(this->SpotSizeMode);}\
+    inline name##Type get##name(SpotSize mode) const { return this->get##name<name##Unit>(mode); }\
+    inline name##Type get##name() const { return this->get##name<name##Unit>(); }
+
+
+
+    SETTER_AND_GETTER( WaistRadius,   decltype(WaistRadius)::unit_type );
+    SETTER_AND_GETTER( WaistDiameter, WaistRadiusUnit );
+
 #undef SETTER_AND_GETTER
 
-    // calculated parameters
+
+
+
+
+    // CALCULATED PARAMETERS
 #define CALCULATED_GETTER( name, U )\
     typedef U name##Unit;\
     typedef quantity<U> name##Type;\
@@ -89,11 +108,25 @@ class GaussianBeam
 
     CALCULATED_GETTER( FreeSpaceWavelength, WavelengthUnit );
     CALCULATED_GETTER( RayleighRange, WaistRadiusUnit );
-    CALCULATED_GETTER( Divergence, t::milliradian );
-    CALCULATED_GETTER( WaistDiameter, WaistRadiusUnit );
+
 
 #undef CALCULATED_GETTER
 
+#define CALCULATED_GETTER( name, U )\
+    typedef U name##Unit;\
+    typedef quantity<U> name##Type;\
+    template<typename T>\
+    quantity<T> get##name(SpotSize mode) const;\
+    template<typename T>\
+    quantity<T> get##name() const { return this->get##name<T>(this->SpotSizeMode); }\
+    quantity<U> get##name(SpotSize mode) const {return this->get##name<U>(); }\
+    quantity<U> get##name() const {return this->get##name<U>(); }
+
+    CALCULATED_GETTER( Divergence, t::milliradian );
+
+#undef CALCULATED_GETTER
+
+    // Z-DEPENDENT CALCULATED PARAMETERS
 #define CALCULATED_GETTER( name, U )\
     typedef U name##Unit;\
     typedef quantity<U> name##Type;\
@@ -128,19 +161,45 @@ class GaussianBeam
 #undef U
 
 
-    // SPECIAL SETTERS
-    // the theory of Gaussian beams is almost always formulated in terms of the beam radius,
-    // but we almost always will want to work with the beam diameter. this setter allows
-    // the user to set the beam diameter, even through we are storing the radius.
-    template<typename T>
-    void setWaistDiameter(T v) { this->setWaistRadius( WaistRadiusType(v)/2. ); }
-
-
     template<typename T, typename U>
     void transform( OpticalElementInterface<T>* elem, U z );
     template<typename T>
     void transform( OpticalElementInterface<T>* elem ) { this->transform( elem, this->getCurrentPosition() ); }
 };
+
+// the waist radius functions need to be handled the spot size mode
+template<typename T>
+void GaussianBeam::setWaistRadius(T v, SpotSize mode)
+{
+  double scale = mode == SpotSize::E ? 2 : 1;
+  this->WaistRadius = scale*WaistRadiusType(v);
+}
+
+template<typename T>
+quantity<T> GaussianBeam::getWaistRadius(SpotSize mode) const
+{
+  double scale = mode == SpotSize::E ? 1/sqrt(2.) : 1;
+  return scale*quantity<T>(this->WaistRadius);
+}
+
+// the theory of Gaussian beams is almost always formulated in terms of the beam radius,
+// but we almost always will want to work with the beam diameter. this setter allows
+// the user to set the beam diameter, even through we are storing the radius.
+template<typename T>
+void GaussianBeam::setWaistDiameter(T v, SpotSize mode)
+{
+  this->setWaistRadius( WaistRadiusType(v)/2., mode );
+}
+
+template<typename T>
+quantity<T> GaussianBeam::getWaistDiameter(SpotSize mode) const
+{
+  return 2.*this->getWaistRadius<T>(mode);
+}
+
+
+
+
 
 
 template<typename T>
@@ -160,17 +219,11 @@ quantity<T> GaussianBeam::getRayleighRange() const
 }
 
 template<typename T>
-quantity<T> GaussianBeam::getDivergence() const
+quantity<T> GaussianBeam::getDivergence(SpotSize mode) const
 {
-  auto val = 2.*this->getWavelength<t::nanometer>()/( M_PI*this->getWaistRadius<t::nanometer>() )*t::radian();
-
-  return quantity<T>(val);
-}
-
-template<typename T>
-quantity<T> GaussianBeam::getWaistDiameter() const
-{
-  auto val = 2.*this->getWaistRadius<T>();
+  double scale = mode == SpotSize::E ? 1/sqrt(2.) : 1;
+  //                  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv this calculation gives the half-angle divergence
+  auto val = scale*2.*this->getWavelength<t::nanometer>()/( M_PI*this->getWaistRadius<t::nanometer>() )*t::radian();
 
   return quantity<T>(val);
 }
@@ -280,7 +333,8 @@ void GaussianBeam::transform( OpticalElementInterface<T>* elem, U z )
   this->setPower(      this->getPower()     *(1.-elem->getPowerLoss()) );
 
   this->setWaistPosition( quantity<T>(z) - qf.real()*T() );
-  this->setWaistRadius( sqrt(qf.imag()*this->getWavelength<T>().value()/M_PI)*T() );
+  //                    vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  this calculation will give us the 1/e^2 beam radius
+  this->setWaistRadius( sqrt(qf.imag()*this->getWavelength<T>().value()/M_PI)*T(), SpotSize::E2 );
 
 }
 
