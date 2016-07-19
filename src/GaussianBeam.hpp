@@ -14,148 +14,116 @@
 
 #include "Units.hpp"
 #include "Constants.hpp"
-#include "OpticalElement.hpp"
+#include "OpticalElements/OpticalElementInterface.hpp"
 
 using std::complex;
 using boost::property_tree::ptree;
 
+/** @class 
+  * @brief A class implementing Gaussian Beam calculations.
+  * @author C.D. Clark III
+  *
+  * NOTE: This class uses the same convesion as "Lasers" by Minlonni and Eberly in which the beam radius/diameter is defined
+  * by the 1/e^2 points. This differs from the ANSI standard.
+  */
 class GaussianBeam
 {
 
   protected:
-    quantity<t::hertz> frequency; ///< frequency of the light
-    quantity<t::nanometer> wavelength; ///< wavelength of light in the propagation medium
-    quantity<t::centimeter> waistPosition; ///< position of the beam waist
-    quantity<t::centimeter> waistDiameter; ///< diameter (1/e^2) of the beam waist
-    quantity<t::watt> power; ///< total power in the beam
-    quantity<t::centimeter> currentPosition; ///< the current position in the beam.
+    // Note on case: we are capitalizing member names here so that
+    //               we can use macros to generate the accessor functions.
+
+    quantity<t::hertz> Frequency; ///< frequency of the light
+    quantity<t::nanometer> Wavelength; ///< wavelength of light in the propagation medium
+    quantity<t::centimeter> WaistPosition; ///< position of the beam waist
+    quantity<t::centimeter> WaistRadius; ///< radius (1/e^2) of the beam waist
+    quantity<t::watt> Power; ///< total power in the beam
+    quantity<t::centimeter> CurrentPosition; ///< the current position in the beam.
 
   public:
+    
+    // this macro creates one setter and two getters for a member quantity.
+    // units are handled automatically by the compiler magic (requires C++11 compiler).
+#define SETTER_AND_GETTER(name)\
+    typedef decltype(name) name##Type;\
+    typedef name##Type::unit_type name##Unit;\
+    template<typename T>\
+    void set##name(T v) { this->name = name##Type(v); }\
+    template<typename T>\
+    quantity<T> get##name() const       { return quantity<T>(this->name); }\
+    inline name##Type get##name() const { return this->get##name<name##Unit>(); }
 
-    // frequency getters and setters
-    template<typename T>
-    void setFrequency(T v) { this->frequency = quantity<t::hertz>(v); } ///< performs unit conversion and sets frequency
-    template<typename T>
-    quantity<T> getFrequency() const { return quantity<T>(this->frequency); } ///< returns frequency in specified units
-    inline quantity<t::hertz> getFrequency() const { return this->getFrequency<t::hertz>(); } ///< returns frequency in default units (t::hertz)
-
-    // wavelength getters and setters
-    template<typename T>
-    void setWavelength(T v) { this->wavelength = quantity<t::nanometer>(v); } ///< performs unit conversion and sets wavelength
-    template<typename T>
-    quantity<T> getWavelength() const { return quantity<T>(this->wavelength); } ///< returns wavelength in specified units
-    inline quantity<t::nanometer> getWavelength() const { return this->getWavelength<t::nanometer>(); } ///< returns wavelength in default units (t::nanometer)
-
-    // waistPosition getters and setters
-    template<typename T>
-    void setWaistPosition(T v) { this->waistPosition = quantity<t::centimeter>(v); } ///< performs unit conversion and sets waistPosition
-    template<typename T>
-    quantity<T> getWaistPosition() const { return quantity<T>(this->waistPosition); } ///< returns waistPosition in specified units
-    inline quantity<t::centimeter> getWaistPosition() const { return this->getWaistPosition<t::centimeter>(); } ///< returns waistPosition in default units (t::centimeter)
-
-    // waistDiameter getters and setters
-    template<typename T>
-    void setWaistDiameter(T v) { this->waistDiameter = quantity<t::centimeter>(v); } ///< performs unit conversion and sets waistDiameter
-    template<typename T>
-    quantity<T> getWaistDiameter() const { return quantity<T>(this->waistDiameter); } ///< returns waistDiameter in specified units
-    inline quantity<t::centimeter> getWaistDiameter() const { return this->getWaistDiameter<t::centimeter>(); } ///< returns waistDiameter in default units (t::centimeter)
-
-    // power getters and setters
-    template<typename T>
-    void setPower(T v) { this->power = quantity<t::watt>(v); } ///< performs unit conversion and sets power
-    template<typename T>
-    quantity<T> getPower() const { return quantity<T>(this->power); } ///< returns power in specified units
-    inline quantity<t::watt> getPower() const { return this->getPower<t::watt>(); } ///< returns power in default units (t::watt)
-
-    // currentPosition getters and setters
-    template<typename T>
-    void setCurrentPosition(T v) { this->currentPosition = quantity<t::centimeter>(v); } ///< performs unit conversion and sets currentPosition
-    template<typename T>
-    quantity<T> getCurrentPosition() const { return quantity<T>(this->currentPosition); } ///< returns currentPosition in specified units
-    inline quantity<t::centimeter> getCurrentPosition() const { return this->getCurrentPosition<t::centimeter>(); } ///< returns currentPosition in internal units (t::centimeter)
+    SETTER_AND_GETTER(Frequency);
+    SETTER_AND_GETTER(Wavelength);
+    SETTER_AND_GETTER(WaistPosition);
+    SETTER_AND_GETTER(WaistRadius);
+    SETTER_AND_GETTER(Power);
+    SETTER_AND_GETTER(CurrentPosition);
 
 
+#undef SETTER_AND_GETTER
 
     // calculated parameters
+#define CALCULATED_GETTER( name, U )\
+    typedef U name##Unit;\
+    typedef quantity<U> name##Type;\
+    template<typename T>\
+    quantity<T> get##name() const;\
+    quantity<U> get##name() const {return this->get##name<U>(); }
 
+    CALCULATED_GETTER( FreeSpaceWavelength, WavelengthUnit );
+    CALCULATED_GETTER( RayleighRange, WaistRadiusUnit );
+    CALCULATED_GETTER( Divergence, t::milliradian );
+    CALCULATED_GETTER( WaistDiameter, WaistRadiusUnit );
+
+#undef CALCULATEDGETTER
+
+#define CALCULATED_GETTER( name, U )\
+    typedef U name##Unit;\
+    typedef quantity<U> name##Type;\
+    template<typename T, typename V>\
+    quantity<T> get##name(V z) const;\
+    template<typename T>\
+    quantity<T> get##name(   ) const {return this->get##name<T>( this->getCurrentPosition() );}\
+    template<typename V>\
+    quantity<U> get##name(V z) const {return this->get##name<U>(z); }\
+    quantity<U> get##name(   ) const {return this->get##name<U>( ); }
+
+    CALCULATED_GETTER( Radius, WaistRadiusUnit );
+    CALCULATED_GETTER( Diameter, WaistRadiusUnit );
+    CALCULATED_GETTER( RadiusOfCurvature, WaistPositionUnit );
+    CALCULATED_GETTER( RelativeWaistPosition, WaistPositionUnit );
+    CALCULATED_GETTER( Area, t::centimeter_squared );
+    CALCULATED_GETTER( PeakIrradiance, t::watt_per_centimeter_squared );
+
+
+#undef GETTER
+
+#define U t::centimeter
+    typedef U ComplexBeamParameterUnit;
+    typedef quantity<U,complex<double> > ComplexBeamParameterType;
+    template<typename T, typename V>
+    quantity<T,complex<double> >   getComplexBeamParameter(V z) const;
     template<typename T>
-    quantity<T> getFreeSpaceWavelength() const; ///< computes and returns free space wavelength in specified units
-    inline quantity<t::nanometer> getFreeSpaceWavelength() const { return this->getFreeSpaceWavelength<t::nanometer>(); } ///< returns free space wavelength in default units (t::nanometer)
+    quantity<T,complex<double> >   getComplexBeamParameter(   ) const { return this->getComplexBeamParameter<T>(this->getCurrentPosition());}
+    template<typename V>
+    quantity<U,complex<double> >   getComplexBeamParameter(V z) const {return this->getComplexBeamParameter<U>(z); }
+    quantity<U,complex<double> >   getComplexBeamParameter(   ) const {return this->getComplexBeamParameter<U>( ); }
+#undef U
 
+
+    // SPECIAL SETTERS
+    // the theory of Gaussian beams is almost always formulated in terms of the beam radius,
+    // but we almost always will want to work with the beam diameter. this setter allows
+    // the user to set the beam diameter, even through we are storing the radius.
     template<typename T>
-    quantity<T> getRayleighRange() const; ///< computes and returns rayleigh range in specified units
-    inline quantity<t::centimeter> getRayleighRange() const { return this->getRayleighRange<t::centimeter>(); } ///< returns rayleigh range in default units (t::centimeter)
-
-    template<typename T>
-    quantity<T> getDivergence() const; ///< computes and returns divergence in specified units
-    inline quantity<t::milliradian> getDivergence() const { return this->getDivergence<t::milliradian>(); } ///< returns divergence in default units ()
-
-    template<typename T,typename U>
-    quantity<T>              getDiameter(U   ) const; ///< computes and returns diameter in specified units
-    template<typename U>
-    quantity<t::centimeter>  getDiameter(U z ) const { return this->getDiameter<t::centimeter>(z); } ///< returns diameter in default units (t::centimeter)
-    template<typename T>
-    quantity<T>              getDiameter(    ) const { return this->getDiameter<T>(this->currentPosition);} ///< computes and returns diameter, in specified units, at the current position
-    quantity<t::centimeter>  getDiameter(    ) const { return this->getDiameter<t::centimeter>(this->currentPosition); } ///< returns diameter in default units (t::centimeter) at the current position
-
-    template<typename T,typename U>
-    quantity<T>              getRadius(U   ) const; ///< computes and returns radius in specified units
-    template<typename U>
-    quantity<t::centimeter>  getRadius(U z ) const { return this->getRadius<t::centimeter>(z); } ///< returns radius in default units (t::centimeter)
-    template<typename T>
-    quantity<T>              getRadius(    ) const { return this->getRadius<T>(this->currentPosition);} ///< computes and returns radius, in specified units, at the current position
-    quantity<t::centimeter>  getRadius(    ) const { return this->getRadius<t::centimeter>(this->currentPosition); } ///< returns radius in default units (t::centimeter) at the current position
-
-    template<typename T>
-    quantity<T> getWaistRadius() const; ///< computes and returns waist radius in specified units
-    inline quantity<t::centimeter> getWaistRadius() const { return this->getWaistRadius<t::centimeter>(); } ///< returns waist radius in default units (t::centimeter)
-
-    template<typename T,typename U>
-    quantity<T>              getRadiusOfCurvature(U   ) const; ///< computes and returns radius of curvature in specified units
-    template<typename U>
-    quantity<t::centimeter>  getRadiusOfCurvature(U z ) const { return this->getRadiusOfCurvature<t::centimeter>(z); } ///< returns radiuus of curvature in default units (t::centimeter)
-    template<typename T>
-    quantity<T>              getRadiusOfCurvature(    ) const { return this->getRadiusOfCurvature<T>(this->currentPosition);} ///< computes and returns radius of curvature, in specified units, at the current position
-    quantity<t::centimeter>  getRadiusOfCurvature(    ) const { return this->getRadiusOfCurvature<t::centimeter>(this->currentPosition); } ///< returns radius of curvature in default units (t::centimeter) at the current position
-
-    template<typename T, typename U>
-    quantity<T,complex<double> >               getComplexBeamParameter(U   ) const; ///< computes and returns complex beam parameter in specified units
-    template<typename U>
-    quantity<t::centimeter, complex<double> >  getComplexBeamParameter(U z ) const { return this->getComplexBeamParameter<t::centimeter>(z); } ///< returns complex beam parameter in default units (t::centimeter, complex<double> )
-    template<typename T>
-    quantity<T,complex<double> >               getComplexBeamParameter(    ) const { return this->getComplexBeamParameter<T>(this->currentPosition);} ///< computes and returns complex beam parameter, in specified units, at the current position
-    quantity<t::centimeter, complex<double> >  getComplexBeamParameter(    ) const { return this->getComplexBeamParameter<t::centimeter>(this->currentPosition); } ///< returns complex beam parameter in default units (t::centimeter) at the current position
-
-    template<typename T,typename U>
-    quantity<T>              getRelativeWaistPosition(U   ) const; ///< computes and returns the relative waist position in specified units
-    template<typename U>
-    quantity<t::centimeter>  getRelativeWaistPosition(U z ) const { return this->getRelativeWaistPosition<t::centimeter>(z); } ///< returns relative waist position in default units (t::centimeter)
-    template<typename T>
-    quantity<T>              getRelativeWaistPosition(    ) const { return this->getRelativeWaistPosition<T>(this->currentPosition);} ///< computes and returns relative waist position, in specified units, at the current position
-    quantity<t::centimeter>  getRelativeWaistPosition(    ) const { return this->getRelativeWaistPosition<t::centimeter>(this->currentPosition); } ///< returns relative waist position in default units (t::centimeter) at the current position
-
-    template<typename T,typename U>
-    quantity<T>                      getArea(U   ) const; ///< computes and returns area in specified units
-    template<typename U>
-    quantity<t::centimeter_squared>  getArea(U z ) const { return this->getArea<t::centimeter_squared>(z); } ///< returns area in default units (t::centimeter)
-    template<typename T>
-    quantity<T>                      getArea(    ) const { return this->getArea<T>(this->currentPosition);} ///< computes and returns area, in specified units, at the current position
-    quantity<t::centimeter_squared>  getArea(    ) const { return this->getArea<t::centimeter_squared>(this->currentPosition); } ///< returns area in default units (t::centimeter_squared) at the current position
-
-    template<typename T,typename U>
-    quantity<T>                               getPeakIrradiance(U   ) const; ///< computes and returns peak irradiance in specified units
-    template<typename U>
-    quantity<t::watt_per_centimeter_squared>  getPeakIrradiance(U z ) const { return this->getPeakIrradiance<t::watt_per_centimeter_squared>(z); } ///< returns peak irradiance in default units (t::centimeter)
-    template<typename T>
-    quantity<T>                               getPeakIrradiance(    ) const { return this->getPeakIrradiance<T>(this->currentPosition);} ///< computes and returns peak irradiance, in specified units, at the current position
-    quantity<t::watt_per_centimeter_squared>  getPeakIrradiance(    ) const { return this->getPeakIrradiance<t::watt_per_centimeter_squared>(this->currentPosition); } ///< returns peak irradiance in default units (t::centimeter) at the current position
-
+    void setWaistDiameter(T v) { this->setWaistRadius( WaistRadiusType(v)/2. ); }
 
 
     template<typename T, typename U>
     void transform( OpticalElementInterface<T>* elem, U z );
     template<typename T>
-    void transform( OpticalElementInterface<T>* elem ) { this->transform( elem, this->currentPosition ); }
+    void transform( OpticalElementInterface<T>* elem ) { this->transform( elem, this->getCurrentPosition() ); }
 };
 
 
@@ -178,7 +146,15 @@ quantity<T> GaussianBeam::getRayleighRange() const
 template<typename T>
 quantity<T> GaussianBeam::getDivergence() const
 {
-  auto val = (4/M_PI)*(this->getWavelength<t::nanometer>()/this->getWaistDiameter<t::nanometer>())*t::radian();
+  auto val = 2.*this->getWavelength<t::nanometer>()/( M_PI*this->getWaistRadius<t::nanometer>() )*t::radian();
+
+  return quantity<T>(val);
+}
+
+template<typename T>
+quantity<T> GaussianBeam::getWaistDiameter() const
+{
+  auto val = 2.*this->getWaistRadius<T>();
 
   return quantity<T>(val);
 }
@@ -186,9 +162,7 @@ quantity<T> GaussianBeam::getDivergence() const
 template<typename T,typename U>
 quantity<T> GaussianBeam::getDiameter(U z) const
 {
-  quantity<T> dz = this->getRelativeWaistPosition<T>(z);
-
-  auto val = this->getWaistDiameter<T>()*root<2>( 1 + pow<2>(dz/this->getRayleighRange<T>()) );
+  auto val = 2.*this->getRadius<T>(z);
 
   return quantity<T>(val);
 }
@@ -196,15 +170,9 @@ quantity<T> GaussianBeam::getDiameter(U z) const
 template<typename T,typename U>
 quantity<T> GaussianBeam::getRadius(U z) const
 {
-  auto val = this->getDiameter<T>(z)/2.;
+  quantity<T> dz = this->getRelativeWaistPosition<T>(z);
 
-  return quantity<T>(val);
-}
-
-template<typename T>
-quantity<T> GaussianBeam::getWaistRadius() const
-{
-  auto val = this->getWaistDiameter<T>()/2.;
+  auto val = this->getWaistRadius<T>()*root<2>( 1 + pow<2>(dz/this->getRayleighRange<T>()) );
 
   return quantity<T>(val);
 }
@@ -285,7 +253,6 @@ void GaussianBeam::transform( OpticalElementInterface<T>* elem, U z )
   // The imaginary part of q is the rayliegh range, z_R = \pi \omega_0^2 / \lambda
   //
   // So, \omega_0 = \sqrt{ z_R \lambda / \pi }
-  // and d = 2 \omega_0
   //
   // CAREFUL! Make sure to get the units right.
   //
@@ -294,7 +261,7 @@ void GaussianBeam::transform( OpticalElementInterface<T>* elem, U z )
   this->setPower(      this->getPower()     *(1.-elem->getPowerLoss()) );
 
   this->setWaistPosition( quantity<T>(z) - qf.real()*T() );
-  this->setWaistDiameter( 2*sqrt(qf.imag()*this->getWavelength<T>().value()/M_PI)*T() );
+  this->setWaistRadius( sqrt(qf.imag()*this->getWavelength<T>().value()/M_PI)*T() );
 
 }
 
