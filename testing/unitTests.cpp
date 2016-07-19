@@ -16,6 +16,7 @@ SCENARIO( "GaussianBeam configuration", "[GaussianBeam]" )
 {
   GIVEN("An uninitialized GaussianBeam instance")
   {
+
     GaussianBeam beam;
 
     WHEN("the wavelength is set to 700 nm") {
@@ -116,7 +117,33 @@ SCENARIO( "GaussianBeam configuration", "[GaussianBeam]" )
         }
       }
     }
+
+
+    WHEN("waist diameter is set to 2 cm")
+    {
+      beam.setWaistDiameter( 2*cm );
+      AND_WHEN("spot size mode is set to 1/e")
+      {
+        beam.setSpotSizeMode(GaussianBeam::SpotSize::E);
+        THEN("waist diameter is sqrt(2) cm")
+        {
+          CHECK( beam.getDiameter().value() == Approx(sqrt(2)) );
+        }
+
+        AND_WHEN("spot size mode is set back to 1/e^2")
+        {
+
+          beam.setSpotSizeMode(GaussianBeam::SpotSize::E2);
+          THEN("waist diameter is 2 cm")
+          {
+            CHECK( beam.getDiameter().value() == Approx(2) );
+          }
+
+        }
+      }
+    }
   }
+
 }
 
 SCENARIO( "Complex Beam Parameter Calculations", "[GaussianBeam]" )

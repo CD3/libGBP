@@ -23,11 +23,13 @@ using boost::property_tree::ptree;
   * @brief A class implementing Gaussian Beam calculations.
   * @author C.D. Clark III
   *
-  * NOTE: This class uses the same convesion as "Lasers" by Minlonni and Eberly in which the beam radius/diameter is defined
+  * NOTE: This class uses the same convension as "Lasers" by Minlonni and Eberly in which the beam radius/diameter is defined
   * by the 1/e^2 points. This differs from the ANSI standard.
   */
 class GaussianBeam
 {
+  public:
+    enum class SpotSize { E=1, E2=2 };
 
   protected:
     // Note on case: we are capitalizing member names here so that
@@ -39,6 +41,8 @@ class GaussianBeam
     quantity<t::centimeter> WaistRadius; ///< radius (1/e^2) of the beam waist
     quantity<t::watt> Power; ///< total power in the beam
     quantity<t::centimeter> CurrentPosition; ///< the current position in the beam.
+
+    SpotSize SpotSizeMode = SpotSize::E2;
 
   public:
     
@@ -56,10 +60,22 @@ class GaussianBeam
     SETTER_AND_GETTER(Frequency);
     SETTER_AND_GETTER(Wavelength);
     SETTER_AND_GETTER(WaistPosition);
-    SETTER_AND_GETTER(WaistRadius);
     SETTER_AND_GETTER(Power);
     SETTER_AND_GETTER(CurrentPosition);
 
+#undef SETTER_AND_GETTER
+
+    // the waist radius functions need to be handled the spot size mode
+    typedef decltype(WaistRadius) WaistRadiusType;
+    typedef WaistRadiusType::unit_type WaistRadiusUnit;
+    template<typename T>
+    void setWaistRadius(T v) { double scale = this->SpotSizeMode == SpotSize::E ? 2 : 1; this->WaistRadius = scale*WaistRadiusType(v);}
+    template<typename T>
+    quantity<T> getWaistRadius() const       { double scale = this->SpotSizeMode == SpotSize::E ? 1/sqrt(2.) : 1; return scale*quantity<T>(this->WaistRadius);}
+    inline WaistRadiusType getWaistRadius() const { return this->getWaistRadius<WaistRadiusUnit>();}
+
+    GaussianBeam::SpotSize setSpotSizeMode(SpotSize m) {this->SpotSizeMode = m;}
+    GaussianBeam::SpotSize getSpotSizeMode() const {return this->SpotSizeMode;}
 
 #undef SETTER_AND_GETTER
 
@@ -76,7 +92,7 @@ class GaussianBeam
     CALCULATED_GETTER( Divergence, t::milliradian );
     CALCULATED_GETTER( WaistDiameter, WaistRadiusUnit );
 
-#undef CALCULATEDGETTER
+#undef CALCULATED_GETTER
 
 #define CALCULATED_GETTER( name, U )\
     typedef U name##Unit;\
@@ -221,7 +237,10 @@ quantity<T> GaussianBeam::getArea(U z) const
 template<typename T,typename U>
 quantity<T> GaussianBeam::getPeakIrradiance(U z) const
 {
-  auto val = 2.*this->getPower()/this->getArea(z); // NOTE: area is the 1/e^2 area
+  // if SpotSizeMode == E, then peak irradiance is P/A
+  // if SpotSizeMode == E2, then peak irradiance is 2*P/A
+  // in other words, E = SpotSizeMode * P / A
+  auto val = static_cast<double>(SpotSizeMode)*this->getPower()/this->getArea(z);
 
   return quantity<T>(val);
 }
