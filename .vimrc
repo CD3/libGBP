@@ -1,7 +1,7 @@
 let NERDTreeIgnore=['\.pdf']
 
 
-"let g:makeprg="ninja"
+let g:makeprg="ninja"
 "let g:cmake_opts="-G Ninja"
 
 let s:build_dir=expand('<sfile>:p:h')."/build"

@@ -7,6 +7,7 @@
   * @date 06/29/16
   */
 
+#include <memory>
 #include <Eigen/Dense>
 #include "Units.hpp"
 
@@ -103,6 +104,9 @@ class OpticalElementAdapter: public OpticalElementInterface<U>
     double                    getPowerLoss() const {return t.getPowerLoss();}
     double                    getWavelengthScaleFactor() const {return t.getWavelengthScaleFactor();}
 };
+
+template<typename T>
+using  OpticalElement_ptr = std::shared_ptr<OpticalElementInterface<T> >;
 
 
 #endif // include protector

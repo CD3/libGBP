@@ -7,7 +7,7 @@
 
 #include "GaussianBeam.hpp"
 #include "OpticalElements/SphericalInterface.hpp"
-#include "BeamConfigurator.hpp"
+#include "BeamBuilder.hpp"
 
 TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
 {
@@ -38,7 +38,7 @@ TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
     for( int j = 0; j < N; j++)
     {
       auto Diam = minDiam + j*1.*dDiam;
-      BeamConfigurator config;
+      BeamBuilder config;
 
       config.setWavelength( 532*nm );
       config.setPosition(0*cm).setDiameter(Diam).setDivergence(Div);
@@ -59,11 +59,11 @@ TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
 }
 
 #include "GaussianBeam.hpp"
-#include "BeamConfigurator.hpp"
+#include "BeamBuilder.hpp"
 
-TEST_CASE( "BeamConfigurator Tests" )
+TEST_CASE( "BeamBuilder Tests" )
 {
-  BeamConfigurator config;
+  BeamBuilder config;
 
   SECTION("Internal Units")
   {

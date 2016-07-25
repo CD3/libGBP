@@ -333,12 +333,12 @@ SCENARIO( "Spherical interface class calculations", "[OpticalElements]" )
 #include "GaussianBeam.hpp"
 #include "OpticalElements/ThinLens.hpp"
 #include "OpticalElements/SphericalInterface.hpp"
-#include "BeamConfigurator.hpp"
+#include "BeamBuilder.hpp"
 
 TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
 {
   GaussianBeam beam;
-  BeamConfigurator config;
+  BeamBuilder config;
 
   SECTION("Thin lens examples") {
 
@@ -465,7 +465,7 @@ TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
 
       
       beam.setPower(         5*mW );
-      BeamConfigurator config;
+      BeamBuilder config;
 
       config.setWavelength( 532*nm );
       config.setPosition(0*cm).setDiameter(3*mm).setDivergence(2*mrad);
@@ -501,7 +501,7 @@ TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
 
       
       beam.setPower(         5*mW );
-      BeamConfigurator config;
+      BeamBuilder config;
 
       config.setWavelength( 532*nm );
       config.setPosition(0*cm).setDiameter(3*mm).setDivergence(2*mrad);
@@ -556,11 +556,11 @@ TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
 }
 
 #include "GaussianBeam.hpp"
-#include "BeamConfigurator.hpp"
+#include "BeamBuilder.hpp"
 
-TEST_CASE( "BeamConfigurator Tests" )
+TEST_CASE( "BeamBuilder Tests" )
 {
-  BeamConfigurator config;
+  BeamBuilder config;
 
   SECTION("Internal Units")
   {
@@ -639,6 +639,68 @@ TEST_CASE( "BeamConfigurator Tests" )
   }
 }
 
+#include "utils/Builder.hpp"
+TEST_CASE("Builder class tests")
+{
+
+
+}
+
+#include "OpticalElements/OpticalElementBuilder.hpp"
+
+TEST_CASE("OpticalElementBuilder tests")
+{
+  SECTION("Thin lens tests")
+  {
+    OpticalElementBuilder<t::centimeter> OEBuilder;
+    OpticalElement_ptr<t::centimeter> elem;
+
+    SECTION("External configuration")
+    {
+      for(auto k : std::vector<std::string>( {"thinlens", "thin lens", "thin_lens"} ) )
+      {
+        elem = OEBuilder.create(k);
+        REQUIRE( elem != nullptr );
+
+        ThinLens<t::centimeter>& lens = *std::dynamic_pointer_cast<ThinLens<t::centimeter>>(elem);
+
+
+        lens.setFocalLength( 10*t::centimeter() );
+        auto mat = lens.getRTMatrix();
+
+        CHECK( mat(0,0) == Approx(1) );
+        CHECK( mat(0,1) == Approx(0) );
+        CHECK( mat(1,0) == Approx(-1./10) );
+        CHECK( mat(1,1) == Approx(1) );
+
+        lens.setFocalLength( 1*t::meter() );
+        mat = lens.getRTMatrix();
+
+        CHECK( mat(0,0) == Approx(1) );
+        CHECK( mat(0,1) == Approx(0) );
+        CHECK( mat(1,0) == Approx(-1./100) );
+        CHECK( mat(1,1) == Approx(1) );
+      }
+    }
+
+    SECTION("Internal configuration")
+    {
+      ptree configTree;
+      configTree.put("type", "Thin Lens");
+      configTree.put("focal_length", 10.);
+      elem = OEBuilder.build(configTree);
+      REQUIRE( elem != nullptr );
+
+      auto mat = elem->getRTMatrix();
+
+      CHECK( mat(0,0) == Approx(1) );
+      CHECK( mat(0,1) == Approx(0) );
+      CHECK( mat(1,0) == Approx(-1./10) );
+      CHECK( mat(1,1) == Approx(1) );
+
+    }
+  }
+}
 
 
 #include "GaussianBeam.hpp"
@@ -696,3 +758,5 @@ TEST_CASE( "Optical Systems" )
 
 
 }
+
+

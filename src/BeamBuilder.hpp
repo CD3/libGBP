@@ -1,7 +1,7 @@
-#ifndef BeamConfigurator_hpp
-#define BeamConfigurator_hpp
+#ifndef BeamBuilder_hpp
+#define BeamBuilder_hpp
 
-/** @file BeamConfigurator.hpp
+/** @file BeamBuilder.hpp
   * @brief A class that can configure a GaussianBeam based on various scenarios.
   * @author C.D. Clark III
   * @date 07/04/16
@@ -22,12 +22,12 @@
 
 using std::vector;
 
-struct BeamConfigurator
+struct BeamBuilder
 {
 #define ADD_ATTRIBUTE(name, unit, n) \
   vector< quantity<unit> > name; \
   template<typename T> \
-  BeamConfigurator& set##name( T v, int i = -1 )\
+  BeamBuilder& set##name( T v, int i = -1 )\
   {\
     if( i < 0 && this->name.size() < n )\
       this->name.push_back( quantity<unit>(v) );\
@@ -55,7 +55,7 @@ struct BeamConfigurator
 };
 
 void
-BeamConfigurator::configure( GaussianBeam* beam )
+BeamBuilder::configure( GaussianBeam* beam )
 {
   if(this->hasPower())
   {

@@ -8,6 +8,7 @@
   */
 
 #include "OpticalElements/OpticalElementInterface.hpp"
+#include "OpticalElements/OpticalElementBuilder.hpp"
 
 #include<list>
 #include<utility>
@@ -18,8 +19,7 @@ template<typename LengthUnitType>
 class OpticalSystem
 {
   public:
-    typedef std::shared_ptr<OpticalElementInterface<LengthUnitType> > OpticalElement_ptr;
-    typedef std::pair< quantity<LengthUnitType>, OpticalElement_ptr > ElementType;
+    typedef std::pair< quantity<LengthUnitType>, OpticalElement_ptr<LengthUnitType> > ElementType;
     typedef std::list<ElementType> ElementsType;
 
   protected:
@@ -27,7 +27,7 @@ class OpticalSystem
 
   public:
     template<typename U>
-    OpticalSystem<LengthUnitType>& addElement( OpticalElement_ptr elem, U position );
+    OpticalSystem<LengthUnitType>& addElement( OpticalElement_ptr<LengthUnitType> elem, U position );
 
     const ElementsType& getElements() const;
 
@@ -39,7 +39,7 @@ class OpticalSystem
 
 template<typename T>
 template<typename U>
-OpticalSystem<T>& OpticalSystem<T>::addElement( OpticalElement_ptr elem, U position )
+OpticalSystem<T>& OpticalSystem<T>::addElement( OpticalElement_ptr<T> elem, U position )
 {
   elements.push_back( { quantity<T>(position), elem } );
   elements.sort();
