@@ -13,6 +13,7 @@
 #include<list>
 #include<utility>
 #include<memory>
+#include<boost/property_tree/json_parser.hpp>
 
 
 template<typename LengthUnitType>
@@ -30,6 +31,8 @@ class OpticalSystem
     OpticalSystem<LengthUnitType>& addElement( OpticalElement_ptr<LengthUnitType> elem, U position );
 
     const ElementsType& getElements() const;
+
+    void configure( const ptree& configTree );
 
     template<typename U, typename V>
     GaussianBeam transform( const GaussianBeam& beam, U zi, V zf );
@@ -52,6 +55,25 @@ auto OpticalSystem<T>::getElements() const -> const ElementsType&
 }
 
 template<typename T>
+void OpticalSystem<T>::configure(const ptree& configTree)
+{
+  elements.clear();
+  auto elementsConfig = configTree.get_child_optional("elements");
+  if(!elementsConfig)
+    return;
+
+  OpticalElementBuilder<T> builder;
+  quantity<T> position;
+
+  for( auto &iter: elementsConfig.value() )
+  {
+    position = iter.second.get<double>("position", 0) * T();
+    this->addElement( builder.build( iter.second ), position );
+  }
+
+}
+
+template<typename T>
 template<typename U, typename V>
 GaussianBeam OpticalSystem<T>::transform( const GaussianBeam& beam, U zi, V zf )
 {
@@ -71,7 +93,7 @@ template<typename T>
 GaussianBeam OpticalSystem<T>::transform( const GaussianBeam& beam )
 {
   if(!elements.empty())
-    return this->transform( beam, elements.front().first - 1*T(), elements.back().first + 1*T() );
+    return this->transform( beam, elements.front().first, elements.back().first );
   else
     return beam;
 }

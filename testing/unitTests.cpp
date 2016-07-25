@@ -505,6 +505,7 @@ TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
 
       config.setWavelength( 532*nm );
       config.setPosition(0*cm).setDiameter(3*mm).setDivergence(2*mrad);
+      //config.setPosition(0*cm).setDiameter(3*mm).setDivergence(4*mrad); // students assumed half-angle divergence.
 
       config.configure( beam );
 
@@ -639,22 +640,15 @@ TEST_CASE( "BeamBuilder Tests" )
   }
 }
 
-#include "utils/Builder.hpp"
-TEST_CASE("Builder class tests")
-{
-
-
-}
-
 #include "OpticalElements/OpticalElementBuilder.hpp"
 
 TEST_CASE("OpticalElementBuilder tests")
 {
+  OpticalElementBuilder<t::centimeter> OEBuilder;
+  OpticalElement_ptr<t::centimeter> elem;
+
   SECTION("Thin lens tests")
   {
-    OpticalElementBuilder<t::centimeter> OEBuilder;
-    OpticalElement_ptr<t::centimeter> elem;
-
     SECTION("External configuration")
     {
       for(auto k : std::vector<std::string>( {"thinlens", "thin lens", "thin_lens"} ) )
@@ -700,6 +694,42 @@ TEST_CASE("OpticalElementBuilder tests")
 
     }
   }
+
+  SECTION("Spherical interface tests")
+  {
+    ptree configTree;
+    configTree.put("type", "Spherical Interface");
+    configTree.put("radius_of_curvature", 10.);
+    configTree.put("refractive_index.initial", 1.);
+    configTree.put("refractive_index.final", 2.);
+    elem = OEBuilder.build(configTree);
+    REQUIRE( elem != nullptr );
+
+    SphericalInterface<t::centimeter>& interface = *std::dynamic_pointer_cast<SphericalInterface<t::centimeter>>(elem);
+
+    auto mat = elem->getRTMatrix();
+
+    CHECK( mat(0,0) == Approx(1) );
+    CHECK( mat(0,1) == Approx(0) );
+    CHECK( mat(1,0) == Approx(-1./20) );
+    CHECK( mat(1,1) == Approx(1./2) );
+
+    configTree.put("radius_of_curvature", -3.5);
+    elem = OEBuilder.build(configTree);
+    mat = elem->getRTMatrix();
+    CHECK( mat(0,0) == Approx(1) );
+    CHECK( mat(0,1) == Approx(0) );
+    CHECK( mat(1,0) == Approx(+1./7) );
+    CHECK( mat(1,1) == Approx(1./2) );
+
+  }
+
+
+
+
+
+
+
 }
 
 
@@ -710,51 +740,98 @@ TEST_CASE("OpticalElementBuilder tests")
 
 TEST_CASE( "Optical Systems" )
 {
-  GaussianBeam beam;
-  OpticalSystem<t::centimeter> system;
+  SECTION("manual configuration")
+  {
+    GaussianBeam beam;
+    OpticalSystem<t::centimeter> system;
 
-  std::shared_ptr< ThinLens<t::centimeter> > lens;
+    std::shared_ptr< ThinLens<t::centimeter> > lens;
 
-  lens.reset( new ThinLens<t::centimeter>() );
-  lens->setFocalLength( 100*mm );
+    lens.reset( new ThinLens<t::centimeter>() );
+    lens->setFocalLength( 100*mm );
 
-  system.addElement( lens, 0*cm );
+    system.addElement( lens, 0*cm );
 
-  lens.reset( new ThinLens<t::centimeter>() );
-  lens->setFocalLength( 200*mm );
+    lens.reset( new ThinLens<t::centimeter>() );
+    lens->setFocalLength( 200*mm );
 
-  system.addElement( lens, 10*cm );
+    system.addElement( lens, 10*cm );
 
-  CHECK( system.getElements().size() == 2 );
-  auto elem = system.getElements().begin();
-  CHECK( elem->first.value() == Approx(0) );
-  elem++;
-  CHECK( elem->first.value() == Approx(10) );
+    CHECK( system.getElements().size() == 2 );
+    auto elem = system.getElements().begin();
+    CHECK( elem->first.value() == Approx(0) );
+    elem++;
+    CHECK( elem->first.value() == Approx(10) );
 
-  lens.reset( new ThinLens<t::centimeter>() );
-  lens->setFocalLength( 20*mm );
+    lens.reset( new ThinLens<t::centimeter>() );
+    lens->setFocalLength( 20*mm );
 
-  system.addElement( lens, 10*mm );
+    system.addElement( lens, 10*mm );
 
-  CHECK( system.getElements().size() == 3 );
-  elem = system.getElements().begin();
-  CHECK( elem->first.value() == Approx(0) );
-  elem++;
-  CHECK( elem->first.value() == Approx(1) );
-  elem++;
-  CHECK( elem->first.value() == Approx(10) );
+    CHECK( system.getElements().size() == 3 );
+    elem = system.getElements().begin();
+    CHECK( elem->first.value() == Approx(0) );
+    elem++;
+    CHECK( elem->first.value() == Approx(1) );
+    elem++;
+    CHECK( elem->first.value() == Approx(10) );
 
 
-  beam.setWavelength(0.532*um);
-  beam.setWaistDiameter(10*um);
-  beam.setWaistPosition(-10*cm);
+    beam.setWavelength(0.532*um);
+    beam.setWaistDiameter(10*um);
+    beam.setWaistPosition(-10*cm);
 
-  GaussianBeam beam2 = system.transform( beam );
+    GaussianBeam beam2 = system.transform( beam );
 
-  std::cout << "beam.getWaistPosition(): " << beam.getWaistPosition() << std::endl;
-  std::cout << "beam2.getWaistPosition(): " << beam2.getWaistPosition() << std::endl;
+    //CHECK( beam2.getDiameter(0.0*cm).value() == Approx( beam.getDiameter(0.0*cm).value() ) );
+  }
 
-  //CHECK( beam2.getDiameter(0.0*cm).value() == Approx( beam.getDiameter(0.0*cm).value() ) );
+  SECTION("ptree configuration")
+  {
+    ptree configTree;
+    configTree.put("beam.wavelength", 532);
+    configTree.put("beam.divergence", 2);
+    configTree.put("beam.waist.position", -400);
+
+    configTree.put("optical_system.elements.0.position", 100 );
+    configTree.put("optical_system.elements.0.type", "Thin Lens");
+    configTree.put("optical_system.elements.0.focal_length", 200);
+    
+
+    configTree.put("optical_system.elements.1.position", 110 );
+    configTree.put("optical_system.elements.1.type", "Thin Lens");
+    configTree.put("optical_system.elements.1.focal_length", 300);
+
+
+    GaussianBeam beam, beam2;
+    BeamBuilder config;
+    OpticalSystem<t::centimeter> system;
+
+
+    system.configure( configTree.get_child("optical_system") );
+    config.configure( beam, configTree.get_child("beam") );
+
+    CHECK( beam.getWavelength<t::nanometer>().value() == Approx(532) );
+    CHECK( beam.getDivergence<t::milliradian>().value() == Approx(2) );
+    CHECK( beam.getWaistPosition<t::centimeter>().value() == Approx(-400) );
+
+    beam2 = system.transform(beam);
+
+
+    ThinLens<t::centimeter> lens1, lens2;
+    lens1.setFocalLength( 200*cm );
+    lens2.setFocalLength( 300*cm );
+
+    beam.transform(&lens1, 100*cm);
+    beam.transform(&lens2, 110*cm);
+
+
+    // make sure the system produces the same results as manually applying the lenses
+    CHECK( beam.getWavelength().value() == Approx(beam2.getWavelength().value()) );
+    CHECK( beam.getWaistPosition().value() == Approx(beam2.getWaistPosition().value()) );
+    CHECK( beam.getWaistDiameter().value() == Approx(beam2.getWaistDiameter().value()) );
+
+  }
 
 
 }
