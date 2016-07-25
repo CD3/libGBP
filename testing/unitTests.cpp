@@ -333,7 +333,7 @@ SCENARIO( "Spherical interface class calculations", "[OpticalElements]" )
 #include "GaussianBeam.hpp"
 #include "OpticalElements/ThinLens.hpp"
 #include "OpticalElements/SphericalInterface.hpp"
-#include "BeamBuilder.hpp"
+#include "Builders/BeamBuilder.hpp"
 
 TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
 {
@@ -557,7 +557,7 @@ TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
 }
 
 #include "GaussianBeam.hpp"
-#include "BeamBuilder.hpp"
+#include "Builders/BeamBuilder.hpp"
 
 TEST_CASE( "BeamBuilder Tests" )
 {
@@ -640,7 +640,7 @@ TEST_CASE( "BeamBuilder Tests" )
   }
 }
 
-#include "OpticalElements/OpticalElementBuilder.hpp"
+#include "Builders/OpticalElementBuilder.hpp"
 
 TEST_CASE("OpticalElementBuilder tests")
 {

@@ -8,7 +8,7 @@
   */
 
 #include "OpticalElements/OpticalElementInterface.hpp"
-#include "OpticalElements/OpticalElementBuilder.hpp"
+#include "Builders/OpticalElementBuilder.hpp"
 
 #include<list>
 #include<utility>

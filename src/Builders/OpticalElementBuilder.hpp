@@ -12,7 +12,8 @@
   * @author C.D. Clark III
   */
 
-#include "OpticalElementInterface.hpp"
+#include "OpticalElements/OpticalElementInterface.hpp"
+#include "Builder.hpp"
 
 template<typename LengthUnitType>
 class OpticalElementBuilder : public Builder< OpticalElementInterface<LengthUnitType> >
