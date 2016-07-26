@@ -653,7 +653,7 @@ TEST_CASE("OpticalElementBuilder tests")
     {
       for(auto k : std::vector<std::string>( {"thinlens", "thin lens", "thin_lens"} ) )
       {
-        elem = OEBuilder.create(k);
+        elem.reset( OEBuilder.create(k) );
         REQUIRE( elem != nullptr );
 
         ThinLens<t::centimeter>& lens = *std::dynamic_pointer_cast<ThinLens<t::centimeter>>(elem);
@@ -682,7 +682,7 @@ TEST_CASE("OpticalElementBuilder tests")
       ptree configTree;
       configTree.put("type", "Thin Lens");
       configTree.put("focal_length", 10.);
-      elem = OEBuilder.build(configTree);
+      elem.reset( OEBuilder.build(configTree) );
       REQUIRE( elem != nullptr );
 
       auto mat = elem->getRTMatrix();
@@ -702,7 +702,7 @@ TEST_CASE("OpticalElementBuilder tests")
     configTree.put("radius_of_curvature", 10.);
     configTree.put("refractive_index.initial", 1.);
     configTree.put("refractive_index.final", 2.);
-    elem = OEBuilder.build(configTree);
+    elem.reset( OEBuilder.build(configTree) );
     REQUIRE( elem != nullptr );
 
     SphericalInterface<t::centimeter>& interface = *std::dynamic_pointer_cast<SphericalInterface<t::centimeter>>(elem);
@@ -715,7 +715,7 @@ TEST_CASE("OpticalElementBuilder tests")
     CHECK( mat(1,1) == Approx(1./2) );
 
     configTree.put("radius_of_curvature", -3.5);
-    elem = OEBuilder.build(configTree);
+    elem.reset( OEBuilder.build(configTree) );
     mat = elem->getRTMatrix();
     CHECK( mat(0,0) == Approx(1) );
     CHECK( mat(0,1) == Approx(0) );

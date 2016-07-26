@@ -68,7 +68,7 @@ void OpticalSystem<T>::configure(const ptree& configTree)
   for( auto &iter: elementsConfig.value() )
   {
     position = iter.second.get<double>("position", 0) * T();
-    this->addElement( builder.build( iter.second ), position );
+    this->addElement( OpticalElement_ptr<T>( builder.build( iter.second ) ), position );
   }
 
 }

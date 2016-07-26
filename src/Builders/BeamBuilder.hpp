@@ -25,7 +25,7 @@
 
 using std::vector;
 
-struct BeamBuilder // : public Builder<GaussianBeam>
+struct BeamBuilder : public Builder<GaussianBeam>
 {
 #define ADD_ATTRIBUTE(name, unit, n) \
   vector< quantity<unit> > name; \
@@ -57,7 +57,7 @@ struct BeamBuilder // : public Builder<GaussianBeam>
   void configure( GaussianBeam* beam );
   void configure( GaussianBeam& beam ){ this->configure( &beam ); }
 
-  void configure( GaussianBeam* beam, const ptree& configTree );
+  void configure( GaussianBeam* beam, const ptree& configTree ); ///< required by the base class
   void configure( GaussianBeam& beam, const ptree& configTree ){ this->configure( &beam, configTree ); }
 };
 

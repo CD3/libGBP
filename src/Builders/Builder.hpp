@@ -15,25 +15,26 @@
 #include <boost/property_tree/ptree.hpp>
 
 template<typename BASE_CLASS, typename DERIVED_CLASS>
-std::shared_ptr<BASE_CLASS> createInstance() { return std::shared_ptr<BASE_CLASS>( new DERIVED_CLASS() ); }
+BASE_CLASS* createInstance() { return new DERIVED_CLASS(); }
 
 template<typename BASE_CLASS>
 class Builder
 {
   protected:
-    typedef std::function<std::shared_ptr<BASE_CLASS>(void)> factoryFunc;
+    typedef std::function<BASE_CLASS*(void)> factoryFunc;
     std::map<std::string, std::string > namesMap; ///< Mapping from regex's to type names.
     std::map<std::string, factoryFunc > creators; ///< set of functions that create the instances from a typename.
 
     std::string getTypeName( std::string name );
 
   public:
-    virtual std::shared_ptr<BASE_CLASS> create( std::string typeName );
-    virtual std::shared_ptr<BASE_CLASS> build( const ptree& configTree );
     virtual void addNameMapping( std::string from, std::string to );
-    virtual void addType( std::string typeName, std::function<std::shared_ptr<BASE_CLASS>(void) > );
+    virtual void addType( std::string typeName, factoryFunc );
 
-    virtual void configure( std::shared_ptr<BASE_CLASS> elem, const ptree& configTree ) = 0;
+    virtual BASE_CLASS* create( std::string typeName );
+    virtual BASE_CLASS* build( const ptree& configTree );
+
+    virtual void configure( BASE_CLASS* elem, const ptree& configTree ) = 0;
 
 };
 
@@ -55,7 +56,7 @@ Builder<T>::getTypeName( std::string name )
 }
 
 template<typename T>
-std::shared_ptr<T>
+T*
 Builder<T>::create( std::string typeName )
 {
   auto c = creators.find( getTypeName(typeName) );
@@ -63,10 +64,10 @@ Builder<T>::create( std::string typeName )
 }
 
 template<typename T>
-std::shared_ptr<T>
+T*
 Builder<T>::build( const ptree& configTree )
 {
-  std::shared_ptr<T> elem = create( configTree.get("type", "UNKNOWN") );
+  T* elem = create( configTree.get("type", "UNKNOWN") );
   configure( elem, configTree );
 
   return elem;

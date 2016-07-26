@@ -22,7 +22,7 @@ class OpticalElementBuilder : public Builder< OpticalElementInterface<LengthUnit
   public:
     OpticalElementBuilder();
 
-    void configure( OpticalElement_ptr<LengthUnitType> elem, const ptree& configTree );
+    void configure( OpticalElementInterface<LengthUnitType>* elem, const ptree& configTree );
 
 };
 
@@ -39,21 +39,21 @@ OpticalElementBuilder<T>::OpticalElementBuilder()
 
 
 template<typename T>
-void OpticalElementBuilder<T>::configure( OpticalElement_ptr<T> elem, const ptree& configTree )
+void OpticalElementBuilder<T>::configure( OpticalElementInterface<T>* elem, const ptree& configTree )
 {
   std::string typeName = this->getTypeName( configTree.get("type", "UNKNOWN") );
 
   if( typeName == "thinlens" )
   {
     typedef ThinLens<T> ElemType;
-    ElemType& lens = *std::dynamic_pointer_cast<ElemType>(elem);
+    ElemType& lens = *dynamic_cast<ElemType*>(elem);
     lens.setFocalLength( configTree.get<double>("focal_length")*T() );
   }
 
   if( typeName == "sphericalinterface" )
   {
     typedef SphericalInterface<T> ElemType;
-    ElemType& interface = *std::dynamic_pointer_cast<ElemType>(elem);
+    ElemType& interface = *dynamic_cast<ElemType*>(elem);
     interface.setRadiusOfCurvature(      configTree.get<double>("radius_of_curvature")*T() );
     interface.setInitialRefractiveIndex( configTree.get<double>("refractive_index.initial") );
     interface.setFinalRefractiveIndex(   configTree.get<double>("refractive_index.final") );
