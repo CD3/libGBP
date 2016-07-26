@@ -13,7 +13,6 @@
 #include<list>
 #include<utility>
 #include<memory>
-#include<boost/property_tree/json_parser.hpp>
 
 
 template<typename LengthUnitType>
@@ -32,12 +31,15 @@ class OpticalSystem
 
     const ElementsType& getElements() const;
 
-    void configure( const ptree& configTree );
-
     template<typename U, typename V>
     GaussianBeam transform( const GaussianBeam& beam, U zi, V zf );
-
     GaussianBeam transform( const GaussianBeam& beam );
+
+    template<typename U, typename V>
+    void transform( GaussianBeam* beam, U zi, V zf );
+    void transform( GaussianBeam* beam );
+
+    void clear() {elements.clear();}
 };
 
 template<typename T>
@@ -55,36 +57,11 @@ auto OpticalSystem<T>::getElements() const -> const ElementsType&
 }
 
 template<typename T>
-void OpticalSystem<T>::configure(const ptree& configTree)
-{
-  elements.clear();
-  auto elementsConfig = configTree.get_child_optional("elements");
-  if(!elementsConfig)
-    return;
-
-  OpticalElementBuilder<T> builder;
-  quantity<T> position;
-
-  for( auto &iter: elementsConfig.value() )
-  {
-    position = iter.second.get<double>("position", 0) * T();
-    this->addElement( OpticalElement_ptr<T>( builder.build( iter.second ) ), position );
-  }
-
-}
-
-template<typename T>
 template<typename U, typename V>
 GaussianBeam OpticalSystem<T>::transform( const GaussianBeam& beam, U zi, V zf )
 {
   GaussianBeam beam2 = beam;
-
-  for( auto it = elements.begin(); it != elements.end(); it++ )
-  {
-    // only apply elements that are between zi and zf
-    if( it->first >= quantity<T>(zi) && it->first <= quantity<T>(zf) )
-      beam2.transform( it->second.get(), it->first );
-  }
+  this->transform( &beam2, zi, zf );
 
   return beam2;
 }
@@ -92,10 +69,27 @@ GaussianBeam OpticalSystem<T>::transform( const GaussianBeam& beam, U zi, V zf )
 template<typename T>
 GaussianBeam OpticalSystem<T>::transform( const GaussianBeam& beam )
 {
-  if(!elements.empty())
-    return this->transform( beam, elements.front().first, elements.back().first );
-  else
-    return beam;
+  return this->transform( beam, elements.front().first, elements.back().first );
+}
+
+template<typename T>
+template<typename U, typename V>
+void OpticalSystem<T>::transform( GaussianBeam* beam, U zi, V zf )
+{
+
+  for( auto it = elements.begin(); it != elements.end(); it++ )
+  {
+    // only apply elements that are between zi and zf
+    if( it->first >= quantity<T>(zi) && it->first <= quantity<T>(zf) )
+      beam->transform( it->second.get(), it->first );
+  }
+
+}
+
+template<typename T>
+void OpticalSystem<T>::transform( GaussianBeam* beam )
+{
+  this->transform( beam, elements.front().first, elements.back().first );
 }
 
 

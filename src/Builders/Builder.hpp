@@ -14,8 +14,19 @@
 #include <functional>
 #include <boost/property_tree/ptree.hpp>
 
+template<typename CLASS>
+CLASS* createInstance_imp( const boost::true_type&) { return nullptr; }
+
+template<typename CLASS>
+CLASS* createInstance_imp( const boost::false_type&) { return new CLASS(); }
+
+// return a new instance of DERIVED_CLASS as a BASE_CLASS pointer.
+// if DERIVED_CLASS is abstract, nullptr is returned.
+// it is necessary for this function to return a BASE_CLASS pointer so that it has
+// the same signature for all DERIVED_CLASS types and can be stored in a container.
 template<typename BASE_CLASS, typename DERIVED_CLASS>
-BASE_CLASS* createInstance() { return new DERIVED_CLASS(); }
+BASE_CLASS* createInstance() { return createInstance_imp<DERIVED_CLASS>( is_abstract<DERIVED_CLASS>() ); }
+
 
 template<typename BASE_CLASS>
 class Builder
@@ -60,7 +71,10 @@ T*
 Builder<T>::create( std::string typeName )
 {
   auto c = creators.find( getTypeName(typeName) );
-  return c != creators.end() ? (c->second)() : nullptr;
+  // this will return an instance of the class specified by typeName
+  // if typeName cannot be found, an instance of the base class is returned.
+  // if the base class is abstract, nullptr will be returned.
+  return c != creators.end() ? (c->second)() : createInstance<T,T>();
 }
 
 template<typename T>

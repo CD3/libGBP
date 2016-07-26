@@ -737,6 +737,8 @@ TEST_CASE("OpticalElementBuilder tests")
 #include "OpticalElements/ThinLens.hpp"
 #include "OpticalElements/SphericalInterface.hpp"
 #include "OpticalSystem.hpp"
+#include "Builders/OpticalSystemBuilder.hpp"
+#include "Builders/BeamBuilder.hpp"
 
 TEST_CASE( "Optical Systems" )
 {
@@ -803,33 +805,33 @@ TEST_CASE( "Optical Systems" )
     configTree.put("optical_system.elements.1.focal_length", 300);
 
 
-    GaussianBeam beam, beam2;
-    BeamBuilder config;
-    OpticalSystem<t::centimeter> system;
+    BeamBuilder beambuilder;
+    OpticalSystemBuilder<t::centimeter> sysbuilder;
+
+    std::shared_ptr<OpticalSystem<t::centimeter> > system(  sysbuilder.build( configTree.get_child("optical_system") ) );
+    std::shared_ptr<GaussianBeam>                    beam( beambuilder.build( configTree.get_child("beam") ) );
 
 
-    system.configure( configTree.get_child("optical_system") );
-    config.configure( beam, configTree.get_child("beam") );
+    CHECK( beam->getWavelength<t::nanometer>().value() == Approx(532) );
+    CHECK( beam->getDivergence<t::milliradian>().value() == Approx(2) );
+    CHECK( beam->getWaistPosition<t::centimeter>().value() == Approx(-400) );
 
-    CHECK( beam.getWavelength<t::nanometer>().value() == Approx(532) );
-    CHECK( beam.getDivergence<t::milliradian>().value() == Approx(2) );
-    CHECK( beam.getWaistPosition<t::centimeter>().value() == Approx(-400) );
-
-    beam2 = system.transform(beam);
+    system->transform(beam.get());
 
 
+    std::shared_ptr<GaussianBeam> beam2( beambuilder.build( configTree.get_child("beam") ) );
     ThinLens<t::centimeter> lens1, lens2;
     lens1.setFocalLength( 200*cm );
     lens2.setFocalLength( 300*cm );
 
-    beam.transform(&lens1, 100*cm);
-    beam.transform(&lens2, 110*cm);
+    beam2->transform(&lens1, 100*cm);
+    beam2->transform(&lens2, 110*cm);
 
 
     // make sure the system produces the same results as manually applying the lenses
-    CHECK( beam.getWavelength().value() == Approx(beam2.getWavelength().value()) );
-    CHECK( beam.getWaistPosition().value() == Approx(beam2.getWaistPosition().value()) );
-    CHECK( beam.getWaistDiameter().value() == Approx(beam2.getWaistDiameter().value()) );
+    CHECK( beam->getWavelength().value() == Approx(beam2->getWavelength().value()) );
+    CHECK( beam->getWaistPosition().value() == Approx(beam2->getWaistPosition().value()) );
+    CHECK( beam->getWaistDiameter().value() == Approx(beam2->getWaistDiameter().value()) );
 
   }
 
