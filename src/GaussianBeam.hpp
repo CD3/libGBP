@@ -39,6 +39,7 @@ class GaussianBeam
     quantity<t::nanometer> Wavelength; ///< wavelength of light in the propagation medium
     quantity<t::centimeter> WaistPosition; ///< position of the beam waist
     quantity<t::centimeter> WaistRadius; ///< radius (1/e^2) of the beam waist
+    quantity<t::radian> WaistPhase; ///< phase of the electric field at beam waist position.
     quantity<t::watt> Power; ///< total power in the beam
     quantity<t::centimeter> CurrentPosition; ///< the current position in the beam.
 
@@ -122,6 +123,7 @@ class GaussianBeam
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Frequency);
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Wavelength);
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(WaistPosition);
+    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Phase);
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Power);
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(CurrentPosition);
 
@@ -157,6 +159,20 @@ class GaussianBeam
     quantity<U,complex<double> >   getComplexBeamParameter(V z) const {return this->getComplexBeamParameter<U>(z); }
     quantity<U,complex<double> >   getComplexBeamParameter(   ) const {return this->getComplexBeamParameter<U>( ); }
 #undef U
+
+#define U t::volt_per_meter
+    typedef U ElectricFieldUnit;
+    typedef quantity<U,complex<double> > ElectricFieldType;
+    template<typename T, typename V, typename W>
+    quantity<T,complex<double> >   getElectricField(V z, W r) const;
+    template<typename T, typename W>
+    quantity<T,complex<double> >   getElectricField(W r) const { return this->getElectricField<T>(this->getCurrentPosition(),r);}
+    template<typename V, typename W>
+    quantity<U,complex<double> >   getElectricField(V z, W r) const {return this->getElectricField<U>(z,r); }
+    template<typename W>
+    quantity<U,complex<double> >   getElectricField(W r) const {return this->getElectricField<U>(r); }
+#undef U
+
 
 
 
@@ -299,6 +315,11 @@ quantity<T> GaussianBeam::getPeakIrradiance(U z) const
   return quantity<T>(val);
 }
 
+template<typename T, typename V, typename W>
+quantity<T,complex<double> >   GaussianBeam::getElectricField(V z, W r) const
+{
+  // @todo implement
+}
 
 
 template<typename T, typename U>

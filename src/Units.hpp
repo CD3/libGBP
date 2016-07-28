@@ -58,6 +58,10 @@ namespace units
     typedef divide_typeof_helper < watt,  centimeter_squared >::type irradiance;      
     typedef irradiance watt_per_centimeter_squared;
 
+    typedef si::electric_potential volt; typedef volt V;
+
+    typedef divide_typeof_helper<volt, meter>::type volt_per_meter; typedef volt_per_meter V_p_m;
+
   }
   /** @brief namespace for unit instances*/
   namespace i
