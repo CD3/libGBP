@@ -7,7 +7,7 @@
 
 #include "GaussianBeam.hpp"
 #include "OpticalElements/SphericalInterface.hpp"
-#include "BeamBuilder.hpp"
+#include "Builders/BeamBuilder.hpp"
 
 TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
 {
@@ -59,7 +59,7 @@ TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
 }
 
 #include "GaussianBeam.hpp"
-#include "BeamBuilder.hpp"
+#include "Builders/BeamBuilder.hpp"
 
 TEST_CASE( "BeamBuilder Tests" )
 {

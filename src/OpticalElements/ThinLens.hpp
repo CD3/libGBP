@@ -7,13 +7,12 @@
   * @date 07/01/16
   */
 
-#include "IdealElement.hpp"
+#include "BaseOpticalElement.hpp"
 
 template<typename T>
-class ThinLens : public IdealElement<T>
+class ThinLens : public BaseOpticalElement<T>
 {
   public:
-    // the required interface
     Eigen::Matrix<double,2,2> getRTMatrix() const;
 
   protected:

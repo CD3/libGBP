@@ -7,10 +7,10 @@
   * @date 07/01/16
   */
 
-#include "IdealElement.hpp"
+#include "BaseOpticalElement.hpp"
 
 template<typename T>
-class Interface : public IdealElement<T>
+class Interface : public BaseOpticalElement<T>
 {
   public:
     // reimplement the wavelength scale factor

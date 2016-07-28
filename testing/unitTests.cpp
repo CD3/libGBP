@@ -7,11 +7,11 @@
 #include <iomanip>
 
 
-#include "GaussianBeam.hpp"
 
 #define WRITE2(a,b) std::cout<< a << " " << b << std::endl
 #define WRITE3(a,b,c) std::cout<< a << " " << b << " " << c << std::endl
 
+#include "GaussianBeam.hpp"
 SCENARIO( "GaussianBeam configuration", "[GaussianBeam]" )
 {
   GIVEN("An uninitialized GaussianBeam instance")
@@ -146,6 +146,7 @@ SCENARIO( "GaussianBeam configuration", "[GaussianBeam]" )
 
 }
 
+#include "GaussianBeam.hpp"
 SCENARIO( "Complex Beam Parameter Calculations", "[GaussianBeam]" )
 {
   GaussianBeam beam;
@@ -174,7 +175,6 @@ SCENARIO( "Complex Beam Parameter Calculations", "[GaussianBeam]" )
 }
 
 #include "OpticalElements/ThinLens.hpp"
-
 SCENARIO( "Thin lens class calculations", "[OpticalElements]" )
 {
   WHEN("lens is created") {
@@ -219,7 +219,6 @@ SCENARIO( "Thin lens class calculations", "[OpticalElements]" )
 }
 
 #include "OpticalElements/FlatInterface.hpp"
-
 SCENARIO( "Flat interface class calculations", "[OpticalElements]" )
 {
   WHEN("interface is created") {
@@ -276,7 +275,6 @@ SCENARIO( "Flat interface class calculations", "[OpticalElements]" )
 }
 
 #include "OpticalElements/SphericalInterface.hpp"
-
 SCENARIO( "Spherical interface class calculations", "[OpticalElements]" )
 {
   WHEN("interface is created") {
@@ -330,11 +328,66 @@ SCENARIO( "Spherical interface class calculations", "[OpticalElements]" )
   }
 }
 
+#include "OpticalElements/Filter.hpp"
+SCENARIO( "Filter class calculations" "[OpticalElements]" )
+{
+  GIVEN("a filter")
+  {
+    Filter filter;
+
+    WHEN("OD is 1")
+    {
+      filter.setOpticalDensity(1);
+      THEN("power loss is 0.9")
+      {
+        CHECK(filter.getPowerLoss() == Approx(0.9) );
+      }
+    }
+    WHEN("OD is 2")
+    {
+      filter.setOpticalDensity(2);
+      THEN("power loss is 0.99")
+      {
+        CHECK(filter.getPowerLoss() == Approx(0.99) );
+      }
+    }
+  }
+}
+
+#include "Media/LinearAbsorber.hpp"
+SCENARIO( "Linear absorber calculations" "[OpticalElements]" )
+{
+  GIVEN("a linear absorber")
+  {
+    LinearAbsorber<t::cm> absorber;
+
+    WHEN("mu_a is 1")
+    {
+      absorber.setAbsorptionCoefficient( 1/cm );
+      THEN("transmission between z = 1 cm and z = 2 cm is e^{-1}")
+      {
+        CHECK(absorber.getTransmission( 1*cm, 2*cm) == Approx( exp(-1)) );
+      }
+      THEN("transmission between z = 1 m and z = 2 m is e^{-100}")
+      {
+        CHECK(absorber.getTransmission( 1*m, 2*m) == Approx( exp(-100)) );
+      }
+      THEN("transmission between z = 2 cm and z = 1 cm is e^{1}")
+      {
+        CHECK(absorber.getTransmission( 2*cm, 1*cm) == Approx( exp(1)) );
+      }
+      THEN("transmission between z = 2 m and z = 1 m is e^{100}")
+      {
+        CHECK(absorber.getTransmission( 2*m, 1*m) == Approx( exp(100)) );
+      }
+    }
+  }
+}
+
 #include "GaussianBeam.hpp"
 #include "OpticalElements/ThinLens.hpp"
 #include "OpticalElements/SphericalInterface.hpp"
 #include "Builders/BeamBuilder.hpp"
-
 TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
 {
   GaussianBeam beam;
@@ -558,8 +611,7 @@ TEST_CASE( "Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]" )
 
 #include "GaussianBeam.hpp"
 #include "Builders/BeamBuilder.hpp"
-
-TEST_CASE( "BeamBuilder Tests" )
+TEST_CASE( "BeamBuilder Tests", "[Builders,GuassianBeam]" )
 {
   BeamBuilder config;
 
@@ -641,8 +693,7 @@ TEST_CASE( "BeamBuilder Tests" )
 }
 
 #include "Builders/OpticalElementBuilder.hpp"
-
-TEST_CASE("OpticalElementBuilder tests")
+TEST_CASE("OpticalElementBuilder tests", "[Builders,OpticalElements]" )
 {
   OpticalElementBuilder<t::centimeter> OEBuilder;
   OpticalElement_ptr<t::centimeter> elem;
@@ -732,15 +783,13 @@ TEST_CASE("OpticalElementBuilder tests")
 
 }
 
-
 #include "GaussianBeam.hpp"
 #include "OpticalElements/ThinLens.hpp"
 #include "OpticalElements/SphericalInterface.hpp"
 #include "OpticalSystem.hpp"
 #include "Builders/OpticalSystemBuilder.hpp"
 #include "Builders/BeamBuilder.hpp"
-
-TEST_CASE( "Optical Systems" )
+TEST_CASE( "Optical Systems", "[OpticalSystem]" )
 {
   SECTION("manual configuration")
   {
@@ -834,6 +883,48 @@ TEST_CASE( "Optical Systems" )
     CHECK( beam->getWaistDiameter().value() == Approx(beam2->getWaistDiameter().value()) );
 
   }
+
+
+}
+
+#include "Media/AbsorberStack.hpp"
+#include "Media/LinearAbsorber.hpp"
+TEST_CASE("Absorber Stack")
+{
+
+  SECTION("boundaries configuration")
+  {
+    AbsorberStack<t::centimeter> stack;
+
+    std::shared_ptr<LinearAbsorber<t::centimeter>> abs;
+
+    abs.reset( new LinearAbsorber<t::centimeter>() );
+    abs->setAbsorptionCoefficient( 0.1/cm );
+    stack.setBackgroundAbsorber(abs);
+
+    abs.reset( new LinearAbsorber<t::centimeter>() );
+    abs->setAbsorptionCoefficient( 1/cm );
+    stack.addBoundary( abs, 0*cm );
+
+    abs.reset( new LinearAbsorber<t::centimeter>() );
+    abs->setAbsorptionCoefficient( 10/cm );
+    stack.addBoundary( abs, 1*cm );
+
+    abs.reset( new LinearAbsorber<t::centimeter>() );
+    abs->setAbsorptionCoefficient( 2/cm );
+    stack.addBoundary( abs, 1.001*cm );
+
+    // zi and zf are both in front of the first boundary.
+    CHECK(stack.getTransmission( -2*cm, -1*cm )  == Approx(exp(-0.1)) );
+    // all boundaries are between z1 and zf.
+    CHECK(stack.getTransmission( -1*cm, 0.1*m )  == Approx(exp(-0.1)*exp(-1)*exp(-10*0.001)*exp(-2*(10-1.001))) );
+    // zi and zf are both between the 1st and 2nd boundaries.
+    CHECK(stack.getTransmission( 0.1*cm, 0.9*cm )  == Approx(exp(-0.8)) );
+    // zi and zf are both beghind between the 1st and 2nd boundaries.
+    CHECK(stack.getTransmission( 2*m, 2.1*m )  == Approx(exp(-2*10)) );
+  }
+
+
 
 
 }
