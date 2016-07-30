@@ -18,7 +18,7 @@ class OpticalSystemBuilder : public Builder< OpticalSystem<LengthUnitType> >
 {
 
   public:
-    void configure( OpticalSystem<LengthUnitType>* elem, const ptree& configTree );
+    void configure( OpticalSystem<LengthUnitType>* system, const ptree& configTree );
 };
 
 template<typename T>

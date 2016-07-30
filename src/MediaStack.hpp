@@ -1,35 +1,36 @@
-#ifndef Media_AbsorberStack_hpp
-#define Media_AbsorberStack_hpp
+#ifndef MediaStack_hpp
+#define MediaStack_hpp
 
-/** @file AbsorberStack.hpp
+/** @file MediaStack.hpp
   * @brief 
   * @author C.D. Clark III
   * @date 07/27/16
   */
 
-#include "LinearAbsorber.hpp"
+#include "Media/MediaInterface.hpp"
 #include <queue>
 
 
 template<typename LengthUnitType>
-class AbsorberStack
+class MediaStack
 {
   public:
-    typedef std::pair< quantity<LengthUnitType>, Absorber_ptr<LengthUnitType> > BoundaryType;
+    typedef std::pair< quantity<LengthUnitType>, Media_ptr<LengthUnitType> > BoundaryType;
     typedef std::list<BoundaryType> BoundariesType;
 
   protected:
-    Absorber_ptr<LengthUnitType> backgroundAbsorber;
+    Media_ptr<LengthUnitType> backgroundMedia;
     BoundariesType boundaries;
 
   public:
 
-    AbsorberStack();
+    MediaStack();
 
-    AbsorberStack<LengthUnitType>& setBackgroundAbsorber( Absorber_ptr<LengthUnitType> abs ) {this->backgroundAbsorber = abs;}
+    MediaStack<LengthUnitType>& setBackgroundMedia( Media_ptr<LengthUnitType> abs ) {this->backgroundMedia = abs;}
+    Media_ptr<LengthUnitType>   getBackgroundMedia( ) {return this->backgroundMedia;}
 
     template<typename U>
-    AbsorberStack<LengthUnitType>& addBoundary( Absorber_ptr<LengthUnitType> abs, U position );
+    MediaStack<LengthUnitType>& addBoundary( Media_ptr<LengthUnitType> abs, U position );
 
     const BoundariesType& getBoundaries() const;
 
@@ -41,29 +42,29 @@ class AbsorberStack
 };
 
 template<typename T>
-AbsorberStack<T>::AbsorberStack()
-:backgroundAbsorber( new Absorber<T>() )
+MediaStack<T>::MediaStack()
+:backgroundMedia( new BaseMedia<T>() )
 {
   
 }
 
 template<typename T>
 template<typename U>
-AbsorberStack<T>& AbsorberStack<T>::addBoundary( Absorber_ptr<T> abs, U position )
+MediaStack<T>& MediaStack<T>::addBoundary( Media_ptr<T> abs, U position )
 {
   boundaries.push_back( { quantity<T>(position), abs} );
   boundaries.sort();
 }
 
 template<typename T>
-auto AbsorberStack<T>::getBoundaries() const -> const BoundariesType&
+auto MediaStack<T>::getBoundaries() const -> const BoundariesType&
 {
   return boundaries;
 }
 
 template<typename T>
 template<typename U, typename V>
-double AbsorberStack<T>::getTransmission( U zi, V zf ) const
+double MediaStack<T>::getTransmission( U zi, V zf ) const
 {
   quantity<T> zi_ = quantity<T>(zi);
   quantity<T> zf_ = quantity<T>(zf);
@@ -77,13 +78,13 @@ double AbsorberStack<T>::getTransmission( U zi, V zf ) const
   // first, we need to figure out where zi and zf are w.r.t. the boundaries.
   // we determine what boundaries are between zi and zf
   std::queue<decltype(boundaries.begin())> incBoundaries;
-  auto currentAbsorber = backgroundAbsorber; 
+  auto currentMedia = backgroundMedia; 
   for( auto it = boundaries.begin(); it != boundaries.end(); it++ )
   {
     if( zi_ < it->first && it->first < zf_ )
       incBoundaries.push( it );
     if( zi_ > it->first )
-      currentAbsorber = it->second;
+      currentMedia = it->second;
   }
 
   double transmission = 1;
@@ -92,14 +93,14 @@ double AbsorberStack<T>::getTransmission( U zi, V zf ) const
   while( incBoundaries.size() > 0 )
   {
     zf__ = incBoundaries.front()->first;
-    transmission *= currentAbsorber->getTransmission(zi__, zf__);
+    transmission *= currentMedia->getTransmission(zi__, zf__);
     zi__ = zf__;
-    currentAbsorber = incBoundaries.front()->second;
+    currentMedia = incBoundaries.front()->second;
     incBoundaries.pop();
   }
 
   zf__ = zf_;
-  transmission *= currentAbsorber->getTransmission(zi__, zf__);
+  transmission *= currentMedia->getTransmission(zi__, zf__);
 
   
 

@@ -144,6 +144,37 @@ SCENARIO( "GaussianBeam configuration", "[GaussianBeam]" )
     }
   }
 
+  GIVEN("a configured GaussianBeam instance")
+  {
+    GaussianBeam beam;
+
+    beam.setWavelength(532*nm);
+    beam.setWaistPosition(5*cm);
+    beam.setWaistDiameter(10*um);
+    beam.setWaistPhase(0*rad);
+    beam.setPower(1*W);
+
+    WHEN("the current position is set to 10 cm")
+    {
+      auto z = 10*cm;
+      beam.setCurrentPosition(z);
+      THEN("the z-dependent getters agree when called with and without an argument.")
+      {
+#define CHECK_SAME(name) CHECK( beam.get##name(z).value() == Approx( beam.get##name().value() ) )
+
+        CHECK_SAME( Radius );
+        CHECK_SAME( Diameter );
+        CHECK_SAME( RadiusOfCurvature );
+        CHECK_SAME( RelativeWaistPosition );
+        CHECK_SAME( Area );
+        CHECK_SAME( PeakIrradiance );
+        CHECK_SAME( GouyPhase );
+
+#undef CHECK_SAME
+      }
+    }
+
+  }
 }
 
 #include "GaussianBeam.hpp"
@@ -887,20 +918,21 @@ TEST_CASE( "Optical Systems", "[OpticalSystem]" )
 
 }
 
-#include "Media/AbsorberStack.hpp"
+#include "MediaStack.hpp"
 #include "Media/LinearAbsorber.hpp"
-TEST_CASE("Absorber Stack")
+#include "Builders/MediaStackBuilder.hpp"
+TEST_CASE("Media Stack")
 {
 
   SECTION("boundaries configuration")
   {
-    AbsorberStack<t::centimeter> stack;
+    MediaStack<t::centimeter> stack;
 
     std::shared_ptr<LinearAbsorber<t::centimeter>> abs;
 
     abs.reset( new LinearAbsorber<t::centimeter>() );
     abs->setAbsorptionCoefficient( 0.1/cm );
-    stack.setBackgroundAbsorber(abs);
+    stack.setBackgroundMedia(abs);
 
     abs.reset( new LinearAbsorber<t::centimeter>() );
     abs->setAbsorptionCoefficient( 1/cm );
@@ -924,9 +956,144 @@ TEST_CASE("Absorber Stack")
     CHECK(stack.getTransmission( 2*m, 2.1*m )  == Approx(exp(-2*10)) );
   }
 
+  SECTION("builder configuration")
+  {
+    ptree configTree;
+
+    configTree.put("media_stack.media.background.type", "linear absorber");
+    configTree.put("media_stack.media.background.absorption_coefficient", 0.1 );
+
+    configTree.put("media_stack.media.0.type", "linear absorber");
+    configTree.put("media_stack.media.0.position", 0 );
+    configTree.put("media_stack.media.0.absorption_coefficient", 1 );
+
+    configTree.put("media_stack.media.1.type", "linear absorber");
+    configTree.put("media_stack.media.1.absorption_coefficient", 10 );
+    configTree.put("media_stack.media.1.position", 1 );
+
+    configTree.put("media_stack.media.2.type", "linear absorber");
+    configTree.put("media_stack.media.2.absorption_coefficient", 2 );
+    configTree.put("media_stack.media.2.position", 1.001 );
+
+    MediaStackBuilder<t::centimeter> MSb;
+    std::shared_ptr<MediaStack<t::centimeter>> stack( MSb.build( configTree.get_child("media_stack") ) );
+
+
+
+    // zi and zf are both in front of the first boundary.
+    CHECK(stack->getTransmission( -2*cm, -1*cm )  == Approx(exp(-0.1)) );
+    // all boundaries are between z1 and zf.
+    CHECK(stack->getTransmission( -1*cm, 0.1*m )  == Approx(exp(-0.1)*exp(-1)*exp(-10*0.001)*exp(-2*(10-1.001))) );
+    // zi and zf are both between the 1st and 2nd boundaries.
+    CHECK(stack->getTransmission( 0.1*cm, 0.9*cm )  == Approx(exp(-0.8)) );
+    // zi and zf are both beghind between the 1st and 2nd boundaries.
+    CHECK(stack->getTransmission( 2*m, 2.1*m )  == Approx(exp(-2*10)) );
+    
+  }
+
+  SECTION("builder configuration 2")
+  {
+    ptree configTree;
+
+    configTree.put("media_stack.media.background.type", "linear absorber");
+    configTree.put("media_stack.media.background.absorption_coefficient", 0.1 );
+
+    configTree.put("media_stack.media.0.type", "linear absorber");
+    configTree.put("media_stack.media.0.position", 0 );
+    configTree.put("media_stack.media.0.absorption_coefficient", 1 );
+    configTree.put("media_stack.media.0.thickness", 1 );
+
+    configTree.put("media_stack.media.1.type", "linear absorber");
+    configTree.put("media_stack.media.1.absorption_coefficient", 10 );
+    configTree.put("media_stack.media.1.thickness", 0.001 );
+
+    configTree.put("media_stack.media.2.type", "linear absorber");
+    configTree.put("media_stack.media.2.absorption_coefficient", 2 );
+
+
+
+    MediaStackBuilder<t::centimeter> MSb;
+    std::shared_ptr<MediaStack<t::centimeter>> stack( MSb.build( configTree.get_child("media_stack") ) );
+
+
+
+    // zi and zf are both in front of the first boundary.
+    CHECK(stack->getTransmission( -2*cm, -1*cm )  == Approx(exp(-0.1)) );
+    // all boundaries are between z1 and zf.
+    CHECK(stack->getTransmission( -1*cm, 0.1*m )  == Approx(exp(-0.1)*exp(-1)*exp(-10*0.001)*exp(-2*(10-1.001))) );
+    // zi and zf are both between the 1st and 2nd boundaries.
+    CHECK(stack->getTransmission( 0.1*cm, 0.9*cm )  == Approx(exp(-0.8)) );
+    // zi and zf are both beghind between the 1st and 2nd boundaries.
+    CHECK(stack->getTransmission( 2*m, 2.1*m )  == Approx(exp(-2*10)) );
+    
+  }
+
+  SECTION("builder configuration 3")
+  {
+    ptree configTree;
+
+
+    // two layers of media separated by a layer of background
+    configTree.put("media_stack.media.0.type", "linear absorber");
+    configTree.put("media_stack.media.0.position", 0 );
+    configTree.put("media_stack.media.0.absorption_coefficient", 1 );
+    configTree.put("media_stack.media.0.thickness", 0.1 );
+
+    configTree.put("media_stack.media.1.type", "linear absorber");
+    configTree.put("media_stack.media.1.position", 1 );
+    configTree.put("media_stack.media.1.absorption_coefficient", 10 );
+    configTree.put("media_stack.media.1.thickness", 0.1 );
+
+
+
+
+    MediaStackBuilder<t::centimeter> MSb;
+    std::shared_ptr<MediaStack<t::centimeter>> stack( MSb.build( configTree.get_child("media_stack") ) );
+
+
+
+    // zi and zf are both in front of the first boundary.
+    CHECK(stack->getTransmission( -2*cm, -1*cm )  == Approx(1) );
+    // all boundaries are between z1 and zf.
+    CHECK(stack->getTransmission( -1*cm, 3*cm )  == Approx(exp(-0.1)*exp(-1)) );
+    // zi and zf are both in the air gap
+    CHECK(stack->getTransmission( 1.2*cm, 1.9*cm )  == Approx(1) );
+    // zi and zf are both in behind the last boundary.
+    CHECK(stack->getTransmission( 3*cm, 4*cm )  == Approx(1) );
+    
+  }
+
 
 
 
 }
 
 
+#include "GBPCalc.hpp"
+TEST_CASE("GBPCalc tests")
+{
+  ptree configTree;
+  configTree.put("beam.wavelength", 532);
+  configTree.put("beam.divergence", 2);
+  configTree.put("beam.knowns.position", 0);
+  configTree.put("beam.knowns.diameter", 10e-4);
+  configTree.put("beam.knowns.power", 2);
+
+  configTree.put("optical_system.elements.0.position", 100 );
+  configTree.put("optical_system.elements.0.type", "Thin Lens");
+  configTree.put("optical_system.elements.0.focal_length", 200);
+  
+
+  configTree.put("media_stack.media.0.type", "linear absorber");
+  configTree.put("media_stack.media.0.position", 100 );
+  configTree.put("media_stack.media.0.thickness", 10 );
+
+  GBPCalc<t::centimeter> calculator;
+  calculator.configure( configTree );
+
+  auto beam = calculator.getBeam( 200*cm );
+
+  
+
+
+}

@@ -123,7 +123,7 @@ class GaussianBeam
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Frequency);
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Wavelength);
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(WaistPosition);
-    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Phase);
+    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(WaistPhase);
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Power);
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(CurrentPosition);
 
@@ -144,6 +144,7 @@ class GaussianBeam
     Z_DEPENDENT_DERIVED_GETTER( RelativeWaistPosition, WaistPositionUnit );
     Z_DEPENDENT_DERIVED_GETTER( Area, t::centimeter_squared );
     Z_DEPENDENT_DERIVED_GETTER( PeakIrradiance, t::watt_per_centimeter_squared );
+    Z_DEPENDENT_DERIVED_GETTER( GouyPhase, t::radian );
 
 
 
@@ -314,6 +315,15 @@ quantity<T> GaussianBeam::getPeakIrradiance(U z) const
 
   return quantity<T>(val);
 }
+
+template<typename T,typename U>
+quantity<T> GaussianBeam::getGouyPhase(U z) const
+{
+  auto val = atan( quantity<t::centimeter>(z) / this->getRayleighRange<t::centimeter>() );
+
+  return quantity<T>(val);
+}
+
 
 template<typename T, typename V, typename W>
 quantity<T,complex<double> >   GaussianBeam::getElectricField(V z, W r) const

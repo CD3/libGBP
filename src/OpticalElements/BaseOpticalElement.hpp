@@ -4,11 +4,15 @@
 #include "OpticalElementInterface.hpp"
 
 /** @file BaseOpticalElement.hpp
-  * @brief Base class for optical elements that provides default implementations for the required methods.
+  * @brief 
   * @author C.D. Clark III
   * @date 07/01/16
   */
 
+/** @class BaseOpticalElement
+  * @brief Base class for optical elements that provides default implementations for the required methods.
+  * @author C.D. Clark III
+  */
 template<typename T>
 class BaseOpticalElement : public OpticalElementInterface<T>
 {

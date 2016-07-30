@@ -7,10 +7,10 @@
   * @date 07/27/16
   */
 
-#include "Absorber.hpp"
+#include "BaseMedia.hpp"
 
 template<typename LengthUnitType>
-class LinearAbsorber : public Absorber<LengthUnitType>
+class LinearAbsorber : public BaseMedia<LengthUnitType>
 {
   protected:
     typedef typename divide_typeof_helper < t::dimensionless, LengthUnitType>::type InvLengthUnitType;

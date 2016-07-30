@@ -41,23 +41,38 @@ OpticalElementBuilder<T>::OpticalElementBuilder()
 template<typename T>
 void OpticalElementBuilder<T>::configure( OpticalElementInterface<T>* elem, const ptree& configTree )
 {
-  std::string typeName = this->getTypeName( configTree.get("type", "UNKNOWN") );
 
-  if( typeName == "thinlens" )
-  {
-    typedef ThinLens<T> ElemType;
-    ElemType& lens = *dynamic_cast<ElemType*>(elem);
-    lens.setFocalLength( configTree.get<double>("focal_length")*T() );
+  // runtime type checking. dynamic_cast will return a nullptr is the elem cannot be cast to
+  // a given pointer type.
+
+
+  { // these brackets allow us to reuse the name ptr for each call
+    auto ptr = dynamic_cast<ThinLens<T>*>(elem);
+    if( ptr != nullptr )
+    {
+      ptr ->setFocalLength( configTree.get<double>("focal_length")*T() );
+    }
   }
 
-  if( typeName == "sphericalinterface" )
+
   {
-    typedef SphericalInterface<T> ElemType;
-    ElemType& interface = *dynamic_cast<ElemType*>(elem);
-    interface.setRadiusOfCurvature(      configTree.get<double>("radius_of_curvature")*T() );
-    interface.setInitialRefractiveIndex( configTree.get<double>("refractive_index.initial") );
-    interface.setFinalRefractiveIndex(   configTree.get<double>("refractive_index.final") );
+    auto ptr = dynamic_cast<Interface<T>*>(elem);
+    if( ptr != nullptr )
+    {
+      ptr->setInitialRefractiveIndex( configTree.get<double>("refractive_index.initial") );
+      ptr->setFinalRefractiveIndex(   configTree.get<double>("refractive_index.final") );
+    }
   }
+
+
+  {
+  auto ptr = dynamic_cast<SphericalInterface<T>*>(elem);
+  if( ptr != nullptr )
+  {
+    ptr->setRadiusOfCurvature(      configTree.get<double>("radius_of_curvature")*T() );
+  }
+  }
+
 }
 
 

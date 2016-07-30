@@ -12,7 +12,7 @@
 #include <memory>
 #include <regex>
 #include <functional>
-#include <boost/property_tree/ptree.hpp>
+#include "utils/ptree.hpp"
 
 template<typename CLASS>
 CLASS* createInstance_imp( const boost::true_type&) { return nullptr; }
