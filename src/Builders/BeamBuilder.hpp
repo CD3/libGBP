@@ -45,14 +45,16 @@ struct BeamBuilder : public Builder<GaussianBeam>
   bool                       has##name( int i = 0 ){ if( i < name.size() ){ return true; }else{return false;} }\
 
 
-  ADD_ATTRIBUTE(    Wavelength       , t::nanometer   , 1);
-  ADD_ATTRIBUTE( FreeSpaceWavelength , t::nanometer   , 1);
-  ADD_ATTRIBUTE(    Divergence       , t::milliradian , 1);
-  ADD_ATTRIBUTE(      Diameter       , t::centimeter  , 2);
-  ADD_ATTRIBUTE(      Position       , t::centimeter  , 2);
-  ADD_ATTRIBUTE( WaistPosition       , t::centimeter  , 1);
-  ADD_ATTRIBUTE( WaistDiameter       , t::centimeter  , 1);
-  ADD_ATTRIBUTE(         Power       , t::watt        , 1);
+  ADD_ATTRIBUTE(    Wavelength        , t::nanometer   , 1);
+  ADD_ATTRIBUTE( FreeSpaceWavelength  , t::nanometer   , 1);
+  ADD_ATTRIBUTE(            Frequency , t::nanometer   , 1);
+  ADD_ATTRIBUTE(    Divergence        , t::milliradian , 1);
+  ADD_ATTRIBUTE(      Diameter        , t::centimeter  , 2);
+  ADD_ATTRIBUTE(      Position        , t::centimeter  , 2);
+  ADD_ATTRIBUTE( WaistPosition        , t::centimeter  , 1);
+  ADD_ATTRIBUTE( WaistDiameter        , t::centimeter  , 1);
+  ADD_ATTRIBUTE(         Power        , t::watt        , 1);
+  ADD_ATTRIBUTE( CurrentPosition      , t::centimeter  , 1);
 
   void configure( GaussianBeam* beam );
   void configure( GaussianBeam& beam ){ this->configure( &beam ); }
@@ -64,6 +66,9 @@ struct BeamBuilder : public Builder<GaussianBeam>
 void
 BeamBuilder::configure( GaussianBeam* beam )
 {
+  if(this->hasWavelength())
+    beam->setWavelength( this->getWavelength<t::nanometer>().value() );
+
   if(this->hasPower())
     beam->setPower( this->getPower<t::watt>().value() );
 
@@ -72,9 +77,6 @@ BeamBuilder::configure( GaussianBeam* beam )
 
   if(this->hasWaistPosition())
     beam->setWaistPosition( this->getWaistPosition<t::centimeter>().value() );
-
-  if(this->hasWavelength())
-    beam->setWavelength( this->getWavelength<t::nanometer>().value() );
 
   if(this->hasWavelength())
   {
@@ -105,7 +107,11 @@ BeamBuilder::configure( GaussianBeam* beam )
     }
   }
 
-  beam->setFrequency( constants::SpeedOfLight / (this->hasFreeSpaceWavelength() ? this->getFreeSpaceWavelength<t::nanometer>().value() : this->getWavelength<t::nanometer>().value() ) );
+  if(!this->hasFrequency())
+    beam->setFrequency( constants::SpeedOfLight / (this->hasFreeSpaceWavelength() ? this->getFreeSpaceWavelength<t::nanometer>().value() : this->getWavelength<t::nanometer>().value() ) );
+
+  if(this->hasCurrentPosition())
+    beam->setCurrentPosition( this->getCurrentPosition<t::centimeter>().value() );
 
 }
 
@@ -126,9 +132,11 @@ BeamBuilder::configure( GaussianBeam* beam, const ptree& configTree )
   }
 
   SET( Wavelength, "wavelength", value*nm );
+  SET( Power, "power", value*W );
   SET( Divergence, "divergence", value*mrad );
   SET( WaistPosition, "waist.position", value*cm);
   SET( WaistDiameter, "waist.diameter", value*cm);
+  SET( CurrentPosition, "current_position", value*cm);
 
   auto knowns = configTree.get_child_optional("knowns");
   if( knowns )

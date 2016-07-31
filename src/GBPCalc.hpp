@@ -20,9 +20,9 @@ template<typename LengthUnitType>
 class GBPCalc
 {
   protected:
-    OpticalSystem<LengthUnitType> optics;
-    MediaStack<LengthUnitType> media;
-    GaussianBeam beam;
+    shared_ptr<OpticalSystem<LengthUnitType> > optics;
+    shared_ptr<MediaStack<LengthUnitType> > media;
+    shared_ptr<GaussianBeam> beam;
 
 
   public:
@@ -44,6 +44,14 @@ template<typename T>
 template<typename V>
 GaussianBeam GBPCalc<T>::getBeam( V z )
 {
+  GaussianBeam beam = *(this->beam);
+
+  double transmission = this->media->getTransmission( beam.getCurrentPosition(), z );
+  beam.setPower( beam.getPower()*transmission );
+  optics->transform( &beam, beam.getCurrentPosition(), z );
+  beam.setCurrentPosition(z);
+
+  return beam;
 }
 
 template<typename T>
@@ -52,6 +60,11 @@ void GBPCalc<T>::configure( const ptree& configTree )
   OpticalSystemBuilder<T> OSb;
   MediaStackBuilder<T> Mb;
   BeamBuilder Bb;
+
+
+  this->beam.reset( Bb.build( configTree.get_child("beam") ) );
+  this->media.reset( Mb.build( configTree.get_child("media_stack") ) );
+  this->optics.reset( OSb.build( configTree.get_child("optical_system") ) );
 
 }
 

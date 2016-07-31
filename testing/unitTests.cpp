@@ -1073,25 +1073,49 @@ TEST_CASE("Media Stack")
 TEST_CASE("GBPCalc tests")
 {
   ptree configTree;
-  configTree.put("beam.wavelength", 532);
-  configTree.put("beam.divergence", 2);
-  configTree.put("beam.knowns.position", 0);
-  configTree.put("beam.knowns.diameter", 10e-4);
-  configTree.put("beam.knowns.power", 2);
+  configTree.put("beam.wavelength", 444);
+  configTree.put("beam.waist.position", 0);
+  configTree.put("beam.waist.diameter", 0.25);
+  configTree.put("beam.power", 0.800);
 
-  configTree.put("optical_system.elements.0.position", 100 );
+  configTree.put("optical_system.elements.0.position", 15 );
   configTree.put("optical_system.elements.0.type", "Thin Lens");
-  configTree.put("optical_system.elements.0.focal_length", 200);
+  configTree.put("optical_system.elements.0.focal_length", 12);
   
 
-  configTree.put("media_stack.media.0.type", "linear absorber");
-  configTree.put("media_stack.media.0.position", 100 );
-  configTree.put("media_stack.media.0.thickness", 10 );
+  configTree.put("media_stack.media.0.type", "Linear Absorber");
+  configTree.put("media_stack.media.0.position", 15 );
+  configTree.put("media_stack.media.0.thickness", 1 );
+  configTree.put("media_stack.media.0.absorption_coefficient", 2 );
 
   GBPCalc<t::centimeter> calculator;
   calculator.configure( configTree );
 
-  auto beam = calculator.getBeam( 200*cm );
+  auto beam = calculator.getBeam( 14.9999*cm );
+
+  CHECK( beam.getWavelength().value() == Approx( 444 ) );
+  CHECK( beam.getPower().value() == Approx( 0.800) );
+  CHECK( beam.getRadiusOfCurvature().value() == Approx( 81501) );
+  CHECK( beam.getWaistPosition().value() == Approx( 0) );
+  CHECK( beam.getWaistDiameter().value() == Approx( 0.25) );
+
+  beam = calculator.getBeam( 15*cm );
+
+  CHECK( beam.getWavelength().value() == Approx( 444 ) );
+  CHECK( beam.getPower().value() == Approx( 0.800*exp(0) ) );
+  CHECK( beam.getRadiusOfCurvature().value() == Approx( -12.0018 ) );
+  CHECK( beam.getWaistPosition().value() == Approx( 27.0004 ) );
+  CHECK( beam.getWaistDiameter().value() == Approx( 0.00271352 ) );
+
+  beam = calculator.getBeam( 100*cm );
+
+  CHECK( beam.getWavelength().value() == Approx( 444 ) );
+  CHECK( beam.getPower().value() == Approx( 0.800*exp(-2) ) );
+  CHECK( beam.getRadiusOfCurvature().value() > 0 );
+  CHECK( beam.getWaistPosition().value() == Approx( 27.0004 ) );
+  CHECK( beam.getWaistDiameter().value() == Approx( 0.00271352 ) );
+
+
 
   
 
