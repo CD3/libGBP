@@ -10,14 +10,12 @@
 #include <iostream>
 #include <complex>
 
-#include <boost/property_tree/ptree.hpp>
 
 #include "Units.hpp"
 #include "Constants.hpp"
 #include "OpticalElements/OpticalElementInterface.hpp"
 
 using std::complex;
-using boost::property_tree::ptree;
 
 /** @class 
   * @brief A class implementing Gaussian Beam calculations.

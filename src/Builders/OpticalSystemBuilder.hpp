@@ -7,11 +7,9 @@
   * @date 07/25/16
   */
 
-#include <boost/property_tree/ptree.hpp>
 #include "OpticalSystem.hpp"
 #include "Builder.hpp"
 
-using boost::property_tree::ptree;
 
 template<typename LengthUnitType>
 class OpticalSystemBuilder : public Builder< OpticalSystem<LengthUnitType> >

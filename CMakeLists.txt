@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
-project(hgbp)
+project(libgbp)
 
 
 option( BUILD_SWIG_WRAPPERS    "Build interface wrapper libraries for other languages with SWIG" OFF )
@@ -25,9 +25,8 @@ find_package(Doxygen)
 
 set( SOURCES )
 
-
-#add_library(GBP ${SOURCES})
-#target_link_libraries(GBP ${EXTERNAL_LIBS})
+add_executable(gbp-cli applications/gbp-cli.cpp)
+target_compile_features( gbp-cli PRIVATE cxx_auto_type)
 
 if(DOXYGEN_FOUND)
 configure_file( ${PROJECT_SOURCE_DIR}/GBP.doxygen.in ${CMAKE_CURRENT_BINARY_DIR}/GBP.doxygen @ONLY)

@@ -12,8 +12,10 @@
   * @author C.D. Clark III
   */
 
-#include "OpticalElements/OpticalElementInterface.hpp"
 #include "Builder.hpp"
+#include "OpticalElements/OpticalElementInterface.hpp"
+#include "OpticalElements/ThinLens.hpp"
+#include "OpticalElements/SphericalInterface.hpp"
 
 template<typename LengthUnitType>
 class OpticalElementBuilder : public Builder< OpticalElementInterface<LengthUnitType> >

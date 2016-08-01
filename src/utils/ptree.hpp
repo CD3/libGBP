@@ -11,8 +11,10 @@
 #include <regex>
 #include <boost/property_tree/ptree.hpp>
 
+using boost::property_tree::ptree;
 
-bool isInt( const std::string &str )
+
+inline bool isInt( const std::string &str )
 {
   if(std::regex_match(str, std::regex("^[0-9]+$") ) )
     return true;
@@ -20,7 +22,7 @@ bool isInt( const std::string &str )
     return false;
 }
 
-bool intComp( const std::string &a, const std::string &b )
+inline bool intComp( const std::string &a, const std::string &b )
 {
   return stoi(a) < stoi(b);
 }
@@ -31,7 +33,7 @@ namespace boost
 namespace property_tree
 {
   // treat keys as integers and compare
-  bool keyIntComp( ptree::const_iterator &a, ptree::const_iterator &b)
+  inline bool keyIntComp( ptree::const_iterator &a, ptree::const_iterator &b)
   {
     return intComp( a->first, b->first );
   }
@@ -52,6 +54,7 @@ namespace property_tree
 
     return children;
   }
+
 
 }
 }

@@ -7,8 +7,9 @@
   * @date 07/29/16
   */
 
-#include "Media/MediaInterface.hpp"
 #include "Builder.hpp"
+#include "Media/MediaInterface.hpp"
+#include "Media/LinearAbsorber.hpp"
 
 /** @class MediaBuilder
   * @brief 

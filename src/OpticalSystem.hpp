@@ -9,6 +9,7 @@
 
 #include "OpticalElements/OpticalElementInterface.hpp"
 #include "Builders/OpticalElementBuilder.hpp"
+#include "GaussianBeam.hpp"
 
 #include<list>
 #include<utility>
