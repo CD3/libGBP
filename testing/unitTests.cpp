@@ -1088,6 +1088,7 @@ TEST_CASE("GBPCalc tests")
   configTree.put("media_stack.media.0.thickness", 1 );
   configTree.put("media_stack.media.0.absorption_coefficient", 2 );
 
+
   GBPCalc<t::centimeter> calculator;
   calculator.configure( configTree );
 
@@ -1117,7 +1118,43 @@ TEST_CASE("GBPCalc tests")
 
 
 
+  std::vector<quantity<t::centimeter>> z_vals;
+  calculator.sig_calculatedBeam.connect( [&z_vals](GaussianBeam beam){ z_vals.push_back( beam.getCurrentPosition()); } );
+
+
+
+  configTree.put("evaluation_points.z.min", 0);
+  configTree.put("evaluation_points.z.max", 100);
+  configTree.put("evaluation_points.z.n"  , 2);
+
+
+  calculator.configure( configTree );
+  calculator.calculate();
+
   
+  REQUIRE( z_vals.size()     == 2 );
+  CHECK( z_vals[0].value() == Approx(0) );
+  CHECK( z_vals[1].value() == Approx(100) );
+
+
+  configTree.erase("evaluation_points");
+  configTree.put("evaluation_points.z.0", 10);
+  configTree.put("evaluation_points.z.1", 11);
+  configTree.put("evaluation_points.z.2", 12);
+
+
+  calculator.configure( configTree );
+  calculator.calculate();
+
+
+  CHECK( z_vals.size()     == 5 );
+  CHECK( z_vals[0].value() == Approx(0) );
+  CHECK( z_vals[1].value() == Approx(100) );
+
+  CHECK( z_vals[2].value() == Approx(10) );
+  CHECK( z_vals[3].value() == Approx(11) );
+  CHECK( z_vals[4].value() == Approx(12) );
+
 
 
 }

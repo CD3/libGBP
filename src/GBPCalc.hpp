@@ -8,6 +8,7 @@
   */
 
 #include <boost/property_tree/ptree.hpp>
+#include <boost/signals2.hpp>
 #include "Builders/OpticalSystemBuilder.hpp"
 #include "Builders/MediaStackBuilder.hpp"
 #include "Builders/BeamBuilder.hpp"
@@ -20,20 +21,23 @@ template<typename LengthUnitType>
 class GBPCalc
 {
   protected:
-    shared_ptr<OpticalSystem<LengthUnitType> > optics;
-    shared_ptr<MediaStack<LengthUnitType> > media;
-    shared_ptr<GaussianBeam> beam;
+    std::shared_ptr<OpticalSystem<LengthUnitType> > optics;
+    std::shared_ptr<MediaStack<LengthUnitType> > media;
+    std::shared_ptr<GaussianBeam> beam;
+    std::vector< quantity<LengthUnitType> > evaluation_points;
 
 
   public:
 
     void configure( const ptree& configTree );
+    void clear();
 
     template<typename V>
     GaussianBeam getBeam( V z );
 
     void calculate();
 
+    boost::signals2::signal< void ( GaussianBeam ) > sig_calculatedBeam;       ///< signal that is emitted when a beam is calculated at a new z position
 };
 
 /** Returns a Gaussian beam that corresponds to a given position. The current position of the beam
@@ -57,6 +61,8 @@ GaussianBeam GBPCalc<T>::getBeam( V z )
 template<typename T>
 void GBPCalc<T>::configure( const ptree& configTree )
 {
+  this->clear();
+
   OpticalSystemBuilder<T> OSb;
   MediaStackBuilder<T> Mb;
   BeamBuilder Bb;
@@ -65,6 +71,50 @@ void GBPCalc<T>::configure( const ptree& configTree )
   this->beam.reset( Bb.build( configTree.get_child("beam") ) );
   this->media.reset( Mb.build( configTree.get_child("media_stack") ) );
   this->optics.reset( OSb.build( configTree.get_child("optical_system") ) );
+
+  auto evalPointsConfig = configTree.get_child_optional("evaluation_points.z");
+  if(evalPointsConfig)
+  {
+    auto min = evalPointsConfig.value().get_optional<double>("min");
+    auto max = evalPointsConfig.value().get_optional<double>("max");
+    auto n   = evalPointsConfig.value().get_optional<double>("n");
+
+    if(min && max && n)
+    {
+      double dz = (max.value() - min.value())/(n.value()-1);
+
+      for( size_t i = 0; i < n.value(); i++)
+        evaluation_points.push_back( (min.value() + i*dz)*T() );
+    }
+
+    for( auto iter: getSortedChildren( evalPointsConfig.value(), keyIntComp, isInt ) )
+    {
+      std::cout << "iter->first: " << iter->first << std::endl;
+      evaluation_points.push_back( iter->second.get<double>("")*T() );
+    }
+
+  }
+
+}
+
+template<typename T>
+void GBPCalc<T>::clear( )
+{
+  beam.reset();
+  optics.reset();
+  media.reset();
+  evaluation_points.clear();
+  
+}
+
+template<typename T>
+void GBPCalc<T>::calculate( )
+{
+  for( size_t i = 0; i < evaluation_points.size(); i++ )
+  {
+    auto z = evaluation_points[i];
+    sig_calculatedBeam( this->getBeam(z) );
+  }
 
 }
 
