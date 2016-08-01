@@ -72,7 +72,7 @@ void GBPCalc<T>::configure( const ptree& configTree )
   this->media.reset( Mb.build( configTree.get_child("media_stack") ) );
   this->optics.reset( OSb.build( configTree.get_child("optical_system") ) );
 
-  auto evalPointsConfig = configTree.get_child_optional("evaluation_points.z");
+  auto evalPointsConfig = configTree.get_child_optional("calculation.evaluation_points.z");
   if(evalPointsConfig)
   {
     auto min = evalPointsConfig.value().get_optional<double>("min");
@@ -89,7 +89,6 @@ void GBPCalc<T>::configure( const ptree& configTree )
 
     for( auto iter: getSortedChildren( evalPointsConfig.value(), keyIntComp, isInt ) )
     {
-      std::cout << "iter->first: " << iter->first << std::endl;
       evaluation_points.push_back( iter->second.get<double>("")*T() );
     }
 
