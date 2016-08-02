@@ -16,6 +16,8 @@ if(EIGEN3_FOUND)
 endif(EIGEN3_FOUND)
 add_definitions(-Wno-deprecated-declarations)
 
+find_package( Boost COMPONENTS program_options )
+
 find_package( Boost REQUIRED )
 if(Boost_FOUND)
   include_directories( ${Boost_INCLUDE_DIR} )
@@ -26,6 +28,7 @@ find_package(Doxygen)
 set( SOURCES )
 
 add_executable(gbp-cli applications/gbp-cli.cpp)
+target_link_libraries( gbp-cli ${Boost_PROGRAM_OPTIONS_LIBRARY} )
 target_compile_features( gbp-cli PRIVATE cxx_auto_type)
 
 if(DOXYGEN_FOUND)

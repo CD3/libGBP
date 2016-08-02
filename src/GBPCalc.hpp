@@ -69,8 +69,14 @@ void GBPCalc<T>::configure( const ptree& configTree )
 
 
   this->beam.reset( Bb.build( configTree.get_child("beam") ) );
-  this->media.reset( Mb.build( configTree.get_child("media_stack") ) );
-  this->optics.reset( OSb.build( configTree.get_child("optical_system") ) );
+  if(configTree.get_child_optional("media_stack"))
+    this->media.reset( Mb.build( configTree.get_child("media_stack") ) );
+  else
+    this->media.reset( Mb.create() );
+  if(configTree.get_child_optional("optical_system"))
+    this->optics.reset( OSb.build( configTree.get_child("optical_system") ) );
+  else
+    this->optics.reset( OSb.create() );
 
   auto evalPointsConfig = configTree.get_child_optional("calculation.evaluation_points.z");
   if(evalPointsConfig)

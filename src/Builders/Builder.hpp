@@ -42,7 +42,7 @@ class Builder
     virtual void addNameMapping( std::string from, std::string to );
     virtual void addType( std::string typeName, factoryFunc );
 
-    virtual BASE_CLASS* create( std::string typeName );
+    virtual BASE_CLASS* create( std::string typeName = "default" );
     virtual BASE_CLASS* build( const ptree& configTree );
 
     virtual void configure( BASE_CLASS* elem, const ptree& configTree ) = 0;

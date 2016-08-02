@@ -138,10 +138,10 @@ BeamBuilder::configure( GaussianBeam* beam, const ptree& configTree )
   SET( WaistDiameter, "waist.diameter", value*cm);
   SET( CurrentPosition, "current_position", value*cm);
 
-  auto knowns = configTree.get_child_optional("knowns");
-  if( knowns )
+  auto profiles = configTree.get_child_optional("profiles");
+  if( profiles )
   {
-    for( auto &iter: knowns.value() )
+    for( auto &iter: profiles.value() )
     {
       tree = &iter.second;
       SET( Position, "position", value*cm );
