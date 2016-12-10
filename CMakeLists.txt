@@ -1,5 +1,7 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.1)
 project(libgbp)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules")
 
 
 option( BUILD_SWIG_WRAPPERS    "Build interface wrapper libraries for other languages with SWIG" OFF )
@@ -18,7 +20,7 @@ add_definitions(-Wno-deprecated-declarations)
 
 find_package( Boost COMPONENTS program_options )
 
-find_package( Boost REQUIRED )
+find_package( Boost 1.56 REQUIRED )
 if(Boost_FOUND)
   include_directories( ${Boost_INCLUDE_DIR} )
 endif(Boost_FOUND)
