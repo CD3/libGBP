@@ -40,6 +40,7 @@ class GaussianBeam
     quantity<t::radian> WaistPhase; ///< phase of the electric field at beam waist position.
     quantity<t::watt> Power; ///< total power in the beam
     quantity<t::centimeter> CurrentPosition; ///< the current position in the beam.
+    quantity<t::dimensionless> BeamQualityFactor; ///< the M^2 factor for the beam.
 
     SpotSize SpotSizeMode = SpotSize::E2;
 
