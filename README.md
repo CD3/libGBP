@@ -4,10 +4,9 @@ A C++ library for doing Gaussian Beam Propagation calculations.
 
 ## Description
 
-This library implement the Gaussian beam propagation based on the paraxial wave equation
+This library implements Gaussian beam propagation calculations based on the paraxial wave equation
 (https://en.wikipedia.org/wiki/Gaussian_beam).
-
-This library started out as a fork of the code written by Aaron Hoffman for his senior thesis at
+It started out as a fork of the code written by Aaron Hoffman for his senior thesis at
 Fort Hays State University, but has since been redesigned (rewritten) based on what we learned during
 his project. It supports the transformation of a beam through multiple optical elements and power transmission
 through linear absorbers.
@@ -25,10 +24,10 @@ but does not allow the divergence to be set. Instead, the wavelength and beam
 waist radius must be set correctly to give a desired beam divergence. The reason for
 this is to keep the physics implementation as small and simple as possible.
 
-Support for flexible configuration is achieved through builder classes. So, for exmaple,
-the builder glass for beams allows the user to specify the wavelength and divergence of
+Support for flexible configuration is achieved through builder classes. So, for example,
+the builder class for beams allows the user to specify the wavelength and divergence of
 a beam and have the beam waist radius automatically calculated. These builder classes can
-implement whatever configuration interface is convienent (direct method calls, boost property trees, configuration
+implement whatever configuration interface is convenient (direct method calls, boost property trees, configuration
 files, etc). and isolate the physics implementation classes from bloat and complexity.
 
 The calculator classes are used to perform the basic calculations and combine the physics and builder classes.
