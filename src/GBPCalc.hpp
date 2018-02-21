@@ -37,7 +37,7 @@ class GBPCalc
 
     void calculate();
 
-    boost::signals2::signal< void ( GaussianBeam ) > sig_calculatedBeam;       ///< signal that is emitted when a beam is calculated at a new z position
+    boost::signals2::signal< void ( const GaussianBeam& ) > sig_calculatedBeam;       ///< signal that is emitted when a beam is calculated at a new z position
 };
 
 /** Returns a Gaussian beam that corresponds to a given position. The current position of the beam
@@ -78,7 +78,7 @@ void GBPCalc<T>::configure( const ptree& configTree )
   else
     this->optics.reset( OSb.create() );
 
-  auto evalPointsConfig = configTree.get_child_optional("calculation.evaluation_points.z");
+  auto evalPointsConfig = configTree.get_child_optional("evaluation_points.z");
   if(evalPointsConfig)
   {
     auto min = evalPointsConfig.value().get_optional<double>("min");
