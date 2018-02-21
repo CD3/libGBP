@@ -78,32 +78,28 @@ BeamBuilder::configure( GaussianBeam* beam )
   if(this->hasWaistPosition())
     beam->setWaistPosition( this->getWaistPosition<t::centimeter>().value() );
 
-  if(this->hasWavelength())
+  if(!this->hasWaistDiameter())
   {
-    if(this->hasDivergence())
+    if(this->hasWavelength() && this->hasDivergence())
     { // if the divergence is known, then we can determine the beam waist diameter
 
-      // \Theta   = \frac{2\lambda}{\pi \omega_0}
-      // \omega_0 = \frac{2\lambda}{\pi \Theta  }
-      quantity<t::centimeter> waistRadius = 2.*beam->getWavelength<t::centimeter>() / quantity_cast<double>( M_PI*this->getDivergence<t::radian>().value() );
-      beam->setWaistRadius( waistRadius );
+        // \Theta   = \frac{2\lambda}{\pi \omega_0}
+        // \omega_0 = \frac{2\lambda}{\pi \Theta  }
+        quantity<t::centimeter> waistRadius = 2.*beam->getWavelength<t::centimeter>() / quantity_cast<double>( M_PI*this->getDivergence<t::radian>().value() );
+        beam->setWaistRadius( waistRadius );
 
-      if(this->hasDiameter())
-      { // if the diameter at some location is known, then we can determine where the beam waist is
+        if(this->hasDiameter())
+        { // if the diameter at some location is known, then we can determine where the beam waist is
+          if(this->getDiameter<t::centimeter>() < 2.*waistRadius)
+            throw std::runtime_error("BEAM CONFIGURATION ERROR: configured beam diameter is smaller than the beam waist diameter based on wavelength and divergence.");
 
-        if(this->getDiameter<t::centimeter>() < 2.*waistRadius)
-          throw std::runtime_error("BEAM CONFIGURATION ERROR: configured beam diameter is smaller than the beam waist diameter.");
+          quantity<t::centimeter> pos = 0*cm;
+          if( this->hasPosition() )
+            pos = this->getPosition<t::centimeter>().value();
 
-
-        quantity<t::centimeter> pos = 0*cm;
-        if( this->hasPosition() )
-          pos = this->getPosition<t::centimeter>().value();
-
-        quantity<t::centimeter> waistPosition = pos - beam->getRayleighRange<t::centimeter>() * sqrt( pow<2>(this->getDiameter<t::centimeter>().value()/beam->getWaistDiameter<t::centimeter>()) - 1. );
-        beam->setWaistPosition( waistPosition );
-      }
-
-
+          quantity<t::centimeter> waistPosition = pos - beam->getRayleighRange<t::centimeter>() * sqrt( pow<2>(this->getDiameter<t::centimeter>().value()/beam->getWaistDiameter<t::centimeter>()) - 1. );
+          beam->setWaistPosition( waistPosition );
+        }
     }
   }
 

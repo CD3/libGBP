@@ -42,7 +42,11 @@ TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
 
       config.setWavelength( 532*nm );
       config.setPosition(0*cm).setDiameter(Diam).setDivergence(Div);
+      try {
       config.configure( beam );
+      } catch (const std::runtime_error& e) {
+        continue;
+      }
 
       out << beam.getDiameter<t::centimeter>() << " ";
       out << beam.getDivergence<t::milliradian>() << " ";
