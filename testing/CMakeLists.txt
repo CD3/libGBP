@@ -1,37 +1,34 @@
-cmake_minimum_required( VERSION 2.8 )
+cmake_minimum_required( VERSION 3.1 )
 
-include_directories( ${Boost_INCLUDE_DIRS} )
-include_directories( "${PROJECT_SOURCE_DIR}/src" )
- link_directories( "${PROJECT_SOURCE_DIR}/src/build" )
+OPTION( BUILD_UNIT_TESTS "Build unit tests for the library" ON )
 
+
+if(BUILD_UNIT_TESTS)
+
+set( binDir ${CMAKE_BINARY_DIR}/testBin )
+set( buildDir ${CMAKE_BINARY_DIR} )
+
+# Find all sources.
 file( GLOB_RECURSE unitTest_SOURCES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    *.cpp )
-message(STATUS "Detected Unit Test Sources:")
+      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+      "./CatchTests/*.cpp" )
+message(STATUS "Detected Catch-based Unit Test Sources:")
 foreach(testSrc ${unitTest_SOURCES})
-message(STATUS "  ${testSrc}" )
+  message(STATUS "  ${testSrc}" )
 endforeach()
 
-set( testDir ${CMAKE_BINARY_DIR}/testBin )
-foreach(testSrc ${unitTest_SOURCES})
-#Extract the filename without an extension (NAME_WE)
-get_filename_component(testName ${testSrc} NAME_WE)
+set( testName ${PROJECT_NAME}_CatchTests )
+add_executable(${testName} ${unitTest_SOURCES})
+target_compile_definitions( ${testName} PRIVATE -DTESTING )
+target_link_libraries(${testName} GBP)
+target_include_directories( ${testName} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include" )
+set_target_properties(${testName} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${binDir})
+set_target_properties(${testName} PROPERTIES CXX_STANDARD 11)
 
-#Add compile target
-add_executable(${testName} ${testSrc})
-
-#Link to Boost libraries AND your targets and dependencies
-target_link_libraries(${testName} ${EXTRA_LIBS} ${LIBS} )
-target_compile_features( ${testName} PRIVATE cxx_auto_type)
-
-#Move testing binaries into a testDIr directory
-set_target_properties(${testName} PROPERTIES 
-    RUNTIME_OUTPUT_DIRECTORY  ${testDir} )
-
-#Finally add it to test execution - 
-#Notice the WORKING_DIRECTORY and COMMAND
 add_test(NAME ${testName} 
-         WORKING_DIRECTORY ${testDir}
-         COMMAND ${testDir}/${testName} )
-endforeach(testSrc)
+         WORKING_DIRECTORY ${buildDir}
+         COMMAND ${binDir}/${testName} )
 
+file(COPY data DESTINATION ${buildDir} )
+
+endif()
