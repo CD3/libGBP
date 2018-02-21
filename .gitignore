@@ -2,3 +2,4 @@ build*/
 *.swp
 *.pyc
 .ycm_extra_conf.py
+src/version.h
