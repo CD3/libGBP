@@ -27,7 +27,7 @@ using std::complex;
 class GaussianBeam
 {
   public:
-    enum class SpotSize { E=1, E2=2 };
+    enum class SpotSize { E=1, E2=2 }; // D4s
 
   protected:
     // Note on case: we are capitalizing member names here so that
@@ -40,7 +40,7 @@ class GaussianBeam
     quantity<t::radian> WaistPhase; ///< phase of the electric field at beam waist position.
     quantity<t::watt> Power; ///< total power in the beam
     quantity<t::centimeter> CurrentPosition; ///< the current position in the beam.
-    quantity<t::dimensionless> BeamQualityFactor; ///< the M^2 factor for the beam.
+    quantity<t::dimensionless> BeamQualityFactor = 1; ///< the M^2 factor for the beam.
 
     SpotSize SpotSizeMode = SpotSize::E2;
 
@@ -62,7 +62,7 @@ class GaussianBeam
     inline name##Type get##name() const { return this->get##name<name##Unit>(); }
 
     /**
-     * setters and getters for SpotSizeMode (SSM) dependent attributes
+     * setters and getters for SpotSizeMode (SSM) dependent attributes (attributes that depend on which mode we are in)
      * the base setter and getter are only declared, not defined.
      */
 #define SSM_DEPENDENT_ATTRIBUTE_SETTER_AND_GETTER(name, U)\
@@ -88,6 +88,8 @@ class GaussianBeam
     quantity<T> get##name() const;\
     quantity<U> get##name() const {return this->get##name<U>(); }
 
+    /** defines base getter for a derived parameter that depends on the SpotSizeMode
+     */
 #define SSM_DEPENDENT_DERIVED_GETTER( name, U )\
     typedef U name##Unit;\
     typedef quantity<U> name##Type;\
@@ -125,6 +127,7 @@ class GaussianBeam
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(WaistPhase);
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Power);
     DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(CurrentPosition);
+    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(BeamQualityFactor);
 
     GaussianBeam::SpotSize setSpotSizeMode(SpotSize m) {this->SpotSizeMode = m;}
     GaussianBeam::SpotSize getSpotSizeMode() const {return this->SpotSizeMode;}
@@ -238,11 +241,21 @@ quantity<T> GaussianBeam::getRayleighRange() const
 template<typename T>
 quantity<T> GaussianBeam::getDivergence(SpotSize mode) const
 {
-  double scale = mode == SpotSize::E ? 1/sqrt(2.) : 1;
-  //                  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv this calculation gives the half-angle divergence
-  auto val = scale*2.*this->getWavelength<t::nanometer>()/( M_PI*this->getWaistRadius<t::nanometer>() )*t::radian();
+  //            vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv this calculation gives the half-angle divergence
+  auto val = 2.*this->getWavelength<t::nanometer>()/( M_PI*this->getWaistRadius<t::nanometer>() )*t::radian();
 
-  return quantity<T>(val);
+  double scale = 1;
+  // The divergence depends on what definition we use for beam
+  // diameter. The equation above is for 1/e^2 beam diameter.
+  // If we are using 1/e, we need to divide this divergence by 1/\sqrt(2)
+  if( mode == SpotSize::E )
+    scale = 1/sqrt(2.);
+
+  // A Gaussian beam has the smallest possible divergence.
+  // Non-Gaussian beams have a larger divergence
+  scale *= this->getBeamQualityFactor();
+
+  return quantity<T>(scale*val);
 }
 
 template<typename T,typename U>
@@ -258,7 +271,7 @@ quantity<T> GaussianBeam::getRadius(U z) const
 {
   quantity<T> dz = this->getRelativeWaistPosition<T>(z);
 
-  auto val = this->getWaistRadius<T>()*root<2>( 1 + pow<2>(dz/this->getRayleighRange<T>()) );
+  auto val = this->getWaistRadius<T>()*root<2>( 1 + this->getBeamQualityFactor()*pow<2>(dz/this->getRayleighRange<T>()) );
 
   return quantity<T>(val);
 }
