@@ -1119,8 +1119,7 @@ TEST_CASE("GBPCalc tests")
 
 
   std::vector<quantity<t::centimeter>> z_vals;
-  calculator.sig_calculatedBeam.connect( [&z_vals](GaussianBeam beam){ z_vals.push_back( beam.getCurrentPosition()); } );
-
+  calculator.sig_calculatedBeam.connect( [&z_vals]( const GaussianBeam& beam){ z_vals.push_back( beam.getCurrentPosition()); } ); 
 
 
   configTree.put("evaluation_points.z.min", 0);
