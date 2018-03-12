@@ -12,19 +12,16 @@ enable_testing()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(libGBP)
-if( STANDALONE )
-  include(function-git_version)
-  GIT_VERSION(${PROJECT_NAME})
-else()
-  set(${PROJECT_NAME}_VERSION "X.X-subproject")
-endif()
+include(macro-git_version)
+GIT_VERSION(libGBP)
+message( STATUS "libGBP version: ${libGBP_VERSION}")
+project(libGBP VERSION ${libGBP_VERSION})
 
 # need to run configure_file twice
-configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/src/version.h.in"
-                "${CMAKE_CURRENT_SOURCE_DIR}/src/version.h")
-configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/src/version.h"
-                "${CMAKE_CURRENT_SOURCE_DIR}/src/version.h")
+configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}_version.h.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME}_version.h")
+configure_file( "${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME}_version.h"
+                "${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME}_version.h")
 
 
 set( cxx_needed_features
@@ -32,17 +29,16 @@ set( cxx_needed_features
    )
 
 find_package( Boost REQUIRED )
-if( NOT TARGET Eigen3::eigen3 )
 find_package( Eigen3 REQUIRED )
 add_library( Eigen3::eigen3 INTERFACE IMPORTED )
 set_property( TARGET Eigen3::eigen3 PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
-endif( NOT TARGET Eigen3::eigen3 )
 
 string( REGEX REPLACE "^lib" "" LIB_NAME ${PROJECT_NAME} )
 add_library( ${LIB_NAME} INTERFACE )
+add_library( ${PROJECT_NAME}::${LIB_NAME} ALIAS ${LIB_NAME} )
 target_include_directories( ${LIB_NAME} INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/src>
+  $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/src>
+  $<BUILD_INTERFACE:${${PROJECT_NAME}_BINARY_DIR}>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 target_sources(
@@ -73,8 +69,18 @@ target_sources(
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Builders/MediaStackBuilder.hpp>
 )
 
-target_link_libraries(${LIB_NAME} INTERFACE Boost::boost)
-target_link_libraries(${LIB_NAME} INTERFACE Eigen3::eigen3)
+target_link_libraries(${LIB_NAME} INTERFACE Boost::boost Eigen3::eigen3)
+
+if( STANDALONE )
+add_subdirectory( testing )
+endif()
+
+
+
+
+
+
+
 
 install( TARGETS ${LIB_NAME} EXPORT ${PROJECT_NAME}Targets
   LIBRARY DESTINATION lib
@@ -84,12 +90,16 @@ install( TARGETS ${LIB_NAME} EXPORT ${PROJECT_NAME}Targets
 )
 install(DIRECTORY src/
   DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.hpp"
+  FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h"
+)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/
+  DESTINATION include/${PROJECT_NAME}
+  FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h"
 )
 install(EXPORT ${PROJECT_NAME}Targets
   FILE ${PROJECT_NAME}Targets.cmake
   NAMESPACE ${PROJECT_NAME}::
-  DESTINATION lib/cmake/${PROJECT_NAME}
+  DESTINATION cmake
 )
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
 "include(CMakeFindDependencyMacro)
@@ -108,9 +118,28 @@ write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Conf
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
-  DESTINATION lib/cmake/${PROJECT_NAME}
+  DESTINATION cmake
   )
 
-if( STANDALONE )
-add_subdirectory( testing )
+
+
+
+INCLUDE(InstallRequiredSystemLibraries)
+
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A C++ library doing calculations with Gaussian beams.")
+SET(CPACK_PACKAGE_VENDOR "C.D. Clark III")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
+if( ${PROJECT_NAME}_VERSION_MAJOR)
+  SET(CPACK_PACKAGE_VERSION_MAJOR ${${PROJECT_NAME}_VERSION_MAJOR})
 endif()
+if( ${PROJECT_NAME}_VERSION_MINOR)
+  SET(CPACK_PACKAGE_VERSION_MINOR ${${PROJECT_NAME}_VERSION_MINOR})
+endif()
+if( ${PROJECT_NAME}_VERSION_PATCH)
+  SET(CPACK_PACKAGE_VERSION_PATCH ${${PROJECT_NAME}_VERSION_PATCH})
+endif()
+INCLUDE(CPack)
+
+
+
