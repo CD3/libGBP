@@ -1,3 +1,4 @@
+
 # libGPB
 
 A C++ library for doing Gaussian Beam Propagation calculations.
@@ -10,6 +11,24 @@ It started out as a fork of the code written by Aaron Hoffman for his senior the
 Fort Hays State University, but has since been redesigned (rewritten) based on what we learned during
 his project. It supports the transformation of a beam through multiple optical elements and power transmission
 through linear absorbers.
+
+## Installing
+
+`libGBP` can be built an installed with `cmake`. Simply clone the git repository and run:
+
+```bash
+$ mkdir build
+$ cd build
+$ cmake ..
+$ cmake --build .
+$ cmake --build . --target install
+```
+
+The install directory can be set using the `CMAKE_INSTALL_PREFIX` variable
+
+```bash
+$ cmake -DCMAKE_INSTALL_PREFIX=/path/to/custom/install/directory ..
+```
 
 ## Design
 
