@@ -1,4 +1,3 @@
-
 # libGPB
 
 A C++ library for doing Gaussian Beam Propagation calculations.
