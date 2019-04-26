@@ -29,9 +29,7 @@ set( cxx_needed_features
    )
 
 find_package( Boost REQUIRED )
-find_package( Eigen3 REQUIRED )
-add_library( Eigen3::eigen3 INTERFACE IMPORTED )
-set_property( TARGET Eigen3::eigen3 PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
+find_package( Eigen3 3.0 REQUIRED)
 
 string( REGEX REPLACE "^lib" "" LIB_NAME ${PROJECT_NAME} )
 add_library( ${LIB_NAME} INTERFACE )
@@ -69,7 +67,7 @@ target_sources(
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Builders/MediaStackBuilder.hpp>
 )
 
-target_link_libraries(${LIB_NAME} INTERFACE Boost::boost Eigen3::eigen3)
+target_link_libraries(${LIB_NAME} INTERFACE Boost::boost Eigen3::Eigen)
 
 if( STANDALONE )
 add_subdirectory( testing )
