@@ -29,8 +29,6 @@ add_test(NAME ${testName}
          WORKING_DIRECTORY ${buildDir}
          COMMAND ${binDir}/${testName} )
 
-file(COPY data DESTINATION ${buildDir} )
-
 # Create a seprate executable for each "applet"
 file( GLOB_RECURSE applet_SOURCES
       RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
