@@ -228,6 +228,37 @@ SCENARIO( "GaussianBeam configuration", "[GaussianBeam]" )
 
   SECTION("1/e <-> 1/e2 Conversions")
   {
+    GaussianBeam beam;
+
+    beam.setOneOverE2WaistRadius( 10.*i::cm );
+    CHECK( beam.getOneOverE2WaistRadius().value()  == Approx(10) );
+    CHECK( beam.getOneOverE2WaistDiameter().value()== Approx(20) );
+    CHECK( beam.getOneOverEWaistRadius().value()   == Approx(10/sqrt(2)) );
+    CHECK( beam.getOneOverEWaistDiameter().value() == Approx(20/sqrt(2)) );
+
+    beam.setOneOverE2WaistDiameter( 10.*i::cm );
+    CHECK( beam.getOneOverE2WaistRadius().value()  == Approx( 5) );
+    CHECK( beam.getOneOverE2WaistDiameter().value()== Approx(10) );
+    CHECK( beam.getOneOverEWaistRadius().value()   == Approx( 5/sqrt(2)) );
+    CHECK( beam.getOneOverEWaistDiameter().value() == Approx(10/sqrt(2)) );
+
+    beam.setOneOverEWaistRadius( 10.*i::cm );
+    CHECK( beam.getOneOverE2WaistRadius().value()  == Approx(10*sqrt(2)) );
+    CHECK( beam.getOneOverE2WaistDiameter().value()== Approx(20*sqrt(2)) );
+    CHECK( beam.getOneOverEWaistRadius().value()   == Approx(10) );
+    CHECK( beam.getOneOverEWaistDiameter().value() == Approx(20) );
+
+    beam.setOneOverEWaistDiameter( 10.*i::cm );
+    CHECK( beam.getOneOverE2WaistRadius().value()  == Approx( 5*sqrt(2)) );
+    CHECK( beam.getOneOverE2WaistDiameter().value()== Approx(10*sqrt(2)) );
+    CHECK( beam.getOneOverEWaistRadius().value()   == Approx( 5) );
+    CHECK( beam.getOneOverEWaistDiameter().value() == Approx(10) );
+
+    double phi = beam.getOneOverE2HalfAngleDivergence().value();
+    CHECK( beam.getOneOverE2HalfAngleDivergence().value() == Approx(phi) );
+    CHECK( beam.getOneOverE2FullAngleDivergence().value() == Approx(2*phi) );
+    CHECK( beam.getOneOverEHalfAngleDivergence().value() == Approx(phi/sqrt(2)) );
+    CHECK( beam.getOneOverEFullAngleDivergence().value() == Approx(sqrt(2)*phi) );
   }
 }
 

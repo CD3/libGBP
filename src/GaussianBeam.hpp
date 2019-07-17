@@ -153,10 +153,13 @@ class GaussianBeam
     DERIVED_SETTER_AND_GETTER( OneOverEWaistRadius, OneOverE2WaistRadiusType );
     DERIVED_SETTER_AND_GETTER( OneOverEWaistDiameter, OneOverE2WaistRadiusType );
 
+    DERIVED_SETTER_AND_GETTER( OneOverE2HalfAngleDivergence, quantity<t::milliradian> );
+    DERIVED_SETTER_AND_GETTER( OneOverE2FullAngleDivergence, quantity<t::milliradian> );
+    DERIVED_SETTER_AND_GETTER( OneOverEHalfAngleDivergence, quantity<t::milliradian> );
+    DERIVED_SETTER_AND_GETTER( OneOverEFullAngleDivergence, quantity<t::milliradian> );
+
     DERIVED_GETTER( FreeSpaceWavelength, WavelengthType );
     DERIVED_GETTER( RayleighRange, OneOverE2WaistRadiusType );
-    DERIVED_GETTER( OneOverE2HalfAngleDivergence, quantity<t::milliradian> );
-    DERIVED_GETTER( OneOverE2FullAngleDivergence, quantity<t::milliradian> );
 
     Z_DEPENDENT_DERIVED_GETTER( OneOverE2Radius, OneOverE2WaistRadiusType );
     Z_DEPENDENT_DERIVED_GETTER( OneOverERadius, OneOverE2WaistRadiusType );
@@ -199,16 +202,26 @@ GaussianBeam::OneOverE2WaistDiameterType GaussianBeam::getOneOverE2WaistDiameter
   return 2.*this->getOneOverE2WaistRadius();
 }
 
+
+void GaussianBeam::setOneOverEWaistRadius(OneOverEWaistRadiusType v)
+{
+  this->setOneOverE2WaistRadius( sqrt2*OneOverE2WaistRadiusType(v));
+}
+
 GaussianBeam::OneOverEWaistRadiusType GaussianBeam::getOneOverEWaistRadius() const
 {
   return this->getOneOverE2WaistRadius()/sqrt2;
+}
+
+void GaussianBeam::setOneOverEWaistDiameter(OneOverEWaistDiameterType v)
+{
+  this->setOneOverE2WaistRadius( OneOverE2WaistRadiusType(v)/sqrt2 );
 }
 
 GaussianBeam::OneOverEWaistDiameterType GaussianBeam::getOneOverEWaistDiameter() const
 {
   return this->getOneOverE2WaistRadius()*sqrt2;
 }
-
 
 
 
@@ -238,6 +251,16 @@ GaussianBeam::OneOverE2HalfAngleDivergenceType GaussianBeam::getOneOverE2HalfAng
 GaussianBeam::OneOverE2FullAngleDivergenceType GaussianBeam::getOneOverE2FullAngleDivergence() const
 {
   return 2.*getOneOverE2HalfAngleDivergence();
+}
+
+GaussianBeam::OneOverEHalfAngleDivergenceType GaussianBeam::getOneOverEHalfAngleDivergence() const
+{
+  return getOneOverE2HalfAngleDivergence()*sqrt2;
+}
+
+GaussianBeam::OneOverE2FullAngleDivergenceType GaussianBeam::getOneOverEFullAngleDivergence() const
+{
+  return getOneOverE2FullAngleDivergence()*sqrt2;
 }
 
 GaussianBeam::OneOverE2RadiusType GaussianBeam::getOneOverE2Radius(CurrentPositionType z) const
