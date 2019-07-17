@@ -17,17 +17,19 @@
 
 using std::complex;
 
+static constexpr double sqrt2 = 1.41421356237;
 /** @class 
   * @brief A class implementing Gaussian Beam calculations.
   * @author C.D. Clark III
   *
   * NOTE: This class uses the same convension as "Lasers" by Minlonni and Eberly in which the beam radius/diameter is defined
   * by the 1/e^2 points. This differs from the ANSI standard.
+  *
+  * @todo: implement methods to get electric field and irradiance at given (r,z) coordinate.
   */
 class GaussianBeam
 {
   public:
-    enum class SpotSize { E=1, E2=2 }; // D4s
 
   protected:
     // Note on case: we are capitalizing member names here so that
@@ -36,13 +38,13 @@ class GaussianBeam
     quantity<t::hertz> Frequency; ///< frequency of the light
     quantity<t::nanometer> Wavelength; ///< wavelength of light in the propagation medium
     quantity<t::centimeter> WaistPosition; ///< position of the beam waist
-    quantity<t::centimeter> WaistRadius; ///< radius (1/e^2) of the beam waist
+    quantity<t::centimeter> OneOverE2WaistRadius; ///< radius (1/e^2) of the beam waist
     quantity<t::radian> WaistPhase; ///< phase of the electric field at beam waist position.
     quantity<t::watt> Power; ///< total power in the beam
-    quantity<t::centimeter> CurrentPosition; ///< the current position in the beam.
     quantity<t::dimensionless> BeamQualityFactor = 1; ///< the M^2 factor for the beam.
+    quantity<t::centimeter> CurrentPosition; ///< the current position in the beam.
 
-    SpotSize SpotSizeMode = SpotSize::E2;
+
 
   public:
 
@@ -52,67 +54,84 @@ class GaussianBeam
      * this macro creates one setter and two getters for a member quantity.
      * units are handled automatically by the compiler magic (requires C++11 compiler).
      */
-#define DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(name)\
-    typedef decltype(name) name##Type;\
-    typedef name##Type::unit_type name##Unit;\
-    template<typename T>\
-    void set##name(T v) { this->name = name##Type(v); }\
-    template<typename T>\
-    quantity<T> get##name() const       { return quantity<T>(this->name); }\
-    inline name##Type get##name() const { return this->get##name<name##Unit>(); }
+    // clang-format off
+#define ATTRIBUTE_SETTER_AND_GETTER(NAME)\
+    typedef decltype(NAME) NAME##Type;\
+    typedef NAME##Type::unit_type NAME##Unit;\
+    typedef NAME##Type::value_type NAME##Value;\
+    \
+    template<typename T> void set##NAME(T v) { this->NAME = NAME##Type(v); }\
+    template<typename T> quantity<T,NAME##Value> get##NAME() const       { return quantity<T,NAME##Value>(this->NAME); }\
+    inline NAME##Type get##NAME() const { return this->get##NAME<NAME##Unit>(); }
+
+    // clang-format on
 
     /**
-     * setters and getters for SpotSizeMode (SSM) dependent attributes (attributes that depend on which mode we are in)
-     * the base setter and getter are only declared, not defined.
+     * declares setters and getters for derived parameters (parameters that are not stored directly, but can be calculated from the state).
+     * user needs to define non-template versions, and then templated versions that do automatic unit conversion will be created.
+     * example:
+     *
+     * DERIVED_SETTER_AND_GETTER( OneOverE2WaistDiameter, quantity<t::cm> );
+     * OneOverE2WaistDiameterType getOneOverE2WaistDiameter() const {...}
+     * void setOneOverE2WaistDiameter( OneOverE2WaistDiameterType v ) {...}
      */
-#define SSM_DEPENDENT_ATTRIBUTE_SETTER_AND_GETTER(name, U)\
-    typedef U name##Unit;\
-    typedef quantity<U> name##Type;\
+    // clang-format off
+#define DERIVED_SETTER_AND_GETTER(NAME, Q)\
+    typedef Q NAME##Type;\
+    typedef NAME##Type::unit_type NAME##Unit;\
+    typedef NAME##Type::value_type NAME##Value;\
+    \
     template<typename T>\
-    void set##name(T v, SpotSize mode);\
+    void set##NAME(T v) {this->set##NAME( NAME##Type(v) );}\
     template<typename T>\
-    void set##name(T v){ this->set##name(v,this->SpotSizeMode);}\
-    template<typename T>\
-    quantity<T> get##name(SpotSize mode) const;\
-    template<typename T>\
-    quantity<T> get##name() const {return this->get##name<T>(this->SpotSizeMode);}\
-    inline name##Type get##name(SpotSize mode) const { return this->get##name<name##Unit>(mode); }\
-    inline name##Type get##name() const { return this->get##name<name##Unit>(); }
+    quantity<T,NAME##Value> get##NAME() const { return quantity<T,NAME##Value>(this->get##NAME()); }\
+    \
+    inline NAME##Type get##NAME() const; \
+    inline void  set##NAME(NAME##Type v); \
+    // clang-format on
 
-    /** defines base getter for a derived parameter (parameter that is calculated from member variables)
+    /** declares getter for a derived parameter (parameter that is calculated from member variables).
+     * user needs to define non-template version (see DERIVED_SETTER_AND_GETTER above).
      */
-#define DEFAULT_DERIVED_GETTER( name, U )\
-    typedef U name##Unit;\
-    typedef quantity<U> name##Type;\
+    // clang-format off
+#define DERIVED_GETTER( NAME, Q )\
+    typedef Q NAME##Type;\
+    typedef NAME##Type::unit_type NAME##Unit;\
+    typedef NAME##Type::value_type NAME##Value;\
+    \
     template<typename T>\
-    quantity<T> get##name() const;\
-    quantity<U> get##name() const {return this->get##name<U>(); }
-
-    /** defines base getter for a derived parameter that depends on the SpotSizeMode
-     */
-#define SSM_DEPENDENT_DERIVED_GETTER( name, U )\
-    typedef U name##Unit;\
-    typedef quantity<U> name##Type;\
-    template<typename T>\
-    quantity<T> get##name(SpotSize mode) const;\
-    template<typename T>\
-    quantity<T> get##name() const { return this->get##name<T>(this->SpotSizeMode); }\
-    quantity<U> get##name(SpotSize mode) const {return this->get##name<U>(); }\
-    quantity<U> get##name() const {return this->get##name<U>(); }
+    quantity<T,NAME##Value> get##NAME() const {return quantity<T,NAME##Value>(this->get##NAME()); } \
+    \
+    inline NAME##Type get##NAME() const; \
+    // clang-format on
 
     /**
-     * getter for derived parameters that depend on z
+     * getter for derived parameters that depend on z.
+     * user needs to define non-template version, and templated versions that handle unit conversions will be created.
+     *
+     * example:
+     *
+     * Z_DEPENDENT_DERIVED_GETTER( OneOverE2Diameter, quantity<t::cm> );
+     * OneOverE2DiameterType getOneOverE2Diameter(CurrentPositionType z) const {...}
+     *
+     *
      */
-#define Z_DEPENDENT_DERIVED_GETTER( name, U )\
-    typedef U name##Unit;\
-    typedef quantity<U> name##Type;\
+    // clang-format off
+#define Z_DEPENDENT_DERIVED_GETTER( NAME, Q )\
+    typedef Q NAME##Type;\
+    typedef NAME##Type::unit_type NAME##Unit;\
+    typedef NAME##Type::value_type NAME##Value;\
+    \
+    template<typename T>\
+    quantity<T,NAME##Value> get##NAME(   ) const {return this->get##NAME<T>( this->getCurrentPosition());}\
+    NAME##Type  get##NAME(   ) const {return this->get##NAME(    this->getCurrentPosition());}\
     template<typename T, typename V>\
-    quantity<T> get##name(V z) const;\
-    template<typename T>\
-    quantity<T> get##name(   ) const {return this->get##name<T>( this->getCurrentPosition() );}\
+    quantity<T,NAME##Value> get##NAME(V z) const {return quantity<T,NAME##Value>( this->get##NAME( CurrentPositionType(z) ));}\
     template<typename V>\
-    quantity<U> get##name(V z) const {return this->get##name<U>(z); }\
-    quantity<U> get##name(   ) const {return this->get##name<U>( ); }
+    NAME##Type  get##NAME(V z) const {return NAME##Type(  this->get##NAME( CurrentPositionType(z) ));}\
+    \
+    inline NAME##Type get##NAME(CurrentPositionType z) const;
+    // clang-format on
 
 
 
@@ -121,60 +140,40 @@ class GaussianBeam
 
     // DECLARATIONS
 
-    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Frequency);
-    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Wavelength);
-    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(WaistPosition);
-    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(WaistPhase);
-    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(Power);
-    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(CurrentPosition);
-    DEFAULT_ATTRIBUTE_SETTER_AND_GETTER(BeamQualityFactor);
+    ATTRIBUTE_SETTER_AND_GETTER(Frequency);
+    ATTRIBUTE_SETTER_AND_GETTER(Wavelength);
+    ATTRIBUTE_SETTER_AND_GETTER(WaistPosition);
+    ATTRIBUTE_SETTER_AND_GETTER(OneOverE2WaistRadius);
+    ATTRIBUTE_SETTER_AND_GETTER(WaistPhase);
+    ATTRIBUTE_SETTER_AND_GETTER(Power);
+    ATTRIBUTE_SETTER_AND_GETTER(CurrentPosition);
+    ATTRIBUTE_SETTER_AND_GETTER(BeamQualityFactor);
 
-    GaussianBeam::SpotSize setSpotSizeMode(SpotSize m) {this->SpotSizeMode = m;}
-    GaussianBeam::SpotSize getSpotSizeMode() const {return this->SpotSizeMode;}
+    DERIVED_SETTER_AND_GETTER( OneOverE2WaistDiameter, OneOverE2WaistRadiusType );
+    DERIVED_SETTER_AND_GETTER( OneOverEWaistRadius, OneOverE2WaistRadiusType );
+    DERIVED_SETTER_AND_GETTER( OneOverEWaistDiameter, OneOverE2WaistRadiusType );
 
-    SSM_DEPENDENT_ATTRIBUTE_SETTER_AND_GETTER( WaistRadius,   decltype(WaistRadius)::unit_type );
-    SSM_DEPENDENT_ATTRIBUTE_SETTER_AND_GETTER( WaistDiameter, WaistRadiusUnit );
+    DERIVED_GETTER( FreeSpaceWavelength, WavelengthType );
+    DERIVED_GETTER( RayleighRange, OneOverE2WaistRadiusType );
+    DERIVED_GETTER( OneOverE2HalfAngleDivergence, quantity<t::milliradian> );
+    DERIVED_GETTER( OneOverE2FullAngleDivergence, quantity<t::milliradian> );
 
-    DEFAULT_DERIVED_GETTER( FreeSpaceWavelength, WavelengthUnit );
-    DEFAULT_DERIVED_GETTER( RayleighRange, WaistRadiusUnit );
+    Z_DEPENDENT_DERIVED_GETTER( OneOverE2Radius, OneOverE2WaistRadiusType );
+    Z_DEPENDENT_DERIVED_GETTER( OneOverERadius, OneOverE2WaistRadiusType );
+    Z_DEPENDENT_DERIVED_GETTER( OneOverE2Diameter, OneOverE2WaistRadiusType );
+    Z_DEPENDENT_DERIVED_GETTER( OneOverEDiameter, OneOverE2WaistRadiusType );
+    Z_DEPENDENT_DERIVED_GETTER( RadiusOfCurvature, WaistPositionType );
+    Z_DEPENDENT_DERIVED_GETTER( RelativeWaistPosition, WaistPositionType );
+    Z_DEPENDENT_DERIVED_GETTER( OneOverE2Area, quantity<t::centimeter_squared> );
+    Z_DEPENDENT_DERIVED_GETTER( PeakIrradiance, quantity<t::watt_per_centimeter_squared> );
+    Z_DEPENDENT_DERIVED_GETTER( GouyPhase, quantity<t::radian> );
+    typedef quantity<WaistPositionUnit, complex<double> > ComplexLengthType;
+    Z_DEPENDENT_DERIVED_GETTER( ComplexBeamParameter, ComplexLengthType );
+    //typedef quantity<t::volt_per_meter, complex<double> > ComplexElectricFieldType;
+    //Z_DEPENDENT_DERIVED_GETTER( ElectricField, ComplexElectricFieldType );
 
-    SSM_DEPENDENT_DERIVED_GETTER( Divergence, t::milliradian );
-
-    Z_DEPENDENT_DERIVED_GETTER( Radius, WaistRadiusUnit );
-    Z_DEPENDENT_DERIVED_GETTER( Diameter, WaistRadiusUnit );
-    Z_DEPENDENT_DERIVED_GETTER( RadiusOfCurvature, WaistPositionUnit );
-    Z_DEPENDENT_DERIVED_GETTER( RelativeWaistPosition, WaistPositionUnit );
-    Z_DEPENDENT_DERIVED_GETTER( Area, t::centimeter_squared );
-    Z_DEPENDENT_DERIVED_GETTER( PeakIrradiance, t::watt_per_centimeter_squared );
-    Z_DEPENDENT_DERIVED_GETTER( GouyPhase, t::radian );
 
 
-
-    // SPECIAL CASES
-#define U t::centimeter
-    typedef U ComplexBeamParameterUnit;
-    typedef quantity<U,complex<double> > ComplexBeamParameterType;
-    template<typename T, typename V>
-    quantity<T,complex<double> >   getComplexBeamParameter(V z) const;
-    template<typename T>
-    quantity<T,complex<double> >   getComplexBeamParameter(   ) const { return this->getComplexBeamParameter<T>(this->getCurrentPosition());}
-    template<typename V>
-    quantity<U,complex<double> >   getComplexBeamParameter(V z) const {return this->getComplexBeamParameter<U>(z); }
-    quantity<U,complex<double> >   getComplexBeamParameter(   ) const {return this->getComplexBeamParameter<U>( ); }
-#undef U
-
-#define U t::volt_per_meter
-    typedef U ElectricFieldUnit;
-    typedef quantity<U,complex<double> > ElectricFieldType;
-    template<typename T, typename V, typename W>
-    quantity<T,complex<double> >   getElectricField(V z, W r) const;
-    template<typename T, typename W>
-    quantity<T,complex<double> >   getElectricField(W r) const { return this->getElectricField<T>(this->getCurrentPosition(),r);}
-    template<typename V, typename W>
-    quantity<U,complex<double> >   getElectricField(V z, W r) const {return this->getElectricField<U>(z,r); }
-    template<typename W>
-    quantity<U,complex<double> >   getElectricField(W r) const {return this->getElectricField<U>(r); }
-#undef U
 
 
 
@@ -187,161 +186,139 @@ class GaussianBeam
     void transform( OpticalElementInterface<T>* elem ) { this->transform( elem, this->getCurrentPosition() ); }
 };
 
-// the waist radius functions need to be handled the spot size mode
-template<typename T>
-void GaussianBeam::setWaistRadius(T v, SpotSize mode)
-{
-  double scale = mode == SpotSize::E ? 2 : 1;
-  this->WaistRadius = scale*WaistRadiusType(v);
-}
-
-template<typename T>
-quantity<T> GaussianBeam::getWaistRadius(SpotSize mode) const
-{
-  double scale = mode == SpotSize::E ? 1/sqrt(2.) : 1;
-  return scale*quantity<T>(this->WaistRadius);
-}
-
 // the theory of Gaussian beams is almost always formulated in terms of the beam radius,
 // but we almost always will want to work with the beam diameter. this setter allows
 // the user to set the beam diameter, even through we are storing the radius.
-template<typename T>
-void GaussianBeam::setWaistDiameter(T v, SpotSize mode)
+void GaussianBeam::setOneOverE2WaistDiameter(OneOverE2WaistDiameterType v)
 {
-  this->setWaistRadius( WaistRadiusType(v)/2., mode );
+  this->setOneOverE2WaistRadius( OneOverE2WaistRadiusType(v)/2.);
 }
 
-template<typename T>
-quantity<T> GaussianBeam::getWaistDiameter(SpotSize mode) const
+GaussianBeam::OneOverE2WaistDiameterType GaussianBeam::getOneOverE2WaistDiameter() const
 {
-  return 2.*this->getWaistRadius<T>(mode);
+  return 2.*this->getOneOverE2WaistRadius();
+}
+
+GaussianBeam::OneOverEWaistRadiusType GaussianBeam::getOneOverEWaistRadius() const
+{
+  return this->getOneOverE2WaistRadius()/sqrt2;
+}
+
+GaussianBeam::OneOverEWaistDiameterType GaussianBeam::getOneOverEWaistDiameter() const
+{
+  return this->getOneOverE2WaistRadius()*sqrt2;
 }
 
 
 
 
 
-
-template<typename T>
-quantity<T> GaussianBeam::getFreeSpaceWavelength() const
+GaussianBeam::FreeSpaceWavelengthType GaussianBeam::getFreeSpaceWavelength() const
 {
   auto val = constants::SpeedOfLight / this->getFrequency<t::hertz>();
 
-  return quantity<T>(val);
+  return FreeSpaceWavelengthType(val);
 }
 
-template<typename T>
-quantity<T> GaussianBeam::getRayleighRange() const
+GaussianBeam::RayleighRangeType GaussianBeam::getRayleighRange() const
 {
-  auto val = M_PI*pow<2>(this->getWaistRadius<T>())/this->getWavelength<T>();
+  auto val = M_PI*pow<2>(this->getOneOverE2WaistRadius())/this->getWavelength();
 
-  return quantity<T>(val);
+  return RayleighRangeType(val);
 }
 
-template<typename T>
-quantity<T> GaussianBeam::getDivergence(SpotSize mode) const
+GaussianBeam::OneOverE2HalfAngleDivergenceType GaussianBeam::getOneOverE2HalfAngleDivergence() const
 {
   //            vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv this calculation gives the half-angle divergence
-  auto val = 2.*this->getWavelength<t::nanometer>()/( M_PI*this->getWaistRadius<t::nanometer>() )*t::radian();
+  auto val = this->getWavelength<t::nanometer>()/( M_PI*this->getOneOverE2WaistRadius<t::nanometer>() )*t::radian();
 
-  double scale = 1;
-  // The divergence depends on what definition we use for beam
-  // diameter. The equation above is for 1/e^2 beam diameter.
-  // If we are using 1/e, we need to divide this divergence by 1/\sqrt(2)
-  if( mode == SpotSize::E )
-    scale = 1/sqrt(2.);
-
-  // A Gaussian beam has the smallest possible divergence.
-  // Non-Gaussian beams have a larger divergence
-  scale *= this->getBeamQualityFactor();
-
-  return quantity<T>(scale*val);
+  return OneOverE2HalfAngleDivergenceType(val);
 }
 
-template<typename T,typename U>
-quantity<T> GaussianBeam::getDiameter(U z) const
+GaussianBeam::OneOverE2FullAngleDivergenceType GaussianBeam::getOneOverE2FullAngleDivergence() const
 {
-  auto val = 2.*this->getRadius<T>(z);
-
-  return quantity<T>(val);
+  return 2.*getOneOverE2HalfAngleDivergence();
 }
 
-template<typename T,typename U>
-quantity<T> GaussianBeam::getRadius(U z) const
+GaussianBeam::OneOverE2RadiusType GaussianBeam::getOneOverE2Radius(CurrentPositionType z) const
 {
-  quantity<T> dz = this->getRelativeWaistPosition<T>(z);
+  auto dz = -getRelativeWaistPosition(z);
 
-  auto val = this->getWaistRadius<T>()*root<2>( 1 + this->getBeamQualityFactor()*pow<2>(dz/this->getRayleighRange<T>()) );
+  auto val = getOneOverE2WaistRadius()*root<2>( 1 + getBeamQualityFactor()*pow<2>(dz/getRayleighRange()) );
 
-  return quantity<T>(val);
+  return OneOverE2RadiusType(val);
 }
 
-template<typename T,typename U>
-quantity<T> GaussianBeam::getRadiusOfCurvature(U z) const
+GaussianBeam::OneOverE2DiameterType GaussianBeam::getOneOverE2Diameter(CurrentPositionType z) const
 {
-  quantity<T> dz = this->getRelativeWaistPosition<T>(z);
+  auto val = 2.*getOneOverE2Radius(z);
 
-  auto val = dz*( 1 + pow<2>(this->getRayleighRange<T>()/dz) );
-
-  return quantity<T>(val);
+  return OneOverE2DiameterType(val);
 }
 
-template<typename T,typename U>
-quantity<T,complex<double> > GaussianBeam::getComplexBeamParameter(U z) const
+GaussianBeam::OneOverERadiusType GaussianBeam::getOneOverERadius(CurrentPositionType z) const
 {
-  quantity<T> dz = this->getRelativeWaistPosition<T>(z);
+  return OneOverERadiusType( getOneOverE2Radius()/sqrt2 );
+}
+
+GaussianBeam::OneOverEDiameterType GaussianBeam::getOneOverEDiameter(CurrentPositionType z) const
+{
+  auto val = 2.*getOneOverE2Radius(z);
+
+  return OneOverE2DiameterType(val);
+}
+
+GaussianBeam::RadiusOfCurvatureType GaussianBeam::getRadiusOfCurvature(CurrentPositionType z) const
+{
+  auto dz = -getRelativeWaistPosition(z);
+
+  auto val = dz*( 1 + pow<2>(getRayleighRange()/dz) );
+
+  return RadiusOfCurvatureType(val);
+}
+
+GaussianBeam::ComplexBeamParameterType GaussianBeam::getComplexBeamParameter(CurrentPositionType z) const
+{
+  auto dz = -getRelativeWaistPosition<ComplexBeamParameterUnit>(z);
 
   double real,imag;
 
   real = dz.value();
-  imag = this->getRayleighRange<T>().value();
+  imag = getRayleighRange<ComplexBeamParameterUnit>().value();
 
-  auto val = complex<double>(real,imag)*T();
-
-  return quantity<T,complex<double> >(val);
+  return ComplexBeamParameterType::from_value(  complex<double>(real,imag)  );
 }
 
-template<typename T,typename U>
-quantity<T> GaussianBeam::getRelativeWaistPosition(U z) const
+GaussianBeam::RelativeWaistPositionType GaussianBeam::getRelativeWaistPosition(CurrentPositionType z) const
 {
-  quantity<T> val = quantity<T>(z) - this->getWaistPosition<T>();
+  auto val =  RelativeWaistPositionType(getWaistPosition()) - RelativeWaistPositionType(z);
 
   return val;
 }
 
-template<typename T,typename U>
-quantity<T> GaussianBeam::getArea(U z) const
+GaussianBeam::OneOverE2AreaType GaussianBeam::getOneOverE2Area(CurrentPositionType z) const
 {
-  auto val = M_PI*pow<2>(this->getRadius(z));
+  auto val = M_PI*pow<2>(getOneOverE2Radius(z));
 
-  return quantity<T>(val);
+  return OneOverE2AreaType(val);
 }
 
-template<typename T,typename U>
-quantity<T> GaussianBeam::getPeakIrradiance(U z) const
+GaussianBeam::PeakIrradianceType GaussianBeam::getPeakIrradiance(CurrentPositionType z) const
 {
-  // if SpotSizeMode == E, then peak irradiance is P/A
-  // if SpotSizeMode == E2, then peak irradiance is 2*P/A
-  // in other words, E = SpotSizeMode * P / A
-  auto val = static_cast<double>(SpotSizeMode)*this->getPower()/this->getArea(z);
+  // Note: peak irradiance is P/A **when using 1/e beam diameter**.
+  //       for 1/e2 diameter, it will be  2*P/A.
+  auto val = 2.*getPower()/getOneOverE2Area(z);
 
-  return quantity<T>(val);
+  return PeakIrradianceType(val);
 }
 
-template<typename T,typename U>
-quantity<T> GaussianBeam::getGouyPhase(U z) const
+GaussianBeam::GouyPhaseType GaussianBeam::getGouyPhase(CurrentPositionType z) const
 {
-  auto val = atan( quantity<t::centimeter>(z) / this->getRayleighRange<t::centimeter>() );
+  auto val = atan( z / getRayleighRange<CurrentPositionUnit>() );
 
-  return quantity<T>(val);
+  return GouyPhaseType(val);
 }
 
-
-template<typename T, typename V, typename W>
-quantity<T,complex<double> >   GaussianBeam::getElectricField(V z, W r) const
-{
-  // @todo implement
-}
 
 
 template<typename T, typename U>
@@ -377,9 +354,9 @@ void GaussianBeam::transform( OpticalElementInterface<T>* elem, U z )
   this->setPower(      this->getPower()     *(1.-elem->getPowerLoss()) );
 
   this->setWaistPosition( quantity<T>(z) - qf.real()*T() );
-  //                    vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  this calculation will give us the 1/e^2 beam radius
-  this->setWaistRadius( sqrt(qf.imag()*this->getWavelength<T>().value()/M_PI)*T(), SpotSize::E2 );
+  //                             vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  this calculation will give us the 1/e^2 beam radius
+  this->setOneOverE2WaistRadius( sqrt(qf.imag()*this->getWavelength<T>().value()/M_PI)*T() );
 
 }
 
-#endif // include protector
+#endif

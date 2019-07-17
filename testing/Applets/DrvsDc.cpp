@@ -48,11 +48,11 @@ TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
         continue;
       }
 
-      out << beam.getDiameter<t::centimeter>() << " ";
-      out << beam.getDivergence<t::milliradian>() << " ";
+      out << beam.getOneOverE2Diameter<t::centimeter>() << " ";
+      out << beam.getOneOverE2HalfAngleDivergence<t::milliradian>() << " ";
       beam.transform( &cornea, 0*cm );
-      out << beam.getDiameter<t::centimeter>(z) << " ";
-      out << beam.getDivergence<t::milliradian>() << " ";
+      out << beam.getOneOverE2Diameter<t::centimeter>(z) << " ";
+      out << beam.getOneOverE2HalfAngleDivergence<t::milliradian>() << " ";
       out<<"\n";
 
     }
@@ -120,7 +120,7 @@ TEST_CASE( "BeamBuilder Tests" )
     config.configure(beam);
 
     CHECK( beam.getWavelength().value() == Approx(532) );
-    CHECK( beam.getWaistDiameter<t::millimeter>().value() == Approx( 2*0.033868 ) );
+    CHECK( beam.getOneOverE2WaistDiameter<t::millimeter>().value() == Approx( 2*0.033868 ) );
     CHECK( beam.getRayleighRange<t::millimeter>().value() == Approx( 6.77357) );
     CHECK( beam.getRadiusOfCurvature<t::millimeter>(0*mm).value() == Approx( 250.09 ) );
     CHECK( beam.getWaistPosition<t::millimeter>().value() == Approx( -249.908 ) );
@@ -138,7 +138,7 @@ TEST_CASE( "BeamBuilder Tests" )
     config.configure(beam);
 
     CHECK( beam.getWavelength().value() == Approx(532) );
-    CHECK( beam.getWaistDiameter<t::millimeter>().value() == Approx( 2*0.033868 ) );
+    CHECK( beam.getOneOverE2WaistDiameter<t::millimeter>().value() == Approx( 2*0.033868 ) );
     CHECK( beam.getRayleighRange<t::millimeter>().value() == Approx( 6.77357) );
     CHECK( beam.getRadiusOfCurvature<t::millimeter>(1200*mm).value() == Approx( 250.09 ) );
     CHECK( beam.getWaistPosition<t::millimeter>().value() == Approx( 1200-249.908 ) );

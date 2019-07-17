@@ -73,7 +73,7 @@ BeamBuilder::configure( GaussianBeam* beam )
     beam->setPower( this->getPower<t::watt>().value() );
 
   if(this->hasWaistDiameter())
-    beam->setWaistDiameter( this->getWaistDiameter<t::centimeter>().value() );
+    beam->setOneOverE2WaistDiameter( this->getWaistDiameter<t::centimeter>().value() );
 
   if(this->hasWaistPosition())
     beam->setWaistPosition( this->getWaistPosition<t::centimeter>().value() );
@@ -86,7 +86,7 @@ BeamBuilder::configure( GaussianBeam* beam )
         // \Theta   = \frac{2\lambda}{\pi \omega_0}
         // \omega_0 = \frac{2\lambda}{\pi \Theta  }
         quantity<t::centimeter> waistRadius = 2.*beam->getWavelength<t::centimeter>() / quantity_cast<double>( M_PI*this->getDivergence<t::radian>().value() );
-        beam->setWaistRadius( waistRadius );
+        beam->setOneOverE2WaistRadius( waistRadius );
 
         if(this->hasDiameter())
         { // if the diameter at some location is known, then we can determine where the beam waist is
@@ -97,7 +97,7 @@ BeamBuilder::configure( GaussianBeam* beam )
           if( this->hasPosition() )
             pos = this->getPosition<t::centimeter>().value();
 
-          quantity<t::centimeter> waistPosition = pos - beam->getRayleighRange<t::centimeter>() * sqrt( pow<2>(this->getDiameter<t::centimeter>().value()/beam->getWaistDiameter<t::centimeter>()) - 1. );
+          quantity<t::centimeter> waistPosition = pos - beam->getRayleighRange<t::centimeter>() * sqrt( pow<2>(this->getDiameter<t::centimeter>().value()/beam->getOneOverE2WaistDiameter<t::centimeter>()) - 1. );
           beam->setWaistPosition( waistPosition );
         }
     }
