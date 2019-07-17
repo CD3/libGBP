@@ -174,6 +174,7 @@ class GaussianBeam
   Z_DEPENDENT_DERIVED_GETTER(RadiusOfCurvature, WaistPositionType);
   Z_DEPENDENT_DERIVED_GETTER(RelativeWaistPosition, WaistPositionType);
   Z_DEPENDENT_DERIVED_GETTER(OneOverE2Area, quantity<t::centimeter_squared>);
+  Z_DEPENDENT_DERIVED_GETTER(OneOverEArea, quantity<t::centimeter_squared>);
   Z_DEPENDENT_DERIVED_GETTER(PeakIrradiance,
                              quantity<t::watt_per_centimeter_squared>);
   Z_DEPENDENT_DERIVED_GETTER(GouyPhase, quantity<t::radian>);
@@ -252,7 +253,7 @@ GaussianBeam::getOneOverE2HalfAngleDivergence() const
 {
   //            vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   //            this calculation gives the half-angle divergence
-  auto val = this->getWavelength<t::nanometer>() /
+  auto val = getBeamQualityFactor() * getWavelength<t::nanometer>() /
              (M_PI * this->getOneOverE2WaistRadius<t::nanometer>()) *
              t::radian();
 
@@ -277,6 +278,10 @@ GaussianBeam::getOneOverEFullAngleDivergence() const
   return getOneOverE2FullAngleDivergence() * sqrt2;
 }
 
+/**
+ * Computes the beam radius at range, accounting for the
+ * beam quality factor.
+ */
 GaussianBeam::OneOverE2RadiusType GaussianBeam::getOneOverE2Radius(
     CurrentPositionType z) const
 {
@@ -284,7 +289,7 @@ GaussianBeam::OneOverE2RadiusType GaussianBeam::getOneOverE2Radius(
 
   auto val =
       getOneOverE2WaistRadius() *
-      root<2>(1 + getBeamQualityFactor() * pow<2>(dz / getRayleighRange()));
+      root<2>(1 + pow<2>(getBeamQualityFactor() * dz / getRayleighRange()));
 
   return OneOverE2RadiusType(val);
 }
@@ -292,23 +297,19 @@ GaussianBeam::OneOverE2RadiusType GaussianBeam::getOneOverE2Radius(
 GaussianBeam::OneOverE2DiameterType GaussianBeam::getOneOverE2Diameter(
     CurrentPositionType z) const
 {
-  auto val = 2. * getOneOverE2Radius(z);
-
-  return OneOverE2DiameterType(val);
+  return OneOverE2DiameterType(2. * getOneOverE2Radius(z));
 }
 
 GaussianBeam::OneOverERadiusType GaussianBeam::getOneOverERadius(
     CurrentPositionType z) const
 {
-  return OneOverERadiusType(getOneOverE2Radius() / sqrt2);
+  return OneOverERadiusType(getOneOverE2Radius(z) / sqrt2);
 }
 
 GaussianBeam::OneOverEDiameterType GaussianBeam::getOneOverEDiameter(
     CurrentPositionType z) const
 {
-  auto val = 2. * getOneOverE2Radius(z);
-
-  return OneOverE2DiameterType(val);
+  return OneOverEDiameterType( 2. * getOneOverERadius(z));
 }
 
 GaussianBeam::RadiusOfCurvatureType GaussianBeam::getRadiusOfCurvature(
@@ -351,12 +352,20 @@ GaussianBeam::OneOverE2AreaType GaussianBeam::getOneOverE2Area(
   return OneOverE2AreaType(val);
 }
 
+GaussianBeam::OneOverEAreaType GaussianBeam::getOneOverEArea(
+    CurrentPositionType z) const
+{
+  auto val = M_PI * pow<2>(getOneOverERadius(z));
+
+  return OneOverEAreaType(val);
+}
+
 GaussianBeam::PeakIrradianceType GaussianBeam::getPeakIrradiance(
     CurrentPositionType z) const
 {
   // Note: peak irradiance is P/A **when using 1/e beam diameter**.
   //       for 1/e2 diameter, it will be  2*P/A.
-  auto val = 2. * getPower() / getOneOverE2Area(z);
+  auto val = getPower() / getOneOverEArea(z);
 
   return PeakIrradianceType(val);
 }

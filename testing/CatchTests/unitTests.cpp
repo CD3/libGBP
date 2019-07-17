@@ -107,12 +107,20 @@ SCENARIO( "GaussianBeam configuration", "[GaussianBeam]" )
           THEN("the beam divergence is 33.18 mrad") {
             CHECK( beam.getOneOverE2FullAngleDivergence<t::milliradian>( ).value() == Approx(33.86818) );
           }
-          THEN("the beam diameter at 18 m is 270.94538 mm") {
+          THEN("the 1/e^2 beam diameter at 18 m is 270.94538 mm") {
             CHECK( beam.getOneOverE2Diameter<t::millimeter>( 18*m ).value() == Approx(270.94538) );
+          }
+          THEN("the 1/e^2 beam radius at 18 m is 270.94538/2 mm") {
             CHECK( beam.getOneOverE2Radius<t::millimeter>( 18*m ).value() == Approx(270.94538/2) );
           }
-          THEN("the beam area at 18 m is 576.571779025 cm^2") {
+          THEN("the 1/e beam radius at 18 m is 270.94538/2/sqrt(2) mm") {
+            CHECK( beam.getOneOverERadius<t::millimeter>( 18*m ).value() == Approx(270.94538/2/sqrt(2)) );
+          }
+          THEN("the 1/e^2 beam area at 18 m is 576.571779025 cm^2") {
             CHECK( beam.getOneOverE2Area<t::centimeter_squared>( 18*m ).value() == Approx(576.571779025) );
+          }
+          THEN("the 1/e beam area at 18 m is 576.571779025/2 cm^2") {
+            CHECK( beam.getOneOverEArea<t::centimeter_squared>( 18*m ).value() == Approx(576.571779025/2) );
           }
         }
       }
