@@ -42,10 +42,12 @@ class GaussianBeam
   quantity<t::centimeter>
       OneOverE2WaistRadius;  ///< radius (1/e^2) of the beam waist
   quantity<t::radian>
-                             WaistPhase;  ///< phase of the electric field at beam waist position.
-  quantity<t::watt>          Power;  ///< total power in the beam
-  quantity<t::dimensionless> BeamQualityFactor =
-      1;  ///< the M^2 factor for the beam.
+                      WaistPhase;  ///< phase of the electric field at beam waist position.
+  quantity<t::watt>   Power;  ///< total power in the beam
+  quantity<t::radian> OneOverE2HalfAngleDivergence;  ///< beam divergence
+  bool                DiffractionLimitedDivergence =
+      true;  ///< flag indicating if the divergence should be compured from the
+             ///< defraction limit or not
   quantity<t::centimeter>
       CurrentPosition;  ///< the current position in the beam.
 
@@ -149,7 +151,6 @@ class GaussianBeam
   ATTRIBUTE_SETTER_AND_GETTER(WaistPhase);
   ATTRIBUTE_SETTER_AND_GETTER(Power);
   ATTRIBUTE_SETTER_AND_GETTER(CurrentPosition);
-  ATTRIBUTE_SETTER_AND_GETTER(BeamQualityFactor);
 
   DERIVED_SETTER_AND_GETTER(OneOverE2WaistDiameter, OneOverE2WaistRadiusType);
   DERIVED_SETTER_AND_GETTER(OneOverEWaistRadius, OneOverE2WaistRadiusType);
@@ -164,8 +165,14 @@ class GaussianBeam
   DERIVED_SETTER_AND_GETTER(OneOverEFullAngleDivergence,
                             quantity<t::milliradian>);
 
+  DERIVED_GETTER(BeamQualityFactor, quantity<t::dimensionless>);
+  DERIVED_GETTER(OneOverE2HalfAngleDiffractionLimitedDivergence,
+                 quantity<t::milliradian>);
+
   DERIVED_GETTER(FreeSpaceWavelength, WavelengthType);
   DERIVED_GETTER(RayleighRange, OneOverE2WaistRadiusType);
+  DERIVED_GETTER(DiffractionLimitedOneOverE2HalfAngleDivergence,
+                 quantity<t::milliradian>);
 
   Z_DEPENDENT_DERIVED_GETTER(OneOverE2Radius, OneOverE2WaistRadiusType);
   Z_DEPENDENT_DERIVED_GETTER(OneOverERadius, OneOverE2WaistRadiusType);
@@ -183,6 +190,9 @@ class GaussianBeam
   // typedef quantity<t::volt_per_meter, complex<double> >
   // ComplexElectricFieldType; Z_DEPENDENT_DERIVED_GETTER( ElectricField,
   // ComplexElectricFieldType );
+
+  void setDiffractionLimitedDivergence(bool val);
+  bool getDiffractionLimitedDivergence() const;
 
   // OTHER METHODS
 
@@ -232,6 +242,16 @@ GaussianBeam::OneOverEWaistDiameterType GaussianBeam::getOneOverEWaistDiameter()
   return this->getOneOverE2WaistRadius() * sqrt2;
 }
 
+void GaussianBeam::setDiffractionLimitedDivergence(bool val)
+{
+  this->DiffractionLimitedDivergence = val;
+}
+
+bool GaussianBeam::getDiffractionLimitedDivergence() const
+{
+  return this->DiffractionLimitedDivergence;
+}
+
 GaussianBeam::FreeSpaceWavelengthType GaussianBeam::getFreeSpaceWavelength()
     const
 {
@@ -242,22 +262,51 @@ GaussianBeam::FreeSpaceWavelengthType GaussianBeam::getFreeSpaceWavelength()
 
 GaussianBeam::RayleighRangeType GaussianBeam::getRayleighRange() const
 {
-  auto val =
-      M_PI * pow<2>(this->getOneOverE2WaistRadius()) / this->getWavelength();
-
+  auto val = this->getOneOverE2WaistRadius() /
+             this->getOneOverE2HalfAngleDivergence<t::radian>().value();
   return RayleighRangeType(val);
+}
+
+GaussianBeam::BeamQualityFactorType GaussianBeam::getBeamQualityFactor() const
+{
+  if (this->DiffractionLimitedDivergence) {
+    return BeamQualityFactorType::from_value(1);
+  }
+
+  return BeamQualityFactorType(
+      OneOverE2HalfAngleDivergence /
+      getOneOverE2HalfAngleDiffractionLimitedDivergence());
+}
+
+GaussianBeam::OneOverE2HalfAngleDivergenceType
+GaussianBeam::getOneOverE2HalfAngleDiffractionLimitedDivergence() const
+{
+  auto val = getWavelength<t::nanometer>() /
+             (M_PI * this->getOneOverE2WaistRadius<t::nanometer>()) *
+             t::radian();
+
+  return OneOverE2HalfAngleDiffractionLimitedDivergenceType(val);
+}
+
+void GaussianBeam::setOneOverE2HalfAngleDivergence(
+    OneOverE2HalfAngleDivergenceType val)
+{
+  this->OneOverE2HalfAngleDivergence = quantity<t::radian>(val);
+  this->DiffractionLimitedDivergence = false;
 }
 
 GaussianBeam::OneOverE2HalfAngleDivergenceType
 GaussianBeam::getOneOverE2HalfAngleDivergence() const
 {
-  //            vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-  //            this calculation gives the half-angle divergence
-  auto val = getBeamQualityFactor() * getWavelength<t::nanometer>() /
-             (M_PI * this->getOneOverE2WaistRadius<t::nanometer>()) *
-             t::radian();
+  if (this->DiffractionLimitedDivergence)
+    return this->getOneOverE2HalfAngleDiffractionLimitedDivergence();
+  return OneOverE2HalfAngleDivergenceType(this->OneOverE2HalfAngleDivergence);
+}
 
-  return OneOverE2HalfAngleDivergenceType(val);
+void GaussianBeam::setOneOverE2FullAngleDivergence(
+    OneOverE2FullAngleDivergenceType val)
+{
+  this->setOneOverE2HalfAngleDivergence(val / 2.);
 }
 
 GaussianBeam::OneOverE2FullAngleDivergenceType
@@ -266,22 +315,30 @@ GaussianBeam::getOneOverE2FullAngleDivergence() const
   return 2. * getOneOverE2HalfAngleDivergence();
 }
 
+void GaussianBeam::setOneOverEHalfAngleDivergence(
+    OneOverEHalfAngleDivergenceType val)
+{
+  this->setOneOverE2HalfAngleDivergence(val * sqrt2);
+}
+
 GaussianBeam::OneOverEHalfAngleDivergenceType
 GaussianBeam::getOneOverEHalfAngleDivergence() const
 {
-  return getOneOverE2HalfAngleDivergence() * sqrt2;
+  return getOneOverE2HalfAngleDivergence() / sqrt2;
 }
 
-GaussianBeam::OneOverE2FullAngleDivergenceType
+void GaussianBeam::setOneOverEFullAngleDivergence(
+    OneOverEFullAngleDivergenceType val)
+{
+  this->setOneOverEHalfAngleDivergence(val / 2.);
+}
+
+GaussianBeam::OneOverEFullAngleDivergenceType
 GaussianBeam::getOneOverEFullAngleDivergence() const
 {
-  return getOneOverE2FullAngleDivergence() * sqrt2;
+  return getOneOverEHalfAngleDivergence() * 2.;
 }
 
-/**
- * Computes the beam radius at range, accounting for the
- * beam quality factor.
- */
 GaussianBeam::OneOverE2RadiusType GaussianBeam::getOneOverE2Radius(
     CurrentPositionType z) const
 {
@@ -289,7 +346,9 @@ GaussianBeam::OneOverE2RadiusType GaussianBeam::getOneOverE2Radius(
 
   auto val =
       getOneOverE2WaistRadius() *
-      root<2>(1 + pow<2>(getBeamQualityFactor() * dz / getRayleighRange()));
+      root<2>(1 +
+              pow<2>(getOneOverE2HalfAngleDivergence<t::radian>().value() *
+                     OneOverE2WaistRadiusType(dz) / getOneOverE2WaistRadius()));
 
   return OneOverE2RadiusType(val);
 }
@@ -309,7 +368,7 @@ GaussianBeam::OneOverERadiusType GaussianBeam::getOneOverERadius(
 GaussianBeam::OneOverEDiameterType GaussianBeam::getOneOverEDiameter(
     CurrentPositionType z) const
 {
-  return OneOverEDiameterType( 2. * getOneOverERadius(z));
+  return OneOverEDiameterType(2. * getOneOverERadius(z));
 }
 
 GaussianBeam::RadiusOfCurvatureType GaussianBeam::getRadiusOfCurvature(

@@ -237,6 +237,7 @@ SCENARIO( "GaussianBeam configuration", "[GaussianBeam]" )
   SECTION("1/e <-> 1/e2 Conversions")
   {
     GaussianBeam beam;
+    beam.setWavelength( 500*i::nm );
 
     beam.setOneOverE2WaistRadius( 10.*i::cm );
     CHECK( beam.getOneOverE2WaistRadius().value()  == Approx(10) );
@@ -267,6 +268,81 @@ SCENARIO( "GaussianBeam configuration", "[GaussianBeam]" )
     CHECK( beam.getOneOverE2FullAngleDivergence().value() == Approx(2*phi) );
     CHECK( beam.getOneOverEHalfAngleDivergence().value() == Approx(phi/sqrt(2)) );
     CHECK( beam.getOneOverEFullAngleDivergence().value() == Approx(sqrt(2)*phi) );
+
+    beam.setOneOverE2HalfAngleDivergence(0.02*i::rad);
+    CHECK( beam.getOneOverE2HalfAngleDivergence().value() == Approx(20) );
+    CHECK( beam.getOneOverE2HalfAngleDivergence<t::rad>().value() == Approx(0.02) );
+    CHECK( beam.getOneOverEHalfAngleDivergence().value() == Approx(20/sqrt(2)) );
+    CHECK( beam.getOneOverEHalfAngleDivergence<t::rad>().value() == Approx(20./sqrt(2)/1000) );
+    CHECK( beam.getOneOverE2FullAngleDivergence().value() == Approx(2*20) );
+    CHECK( beam.getOneOverE2FullAngleDivergence<t::rad>().value() == Approx(2*20./1000) );
+    CHECK( beam.getOneOverEFullAngleDivergence().value() == Approx(2*20/sqrt(2)) );
+    CHECK( beam.getOneOverEFullAngleDivergence<t::rad>().value() == Approx(2*20./sqrt(2)/1000) );
+
+    beam.setOneOverEHalfAngleDivergence(0.1*i::rad);
+    CHECK( beam.getOneOverE2HalfAngleDivergence().value() == Approx(100*sqrt(2)) );
+    CHECK( beam.getOneOverE2HalfAngleDivergence<t::rad>().value() == Approx(0.1*sqrt(2)) );
+    CHECK( beam.getOneOverEHalfAngleDivergence().value() == Approx(100) );
+    CHECK( beam.getOneOverEHalfAngleDivergence<t::rad>().value() == Approx(0.1) );
+    CHECK( beam.getOneOverE2FullAngleDivergence().value() == Approx(2*100.*sqrt(2)) );
+    CHECK( beam.getOneOverE2FullAngleDivergence<t::rad>().value() == Approx(2*100.*sqrt(2)/1000) );
+    CHECK( beam.getOneOverEFullAngleDivergence().value() == Approx(2*100.) );
+    CHECK( beam.getOneOverEFullAngleDivergence<t::rad>().value() == Approx(2*100./1000) );
+
+    beam.setOneOverE2FullAngleDivergence(0.1*i::rad);
+    CHECK( beam.getOneOverE2HalfAngleDivergence().value() == Approx(50) );
+    CHECK( beam.getOneOverE2HalfAngleDivergence<t::rad>().value() == Approx(0.05) );
+    CHECK( beam.getOneOverEHalfAngleDivergence().value() == Approx(50/sqrt(2)) );
+    CHECK( beam.getOneOverEHalfAngleDivergence<t::rad>().value() == Approx(0.05/sqrt(2)) );
+    CHECK( beam.getOneOverE2FullAngleDivergence().value() == Approx(100) );
+    CHECK( beam.getOneOverE2FullAngleDivergence<t::rad>().value() == Approx(100./1000) );
+    CHECK( beam.getOneOverEFullAngleDivergence().value() == Approx(100./sqrt(2)) );
+    CHECK( beam.getOneOverEFullAngleDivergence<t::rad>().value() == Approx(100./sqrt(2)/1000) );
+
+    beam.setOneOverEFullAngleDivergence(0.05*i::rad);
+    CHECK( beam.getOneOverE2HalfAngleDivergence().value() == Approx(sqrt(2)*50/2) );
+    CHECK( beam.getOneOverE2HalfAngleDivergence<t::rad>().value() == Approx(sqrt(2)*0.05/2) );
+    CHECK( beam.getOneOverEHalfAngleDivergence().value() == Approx(50/2) );
+    CHECK( beam.getOneOverEHalfAngleDivergence<t::rad>().value() == Approx(0.05/2) );
+    CHECK( beam.getOneOverE2FullAngleDivergence().value() == Approx(sqrt(2)*50) );
+    CHECK( beam.getOneOverE2FullAngleDivergence<t::rad>().value() == Approx(sqrt(2)*50./1000) );
+    CHECK( beam.getOneOverEFullAngleDivergence().value() == Approx(50) );
+    CHECK( beam.getOneOverEFullAngleDivergence<t::rad>().value() == Approx(50./1000) );
+
+
+  }
+
+  SECTION("Divergence Setting")
+  {
+    GaussianBeam beam;
+
+    beam.setWavelength( 532*i::nm );
+    beam.setOneOverE2WaistRadius( 2*i::mm );
+
+    double phi = 532e-9/M_PI/2e-3;
+    
+    CHECK( beam.getDiffractionLimitedDivergence() );
+    CHECK( beam.getOneOverE2HalfAngleDiffractionLimitedDivergence<t::rad>().value() == Approx(phi) );
+    CHECK( beam.getOneOverE2HalfAngleDivergence<t::rad>().value() == Approx(phi) );
+    CHECK( beam.getBeamQualityFactor().value() == Approx(1) );
+
+    beam.setOneOverE2FullAngleDivergence(1.*i::mrad );
+    CHECK( !beam.getDiffractionLimitedDivergence() );
+    CHECK( beam.getOneOverE2HalfAngleDiffractionLimitedDivergence<t::rad>().value() == Approx(phi) );
+    CHECK( beam.getOneOverE2HalfAngleDivergence().value() == Approx(0.5) );
+    CHECK( beam.getBeamQualityFactor().value() > 1 );
+    CHECK( beam.getBeamQualityFactor().value() == Approx(0.0005/phi) );
+
+    beam.setDiffractionLimitedDivergence(true);
+    CHECK( beam.getOneOverE2HalfAngleDiffractionLimitedDivergence<t::rad>().value() == Approx(phi) );
+    CHECK( beam.getOneOverE2HalfAngleDivergence<t::rad>().value() == Approx(phi) );
+    CHECK( beam.getBeamQualityFactor().value() == Approx(1) );
+
+    beam.setDiffractionLimitedDivergence(false);
+    CHECK( beam.getOneOverE2HalfAngleDiffractionLimitedDivergence<t::rad>().value() == Approx(phi) );
+    CHECK( beam.getOneOverE2HalfAngleDivergence<t::rad>().value() == Approx(0.0005) );
+    CHECK( beam.getBeamQualityFactor().value() == Approx(0.0005/phi) );
+
   }
 }
 
