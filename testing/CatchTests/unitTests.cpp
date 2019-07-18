@@ -343,6 +343,27 @@ SCENARIO( "GaussianBeam configuration", "[GaussianBeam]" )
     CHECK( beam.getOneOverE2HalfAngleDivergence<t::rad>().value() == Approx(0.0005) );
     CHECK( beam.getBeamQualityFactor().value() == Approx(0.0005/phi) );
 
+    beam.setOneOverE2FullAngleDivergence(phi*i::rad); // divergence set to a value that is lower than physically possible
+    CHECK( beam.getBeamQualityFactor().value() < 1 );
+
+    beam.setOneOverEFullAngleDivergence(0*i::mrad);
+    beam.setOneOverEWaistDiameter(2*i::mm);
+
+    CHECK( beam.getOneOverE2HalfAngleDivergence().value() == Approx(0) );
+    CHECK( beam.getOneOverEDiameter(0*i::m).value() == Approx(0.2) );
+    CHECK( beam.getOneOverEDiameter(10*i::m).value() == Approx(0.2) );
+    CHECK( beam.getOneOverEDiameter(100*i::m).value() == Approx(0.2) );
+    CHECK( beam.getOneOverEDiameter(1000*i::m).value() == Approx(0.2) );
+    CHECK( beam.getBeamQualityFactor().value() == Approx(0) );
+
+    beam.setOneOverEFullAngleDivergence(100*i::mrad);
+    CHECK( beam.getOneOverEDiameter<t::cm>(0*i::m).value() == Approx(0.2) );
+    CHECK( beam.getOneOverEDiameter<t::cm>(10*i::m).value() == Approx(0.2 + 1000*0.1).epsilon(0.01) );
+    CHECK( beam.getOneOverEDiameter<t::cm>(100*i::m).value() == Approx(0.2 + 10000*0.1).epsilon(0.01) );
+    CHECK( beam.getOneOverEDiameter<t::cm>(1000*i::m).value() == Approx(0.2 + 100000*0.1).epsilon(0.01) );
+    CHECK( beam.getBeamQualityFactor().value() > 1 );
+    
+
   }
 }
 
