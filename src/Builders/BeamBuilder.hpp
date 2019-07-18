@@ -9,12 +9,10 @@
  * The beam configurator class manages configuring a GaussianBeam instance for a
  * variety of situations so that the GaussianBeam class can remain simple. The
  * GaussianBeam class only allows the beam configuration to be specified by
- * setting waist diameter, the waist position, and the wavelength. Other common
- * beam parameters (such as divergence) can be calculated, but they cannot be
- * set.
+ * calling setters. It does not support, for example reading configuration from a file.
  *
- * Basically, three parameters must be known to characterize a Gaussian beam,
- * and several sets of 3 parameters are commonly used. For example, if the
+ * Basically, four parameters must be known to characterize a Gaussian beam,
+ * and several sets of 4 parameters are commonly used. For example, if the
  * wavelength and divergence are known, then the beam waist diameter can be
  * calculated. If the diameter at a given position is also known, then the beam
  * waist position can also be determined.
@@ -64,11 +62,11 @@ struct BeamBuilder : public Builder<GaussianBeam> {
   ADD_ATTRIBUTE(Wavelength, t::nanometer, 1);
   ADD_ATTRIBUTE(FreeSpaceWavelength, t::nanometer, 1);
   ADD_ATTRIBUTE(Frequency, t::nanometer, 1);
-  ADD_ATTRIBUTE(Divergence, t::milliradian, 1);
-  ADD_ATTRIBUTE(Diameter, t::centimeter, 2);
+  ADD_ATTRIBUTE(OneOverE2FullAngleDivergence, t::milliradian, 1);
+  ADD_ATTRIBUTE(OneOverE2Diameter, t::centimeter, 2);
   ADD_ATTRIBUTE(Position, t::centimeter, 2);
   ADD_ATTRIBUTE(WaistPosition, t::centimeter, 1);
-  ADD_ATTRIBUTE(WaistDiameter, t::centimeter, 1);
+  ADD_ATTRIBUTE(OneOverE2WaistDiameter, t::centimeter, 1);
   ADD_ATTRIBUTE(Power, t::watt, 1);
   ADD_ATTRIBUTE(CurrentPosition, t::centimeter, 1);
 
@@ -90,16 +88,16 @@ void BeamBuilder::configure(GaussianBeam* beam)
 
   if (this->hasPower()) beam->setPower(this->getPower<t::watt>().value());
 
-  if (this->hasWaistDiameter())
+  if (this->hasOneOverE2WaistDiameter())
     beam->setOneOverE2WaistDiameter(
-        this->getWaistDiameter<t::centimeter>().value());
+        this->getOneOverE2WaistDiameter<t::centimeter>().value());
 
   if (this->hasWaistPosition())
     beam->setWaistPosition(this->getWaistPosition<t::centimeter>().value());
 
-  if (!this->hasWaistDiameter()) {
+  if (!this->hasOneOverE2WaistDiameter()) {
     if (this->hasWavelength() &&
-        this->hasDivergence()) {  // if the divergence is known, then we can
+        this->hasOneOverE2FullAngleDivergence()) {  // if the divergence is known, then we can
                                   // determine the beam waist diameter
 
       // \Theta   = \frac{2\lambda}{\pi \omega_0}
@@ -107,13 +105,13 @@ void BeamBuilder::configure(GaussianBeam* beam)
       quantity<t::centimeter> waistRadius =
           2. * beam->getWavelength<t::centimeter>() /
           quantity_cast<double>(M_PI *
-                                this->getDivergence<t::radian>().value());
+                                this->getOneOverE2FullAngleDivergence<t::radian>().value());
       beam->setOneOverE2WaistRadius(waistRadius);
 
-      if (this->hasDiameter()) {  // if the diameter at some location is known,
+      if (this->hasOneOverE2Diameter()) {  // if the diameter at some location is known,
                                   // then we can determine where the beam waist
                                   // is
-        if (this->getDiameter<t::centimeter>() < 2. * waistRadius)
+        if (this->getOneOverE2Diameter<t::centimeter>() < 2. * waistRadius)
           throw std::runtime_error(
               "BEAM CONFIGURATION ERROR: configured beam diameter is smaller "
               "than the beam waist diameter based on wavelength and "
@@ -126,7 +124,7 @@ void BeamBuilder::configure(GaussianBeam* beam)
         quantity<t::centimeter> waistPosition =
             pos -
             beam->getRayleighRange<t::centimeter>() *
-                sqrt(pow<2>(this->getDiameter<t::centimeter>().value() /
+                sqrt(pow<2>(this->getOneOverE2Diameter<t::centimeter>().value() /
                             beam->getOneOverE2WaistDiameter<t::centimeter>()) -
                      1.);
         beam->setWaistPosition(waistPosition);
@@ -161,9 +159,9 @@ void BeamBuilder::configure(GaussianBeam* beam, const ptree& configTree)
 
   SET(Wavelength, "wavelength", value * nm);
   SET(Power, "power", value * W);
-  SET(Divergence, "divergence", value * mrad);
+  SET(OneOverE2FullAngleDivergence, "divergence", value * mrad);
   SET(WaistPosition, "waist.position", value * cm);
-  SET(WaistDiameter, "waist.diameter", value * cm);
+  SET(OneOverE2WaistDiameter, "waist.diameter", value * cm);
   SET(CurrentPosition, "current_position", value * cm);
 
   auto profiles = configTree.get_child_optional("profiles");
@@ -171,8 +169,8 @@ void BeamBuilder::configure(GaussianBeam* beam, const ptree& configTree)
     for (auto& iter : profiles.value()) {
       tree = &iter.second;
       SET(Position, "position", value * cm);
-      SET(Diameter, "diameter", value * cm);
-      SET(Diameter, "radius", 2. * value * cm);
+      SET(OneOverE2Diameter, "diameter", value * cm);
+      SET(OneOverE2Diameter, "radius", 2. * value * cm);
     }
   }
 

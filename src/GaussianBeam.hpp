@@ -191,8 +191,8 @@ class GaussianBeam
   // ComplexElectricFieldType; Z_DEPENDENT_DERIVED_GETTER( ElectricField,
   // ComplexElectricFieldType );
 
-  void setDiffractionLimitedDivergence(bool val);
-  bool getDiffractionLimitedDivergence() const;
+  inline void setDiffractionLimitedDivergence(bool val);
+  inline bool getDiffractionLimitedDivergence() const;
 
   // OTHER METHODS
 

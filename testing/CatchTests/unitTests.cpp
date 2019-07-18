@@ -1,4 +1,3 @@
-#define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
 #include <fstream>
@@ -781,8 +780,8 @@ TEST_CASE("Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]")
     config.setWavelength(532 * nm);
     config.setPower(10 * mW);
     config.setPosition(0 * cm)
-        .setDiameter(2 * 0.5 * mm)
-        .setDivergence(2 * 0.75 * mrad);
+        .setOneOverE2Diameter(2 * 0.5 * mm)
+        .setOneOverE2FullAngleDivergence(2 * 0.75 * mrad);
     config.configure(beam);
 
     CHECK(beam.getWavelength<t::micrometer>().value() == Approx(0.532));
@@ -884,7 +883,7 @@ TEST_CASE("Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]")
       BeamBuilder config;
 
       config.setWavelength(532 * nm);
-      config.setPosition(0 * cm).setDiameter(3 * mm).setDivergence(2 * mrad);
+      config.setPosition(0 * cm).setOneOverE2Diameter(3 * mm).setOneOverE2FullAngleDivergence(2 * mrad);
 
       config.configure(beam);
 
@@ -916,8 +915,8 @@ TEST_CASE("Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]")
       BeamBuilder config;
 
       config.setWavelength(532 * nm);
-      config.setPosition(0 * cm).setDiameter(3 * mm).setDivergence(2 * mrad);
-      // config.setPosition(0*cm).setDiameter(3*mm).setDivergence(4*mrad); //
+      config.setPosition(0 * cm).setOneOverE2Diameter(3 * mm).setOneOverE2FullAngleDivergence(2 * mrad);
+      // config.setPosition(0*cm).setOneOverE2Diameter(3*mm).setOneOverE2FullAngleDivergence(4*mrad); //
       // students assumed half-angle divergence.
 
       config.configure(beam);
@@ -974,44 +973,44 @@ TEST_CASE("BeamBuilder Tests", "[Builders,GuassianBeam]")
 
   SECTION("Internal Units")
   {
-    config.setWavelength(532 * nm).setDivergence(2.5 * mrad);
+    config.setWavelength(532 * nm).setOneOverE2FullAngleDivergence(2.5 * mrad);
 
     CHECK(config.getWavelength<t::nanometer>().value().value() == Approx(532));
-    CHECK(config.getDivergence<t::milliradian>().value().value() ==
+    CHECK(config.getOneOverE2FullAngleDivergence<t::milliradian>().value().value() ==
           Approx(2.5));
   }
 
   SECTION("Unit Conversions")
   {
-    config.setWavelength(0.532 * um).setDivergence(0.0025 * rad);
+    config.setWavelength(0.532 * um).setOneOverE2FullAngleDivergence(0.0025 * rad);
 
     CHECK(config.getWavelength<t::nanometer>().value().value() == Approx(532));
-    CHECK(config.getDivergence<t::milliradian>().value().value() ==
+    CHECK(config.getOneOverE2FullAngleDivergence<t::milliradian>().value().value() ==
           Approx(2.5));
 
-    config.setWavelength(0.444 * um).setDivergence(0.001 * rad);
+    config.setWavelength(0.444 * um).setOneOverE2FullAngleDivergence(0.001 * rad);
 
     CHECK(config.getWavelength<t::nanometer>().value().value() == Approx(444));
-    CHECK(config.getDivergence<t::milliradian>().value().value() == Approx(1));
+    CHECK(config.getOneOverE2FullAngleDivergence<t::milliradian>().value().value() == Approx(1));
   }
 
   SECTION("Arrays")
   {
     config.setWavelength(0.532 * um);
-    config.setPosition(1.0 * cm).setDiameter(2.0 * mm);
-    config.setPosition(10. * cm).setDiameter(4.0 * mm);
+    config.setPosition(1.0 * cm).setOneOverE2Diameter(2.0 * mm);
+    config.setPosition(10. * cm).setOneOverE2Diameter(4.0 * mm);
 
     CHECK(config.Wavelength.size() == 1);
     CHECK(config.Position.size() == 2);
-    CHECK(config.Diameter.size() == 2);
+    CHECK(config.OneOverE2Diameter.size() == 2);
 
     CHECK(config.getWavelength<t::nanometer>().value().value() == Approx(532));
     CHECK(config.getPosition<t::centimeter>().value().value() == Approx(1));
     CHECK(config.getPosition<t::centimeter>(0).value().value() == Approx(1));
     CHECK(config.getPosition<t::centimeter>(1).value().value() == Approx(10));
-    CHECK(config.getDiameter<t::centimeter>().value().value() == Approx(0.2));
-    CHECK(config.getDiameter<t::centimeter>(0).value().value() == Approx(0.2));
-    CHECK(config.getDiameter<t::centimeter>(1).value().value() == Approx(0.4));
+    CHECK(config.getOneOverE2Diameter<t::centimeter>().value().value() == Approx(0.2));
+    CHECK(config.getOneOverE2Diameter<t::centimeter>(0).value().value() == Approx(0.2));
+    CHECK(config.getOneOverE2Diameter<t::centimeter>(1).value().value() == Approx(0.4));
   }
 
   SECTION("Beam configuration")
@@ -1019,8 +1018,8 @@ TEST_CASE("BeamBuilder Tests", "[Builders,GuassianBeam]")
     GaussianBeam beam;
 
     config.setWavelength(532 * nm);
-    config.setDivergence(10 * mrad);
-    config.setDiameter(2.5000 * mm).setPosition(0.0 * meter);
+    config.setOneOverE2FullAngleDivergence(10 * mrad);
+    config.setOneOverE2Diameter(2.5000 * mm).setPosition(0.0 * meter);
 
     config.configure(beam);
 
@@ -1038,8 +1037,8 @@ TEST_CASE("BeamBuilder Tests", "[Builders,GuassianBeam]")
     GaussianBeam beam;
 
     config.setWavelength(532 * nm);
-    config.setDivergence(10 * mrad);
-    config.setDiameter(2.5000 * mm).setPosition(1.2 * meter);
+    config.setOneOverE2FullAngleDivergence(10 * mrad);
+    config.setOneOverE2Diameter(2.5000 * mm).setPosition(1.2 * meter);
 
     config.configure(beam);
 
@@ -1484,7 +1483,7 @@ TEST_CASE("Gaussian Beam Examples", "[GuassianBeam,Examples]")
     beam.transform(&lens);
 
 
-    CHECK( beam.getWaistPosition<t::centimeter>().value() == Approx(15) );
+    CHECK( beam.getWaistPosition<t::centimeter>().value() == Approx(15).epsilon(0.001) );
     CHECK( beam.getOneOverE2WaistRadius<t::micrometer>().value() == Approx(1e6 * 532e-9*15e-2/M_PI/(5e-3/2)) ); // lambda f / pi omega
 
   }
