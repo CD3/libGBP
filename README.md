@@ -37,9 +37,9 @@ classes are the classes that implement the physics and they are kept simple.
 They provide a set of methods to configure the object and a set of methods to
 implement the physics. They do not provide any extra methods for flexible
 configuration. For example, the class that implements a Gaussian beam can
-calculate and return the beam divergence (an implementation of the physics),
-but does not allow the divergence to be set. Instead, the wavelength and beam
-waist radius must be set correctly to give a desired beam divergence. The reason for
+calculate and return the Rayleigh range (an implementation of the physics),
+but does not allow the Rayleigh to be set. Instead, the wavelength and beam
+waist radius must be set correctly to give a desired beam Rayleigh range. The reason for
 this is to keep the physics implementation as small and simple as possible.
 
 Support for flexible configuration is achieved through builder classes. So, for example,
