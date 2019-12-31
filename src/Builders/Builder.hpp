@@ -13,7 +13,8 @@
 #include <regex>
 #include <string>
 
-#include "utils/ptree.hpp"
+#include "../utils/ptree.hpp"
+
 
 template<typename CLASS>
 CLASS* createInstance_imp(const boost::true_type&)

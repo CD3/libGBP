@@ -71,6 +71,7 @@ target_link_libraries(${LIB_NAME} INTERFACE Boost::boost Eigen3::Eigen)
 
 if( STANDALONE )
 add_subdirectory( testing )
+configure_file( GBP.doxygen.in ${CMAKE_CURRENT_BINARY_DIR}/GBP.doxygen )
 endif()
 
 
