@@ -29,6 +29,7 @@ class MediaStack
   MediaStack<LengthUnitType>& setBackgroundMedia(Media_ptr<LengthUnitType> abs)
   {
     this->backgroundMedia = abs;
+    return *this;
   }
   Media_ptr<LengthUnitType> getBackgroundMedia()
   {
@@ -58,6 +59,7 @@ MediaStack<T>& MediaStack<T>::addBoundary(Media_ptr<T> abs, U position)
 {
   boundaries.push_back({quantity<T>(position), abs});
   boundaries.sort();
+  return *this;
 }
 
 template<typename T>

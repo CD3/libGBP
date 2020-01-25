@@ -1491,7 +1491,7 @@ TEST_CASE("Gaussian Beam Examples", "[GuassianBeam,Examples]")
   SECTION("Setting Beam Diameter at Range")
   {
 
-    // assume we have the following measurments
+    // assume we have the following measurements
     // Wavelength = 532 nm
     // Power = 5 mW
     // Diameter = 5 mm at 10 cm
@@ -1511,10 +1511,10 @@ TEST_CASE("Gaussian Beam Examples", "[GuassianBeam,Examples]")
 
     // now to compute the beam waist diameter...
     // this should be implemented in the library.
-    beam.setOneOverEWaistDiameter( boost::units::pow<2>(D) - boost::units::pow<2>( quantity<t::mm>(10*i::cm) * beam.getOneOverEFullAngleDivergence() ) );
+    beam.setOneOverEWaistDiameter( boost::units::root<2>( boost::units::pow<2>(D) - boost::units::pow<2>( quantity<t::mm>(10*i::cm) * beam.getOneOverEFullAngleDivergence<t::rad>().value() ) ) );
 
-    CHECK( beam.getOneOverEDiameter<t::mm>( 10 * i::cm ).value() == 5 );
-    CHECK( beam.getOneOverEFullAngleDivergence<t::mrad>( ).value() == 5 );
+    CHECK( beam.getOneOverEDiameter<t::mm>( 10 * i::cm ).value() == Approx(5) );
+    CHECK( beam.getOneOverEFullAngleDivergence<t::mrad>( ).value() == Approx(5) );
 
     std::cout << "Waist Diameter: " << beam.getOneOverEWaistDiameter<t::um>()  << std::endl;
     std::cout << "Peak Irradiance at Waist: " << beam.getPeakIrradiance<t::watt_per_centimeter_squared>(0*i::cm ).value() << "W/cm^2" << std::endl;

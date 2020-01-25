@@ -52,6 +52,7 @@ OpticalSystem<T>& OpticalSystem<T>::addElement(OpticalElement_ptr<T> elem,
 {
   elements.push_back({quantity<T>(position), elem});
   elements.sort();
+  return *this;
 }
 
 template<typename T>

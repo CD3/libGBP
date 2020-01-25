@@ -49,6 +49,7 @@ struct BeamBuilder : public Builder<GaussianBeam> {
     if (i < name.size()) {                                      \
       return quantity<T>(name[i]);                              \
     }                                                           \
+    return boost::none;                                         \
   }                                                             \
   bool has##name(int i = 0)                                     \
   {                                                             \
