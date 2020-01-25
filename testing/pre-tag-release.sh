@@ -19,7 +19,10 @@ trap copy_state ERR
 
 mkdir $bindir
 cd $bindir
+conan install ..
+source activate.sh
 cmake .. -DCMAKE_INSTALL_PREFIX=$bindir/install
+source deactivate.sh
 cmake --build .
 cmake --build . --target test
 
@@ -55,6 +58,9 @@ EOF
 
 mkdir build1
 cd build1
+source activate.sh
+conan install ..
+source deactivate.sh
 cmake .. -DlibGBP_DIR=${bindir}/install/cmake/
 cmake --build .
 ./main
@@ -71,7 +77,10 @@ EOF
 
 mkdir build2
 cd build2
+conan install ..
+source activate.sh
 cmake ..
+source deactivate.sh
 cmake --build .
 ./main
 
