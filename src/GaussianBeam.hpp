@@ -10,9 +10,8 @@
 #include <complex>
 #include <iostream>
 
-#include "Constants.hpp"
 #include "OpticalElements/OpticalElementInterface.hpp"
-#include "Units.hpp"
+#include "LaserBeam.hpp"
 
 using std::complex;
 
@@ -152,9 +151,14 @@ class GaussianBeam
   ATTRIBUTE_SETTER_AND_GETTER(Power);
   ATTRIBUTE_SETTER_AND_GETTER(CurrentPosition);
 
+  // methods to allow other conventions for setting beam size
   DERIVED_SETTER_AND_GETTER(OneOverE2WaistDiameter, OneOverE2WaistRadiusType);
   DERIVED_SETTER_AND_GETTER(OneOverEWaistRadius, OneOverE2WaistRadiusType);
   DERIVED_SETTER_AND_GETTER(OneOverEWaistDiameter, OneOverE2WaistRadiusType);
+  DERIVED_SETTER_AND_GETTER(OneOverESquaredWaistRadius, OneOverE2WaistRadiusType);
+  DERIVED_SETTER_AND_GETTER(OneOverESquaredWaistDiameter, OneOverE2WaistRadiusType);
+  DERIVED_SETTER_AND_GETTER(SecondMomentWaistRadius, OneOverE2WaistRadiusType);
+  DERIVED_SETTER_AND_GETTER(SecondMomentWaistDiameter, OneOverE2WaistRadiusType);
 
   DERIVED_SETTER_AND_GETTER(OneOverE2HalfAngleDivergence,
                             quantity<t::milliradian>);
@@ -163,6 +167,14 @@ class GaussianBeam
   DERIVED_SETTER_AND_GETTER(OneOverEHalfAngleDivergence,
                             quantity<t::milliradian>);
   DERIVED_SETTER_AND_GETTER(OneOverEFullAngleDivergence,
+                            quantity<t::milliradian>);
+  DERIVED_SETTER_AND_GETTER(OneOverESquaredHalfAngleDivergence,
+                            quantity<t::milliradian>);
+  DERIVED_SETTER_AND_GETTER(OneOverESquaredFullAngleDivergence,
+                            quantity<t::milliradian>);
+  DERIVED_SETTER_AND_GETTER(SecondMomentHalfAngleDivergence,
+                            quantity<t::milliradian>);
+  DERIVED_SETTER_AND_GETTER(SecondMomentFullAngleDivergence,
                             quantity<t::milliradian>);
 
   DERIVED_GETTER(BeamQualityFactor, quantity<t::dimensionless>);
@@ -225,7 +237,8 @@ void GaussianBeam::setOneOverEWaistRadius(OneOverEWaistRadiusType v)
   this->setOneOverE2WaistRadius(sqrt2 * OneOverE2WaistRadiusType(v));
 }
 
-GaussianBeam::OneOverEWaistRadiusType GaussianBeam::getOneOverEWaistRadius()
+GaussianBeam::OneOverEWaistRadiusType
+GaussianBeam::getOneOverEWaistRadius()
     const
 {
   return this->getOneOverE2WaistRadius() / sqrt2;
@@ -236,11 +249,60 @@ void GaussianBeam::setOneOverEWaistDiameter(OneOverEWaistDiameterType v)
   this->setOneOverE2WaistRadius(OneOverE2WaistRadiusType(v) / sqrt2);
 }
 
-GaussianBeam::OneOverEWaistDiameterType GaussianBeam::getOneOverEWaistDiameter()
+GaussianBeam::OneOverEWaistDiameterType
+GaussianBeam::getOneOverEWaistDiameter()
     const
 {
   return this->getOneOverE2WaistRadius() * sqrt2;
 }
+
+void GaussianBeam::setOneOverESquaredWaistRadius(OneOverESquaredWaistRadiusType v)
+{
+  this->setOneOverE2WaistRadius(OneOverE2WaistRadiusType(v));
+}
+
+GaussianBeam::OneOverESquaredWaistRadiusType
+GaussianBeam::getOneOverESquaredWaistRadius() const
+{
+  return this->getOneOverE2WaistRadius();
+}
+
+void GaussianBeam::setOneOverESquaredWaistDiameter(OneOverESquaredWaistDiameterType v)
+{
+  this->setOneOverE2WaistRadius(OneOverE2WaistRadiusType(v) / 2.);
+}
+
+GaussianBeam::OneOverESquaredWaistDiameterType
+GaussianBeam::getOneOverESquaredWaistDiameter() const
+{
+  return 2. * this->getOneOverE2WaistRadius();
+}
+
+void GaussianBeam::setSecondMomentWaistRadius(SecondMomentWaistRadiusType v)
+{
+  this->setOneOverE2WaistRadius(2.*OneOverE2WaistRadiusType(v));
+}
+
+GaussianBeam::SecondMomentWaistRadiusType
+GaussianBeam::getSecondMomentWaistRadius() const
+{
+  return this->getOneOverE2WaistRadius()/2.;
+}
+
+void GaussianBeam::setSecondMomentWaistDiameter(SecondMomentWaistDiameterType v)
+{
+  this->setOneOverE2WaistRadius(OneOverE2WaistRadiusType(v));
+}
+
+GaussianBeam::SecondMomentWaistDiameterType
+GaussianBeam::getSecondMomentWaistDiameter() const
+{
+  return this->getOneOverE2WaistRadius();
+}
+
+
+
+
 
 void GaussianBeam::setDiffractionLimitedDivergence(bool val)
 {
@@ -295,6 +357,11 @@ void GaussianBeam::setOneOverE2HalfAngleDivergence(
   this->DiffractionLimitedDivergence = false;
 }
 
+
+
+
+
+
 GaussianBeam::OneOverE2HalfAngleDivergenceType
 GaussianBeam::getOneOverE2HalfAngleDivergence() const
 {
@@ -338,6 +405,59 @@ GaussianBeam::getOneOverEFullAngleDivergence() const
 {
   return getOneOverEHalfAngleDivergence() * 2.;
 }
+
+void GaussianBeam::setOneOverESquaredHalfAngleDivergence(
+    OneOverESquaredHalfAngleDivergenceType val)
+{
+  this->setOneOverE2HalfAngleDivergence(val);
+}
+
+GaussianBeam::OneOverESquaredHalfAngleDivergenceType
+GaussianBeam::getOneOverESquaredHalfAngleDivergence() const
+{
+  return getOneOverE2HalfAngleDivergence();
+}
+
+void GaussianBeam::setOneOverESquaredFullAngleDivergence(
+    OneOverESquaredFullAngleDivergenceType val)
+{
+  this->setOneOverE2HalfAngleDivergence(val / 2.);
+}
+
+GaussianBeam::OneOverESquaredFullAngleDivergenceType
+GaussianBeam::getOneOverESquaredFullAngleDivergence() const
+{
+  return getOneOverE2HalfAngleDivergence() * 2.;
+}
+
+void GaussianBeam::setSecondMomentHalfAngleDivergence(
+    SecondMomentHalfAngleDivergenceType val)
+{
+  this->setOneOverE2HalfAngleDivergence(val);
+}
+
+GaussianBeam::SecondMomentHalfAngleDivergenceType
+GaussianBeam::getSecondMomentHalfAngleDivergence() const
+{
+  return getOneOverE2HalfAngleDivergence();
+}
+
+void GaussianBeam::setSecondMomentFullAngleDivergence(
+    SecondMomentFullAngleDivergenceType val)
+{
+  this->setOneOverE2HalfAngleDivergence(val / 2.);
+}
+
+GaussianBeam::SecondMomentFullAngleDivergenceType
+GaussianBeam::getSecondMomentFullAngleDivergence() const
+{
+  return getOneOverE2HalfAngleDivergence() * 2.;
+}
+
+
+
+
+
 
 GaussianBeam::OneOverE2RadiusType GaussianBeam::getOneOverE2Radius(
     CurrentPositionType z) const

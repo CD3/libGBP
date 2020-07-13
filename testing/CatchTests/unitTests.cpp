@@ -81,11 +81,11 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
           CHECK(beam.getRayleighRange<t::meter>().value() ==
                 Approx(4.96302157));
         }
-        THEN("the full angle divergence is 0.20149 mrad")
+        THEN("the full angle divergence is 2*0.20149 mrad")
         {
-          CHECK(beam.getOneOverE2FullAngleDivergence<t::milliradian>().value() /
-                    2 ==
-                Approx(0.20149));
+          CHECK(beam.getOneOverE2FullAngleDivergence<t::milliradian>().value()
+                    ==
+                Approx(2*0.20149));
         }
         THEN("the radius of curvature at 10 m is 12.46315831 m")
         {
@@ -170,7 +170,7 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
       }
     }
 
-    WHEN("waist diameter is set to 2 cm")
+    WHEN("1/e squared waist diameter is set to 2 cm")
     {
       beam.setOneOverE2WaistDiameter(2 * cm);
       THEN("1/e waist diameter is sqrt(2) cm")
@@ -188,6 +188,26 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
       THEN("1/e2 waist radius is 1 cm")
       {
         CHECK(beam.getOneOverE2WaistRadius().value() == Approx(1));
+      }
+      THEN("second moment waist diameter is 1 cm")
+      {
+        CHECK(beam.getSecondMomentWaistDiameter().value() == Approx(1));
+      }
+      THEN("second moment waist radius is 0.5 cm")
+      {
+        CHECK(beam.getSecondMomentWaistRadius().value() == Approx(0.5));
+      }
+    }
+    WHEN("second moment waist diameter is set to 2 cm")
+    {
+      beam.setSecondMomentWaistDiameter(2*i::cm);
+      THEN("1/e squared waist diameter is 4 cm")
+      {
+        CHECK(beam.getOneOverESquaredWaistDiameter().value() == Approx(4));
+      }
+      THEN("1/e squared waist radius is 2 cm")
+      {
+        CHECK(beam.getOneOverESquaredWaistRadius().value() == Approx(2));
       }
     }
   }
