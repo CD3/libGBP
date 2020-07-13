@@ -1,28 +1,51 @@
 # libGPB
 
-A C++ library for doing Gaussian Beam Propagation calculations.
+A C++ library for doing Laser Beam Propagation calculations.
 
 ## Description
 
 This library implements Gaussian beam propagation calculations based on the paraxial wave equation
-(https://en.wikipedia.org/wiki/Gaussian_beam).
+(https://en.wikipedia.org/wiki/Gaussian_beam) and the [general range equations described by Seigman](
+https://web.archive.org/web/20110604095354/http://www.stanford.edu/~siegman/beams_and_resonators/beam_quality_tutorial_osa.pdf).
 It started out as a fork of the code written by Aaron Hoffman for his senior thesis at
 Fort Hays State University, but has since been redesigned (rewritten) based on what we learned during
-his project. It supports the transformation of a beam through multiple optical elements and power transmission
-through linear absorbers.
+his project.
+
+### Features
+
+- Supports multiple conventions.
+    - Multiple conventions for defining the "beam width" and "beam divergence" exist. Physics text books almost always use the 1/e squared beam radius and 1/e squared half width divergence, but
+      the laser safety community uses 1/e beam diameter and 1/e full width divergence. The library supports both conventions (and others) and makes them explicit (methods are not named `setWaistDiameter(...)`, they
+      are named `setOneOverEWaistDiameter(...)`, etc.)
+- Compute the [four sigma beam diameter](https://en.wikipedia.org/wiki/Beam_diameter#D4%CF%83_or_second-moment_width) for an arbitrary laser beam profile.
+    - The second-moment-based beam width obeys a universal propagation law that holds for arbitrary beam shapes. The `LaserBeam` class implements the range equations
+      and supports beams with an arbitrary "M-squared" factor.
+- Compute beam properties for Gaussian beams
+    - For Gaussian laser beams, several additional properties can be defined and measured. The `GaussianLaserBeam` class provides methods to compute:
+        - one over e squared beam radius and diameter at an arbitrary range.
+        - one over e beam radius and diameter at an arbitrary range.
+        - full width half max beam radius and diameter at an arbitrary range.
+        - four sigma diameter at an arbitrary range.
+        - diffraction limited one over e squared half width and full width divergence.
+        - one over e half width and full width divergence.
+        - full width half max half hand full width divergence.
+        - Rayleigh range.
+        - Beam radius of curvature at an arbitrary range.
+- Propagation through various optical elements, including thin lenses and spherical refractive surfaces, using the ABCD ray matrix method.
+
 
 ## Getting Started
 
-The core functionality of `libGBP` is implemented in the `GaussianBeam` class. For simple calculations, this class
+The core functionality of `libGBP` is implemented in the `GaussianLaserBeam` class. For simple calculations, this class
 is all that is needed. For example, to compute the beam diameter of a laser pointer with a known diameter and divergence at some
 range:
 
 ```cpp
-#include<GaussianBeam.hpp>
+#include<libGBP/GaussianBeam.hpp>
 
 ...
 
-GaussianBeam beam;
+GaussianLaserBeam beam;
 
 beam.setOneOverEWaistDiameter( 5*i::mm );
 beam.setOneOverEFullAngleDivergence( 1.5*i::mrad );
@@ -37,14 +60,14 @@ and half angle vs. full angle divergence is a common source or error. Here it is
 setting the 1/e beam waist diameter, the 1/e full angle divergence, and asking for the 1/e beam diameter
 at range.
 
-Note also the units. We can parameters can be set in whatever units are convinient, and we can ask for calculations
-in whatever units we want (as long as they are defined). `libGBP` uses `Boost.Units` and all setter/getter methods of the
-`GaussianBeam` class support passing and retruning arbitrary units.
+Note also the units. Parameters can be set in whatever units are convenient, and we can ask for calculations
+in whatever units we want (as long as they are defined). libGBP uses [Boost.Units](https://www.boost.org/doc/libs/1_73_0/doc/html/boost_units.html) and all setter/getter methods of the
+`GaussianLaserBeam` class support passing and returning arbitrary units.
 
-`GaussianBeam` objects can also be transformed by optical components. The following
-example computes the effect of a 15-cm lens on a 5 mm laser beam.
+`GaussianLaserBeam` objects can also be transformed by optical components. The following
+example computes the effect of a 15-cm lens placed at the waist position of a 5 mm laser beam.
 ```cpp
-    GaussianBeam beam;
+    GaussianLaserBeam beam;
     ThinLens<t::centimeter> lens;
 
     beam.setWavelength(532 * i::nm);
@@ -101,6 +124,6 @@ The calculator classes are used to perform the basic calculations and combine th
 ## Todo
 
     - Implement a simulation class to calculate and return beam characterization at multiple locations in a setup.
-    - Add electric field method to GaussianBeam class.
+    - Add electric field method to GaussianLaserBeam class.
     - Add support for power loss from scattering.
     - Add support for specifying parameters as functions to the builder classes.
