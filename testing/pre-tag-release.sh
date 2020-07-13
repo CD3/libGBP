@@ -34,8 +34,8 @@ cd app
 
 cat << EOF > main.cpp
 #include <iostream>
-#include <libGBP_version.h>
-#include <GaussianBeam.hpp>
+#include <libGBP/version.h>
+#include <libGBP/GaussianBeam.hpp>
 
 int main()
 {
@@ -58,10 +58,10 @@ EOF
 
 mkdir build1
 cd build1
+conan install "${root}"
 source activate.sh
-conan install ..
-source deactivate.sh
 cmake .. -DlibGBP_DIR=${bindir}/install/cmake/
+source deactivate.sh
 cmake --build .
 ./main
 
@@ -77,7 +77,7 @@ EOF
 
 mkdir build2
 cd build2
-conan install ..
+conan install "${root}"
 source activate.sh
 cmake ..
 source deactivate.sh
