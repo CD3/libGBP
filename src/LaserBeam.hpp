@@ -13,29 +13,29 @@
 
 class LaserBeam
 {
-#define ADD_MEMBER(NAME, UNIT)                                              \
- protected:                                                                 \
-  boost::units::quantity<UNIT, double> m_##NAME;                            \
-                                                                            \
- public:                                                                    \
-  template<typename R = UNIT>                                               \
-  boost::units::quantity<R> get##NAME() const                               \
-  {                                                                         \
-    static_assert(std::is_same<typename R::dimension_type,                  \
-                               typename UNIT::dimension_type>::value,       \
+#define ADD_MEMBER(NAME, UNIT)                                               \
+ protected:                                                                  \
+  boost::units::quantity<UNIT, double> m_##NAME;                             \
+                                                                             \
+ public:                                                                     \
+  template<typename R = UNIT>                                                \
+  boost::units::quantity<R> get##NAME() const                                \
+  {                                                                          \
+    static_assert(std::is_same<typename R::dimension_type,                   \
+                               typename UNIT::dimension_type>::value,        \
                   "Dimensions Error: Requested return type for get##NAME() " \
-                  "method has wrong dimensions.");                          \
-    return boost::units::quantity<R>(m_##NAME);                             \
-  }                                                                         \
-  template<typename A>                                                      \
-  void set##NAME(boost::units::quantity<A> a)                               \
-  {                                                                         \
-    static_assert(                                                          \
-        std::is_same<typename A::dimension_type,                            \
-                     typename UNIT::dimension_type>::value,                 \
-        "Dimensions Error: Argument type of set##NAME(...) method has "     \
-        "wrong dimensions.");                                               \
-    m_##NAME = boost::units::quantity<UNIT>(a);                             \
+                  "method has wrong dimensions.");                           \
+    return boost::units::quantity<R>(m_##NAME);                              \
+  }                                                                          \
+  template<typename A>                                                       \
+  void set##NAME(boost::units::quantity<A> a)                                \
+  {                                                                          \
+    static_assert(                                                           \
+        std::is_same<typename A::dimension_type,                             \
+                     typename UNIT::dimension_type>::value,                  \
+        "Dimensions Error: Argument type of set##NAME(...) method has "      \
+        "wrong dimensions.");                                                \
+    m_##NAME = boost::units::quantity<UNIT>(a);                              \
   }
 
   ADD_MEMBER(Wavelength, t::nm);
@@ -43,16 +43,51 @@ class LaserBeam
   ADD_MEMBER(Power, t::W);
   ADD_MEMBER(WaistStandardDeviation, t::cm);
   ADD_MEMBER(WaistPosition, t::cm);
-  ADD_MEMBER(AngularSpreadStandardDeviation, t::mrad);
+
+ protected:
+  bool m_UseDiffractionLimitedDivergence = true;
+ public:
+  inline void setUseDiffractionLimitedDivergence(bool val){m_UseDiffractionLimitedDivergence=val;}
+  inline bool getUseDiffractionLimitedDivergence() const{return m_UseDiffractionLimitedDivergence;}
+
+ protected:
+  boost::units::quantity<t::mrad,double> m_AngularSpreadStandardDeviation;
+ public:
+  template<typename R = t::mrad> 
+  boost::units::quantity<R> getAngularSpreadStandardDeviation() const
+  {                                                                 
+    static_assert(std::is_same<typename R::dimension_type,         
+                               typename t::mrad::dimension_type>::value,        
+                  "Dimensions Error: Requested return type for getAngularSpreadStandardDeviation() " 
+                  "method has wrong dimensions.");                          
+    if(m_UseDiffractionLimitedDivergence)
+    {
+      return this->getDiffractionLimitedAngularSpreadStandardDeviation<R>();
+    }
+    return boost::units::quantity<R>(m_AngularSpreadStandardDeviation);                            
+  }                                                                       
+  template<typename A>                                                   
+  void setAngularSpreadStandardDeviation(boost::units::quantity<A> a)                           
+  {                                                                    
+    static_assert(                                                        
+        std::is_same<typename A::dimension_type,                         
+                     typename t::mrad::dimension_type>::value,             
+        "Dimensions Error: Argument type of setAngularSpreadStandardDeviation(...) method has "
+        "wrong dimensions.");                                         
+    m_AngularSpreadStandardDeviation = boost::units::quantity<t::mrad>(a);                      
+    m_UseDiffractionLimitedDivergence = false;
+  }
+
 #undef ADD_MEMBER
 
 #define ADD_DERIVED_GETTER(NAME, UNIT, ...)                           \
+ public:                                                              \
   template<typename R = UNIT>                                         \
   boost::units::quantity<R> get##NAME() const                         \
   {                                                                   \
     static_assert(std::is_same<typename R::dimension_type,            \
                                typename UNIT::dimension_type>::value, \
-                  "Dimensions Error: Requested return type for "       \
+                  "Dimensions Error: Requested return type for "      \
                   "get##NAME() method "                               \
                   "has wrong dimensions.");                           \
     return boost::units::quantity<R>(__VA_ARGS__);                    \
@@ -79,11 +114,13 @@ class LaserBeam
   ADD_DERIVED_SETTER(WaistFourSigmaDiameter, t::cm,
                      this->setWaistStandardDeviation(arg / 4.));
   /**
-   * Computes the M^2 beam propagation factor (sometimes called the "beam quality") from the beam
-   * divergence and beam waist size.
+   * Computes the M^2 beam propagation factor (sometimes called the "beam
+   * quality") from the beam divergence and beam waist size.
    */
-  ADD_DERIVED_GETTER(BeamPropagationFactor, t::dimensionless,
-                     this->getAngularSpreadStandardDeviation<t::rad>()/this->getDiffractionLimitedAngularSpreadStandardDeviation<t::rad>());
+  ADD_DERIVED_GETTER(
+      BeamPropagationFactor, t::dimensionless,
+      this->getAngularSpreadStandardDeviation<t::rad>() /
+          this->getDiffractionLimitedAngularSpreadStandardDeviation<t::rad>());
 #undef ADD_DERIVED_GETTER
 #undef ADD_DERIVED_SETTER
 
@@ -135,11 +172,12 @@ class LaserBeam
   boost::units::quantity<R> getBeamStandardDeviation(
       boost::units::quantity<A> z) const
   {
-    static_assert(std::is_same<typename R::dimension_type,
-                               typename t::cm::dimension_type>::value,
-                  "Dimensions Error: Requested return type for "
-                  "getBeamStandardDeviation(...) method "
-                  "has wrong dimensions. Should have same dimensions as t::cm.");
+    static_assert(
+        std::is_same<typename R::dimension_type,
+                     typename t::cm::dimension_type>::value,
+        "Dimensions Error: Requested return type for "
+        "getBeamStandardDeviation(...) method "
+        "has wrong dimensions. Should have same dimensions as t::cm.");
     static_assert(
         std::is_same<typename A::dimension_type,
                      typename t::cm::dimension_type>::value,
@@ -147,29 +185,31 @@ class LaserBeam
         "has wrong dimensions.");
     auto sigma = root<2>(
         pow<2>(m_WaistStandardDeviation) +
-        pow<2>(boost::units::quantity<t::rad>(m_AngularSpreadStandardDeviation))
+        pow<2>(boost::units::quantity<t::rad>(this->getAngularSpreadStandardDeviation()))
                 .value() *
             pow<2>(boost::units::quantity<t::cm>(z) - m_WaistPosition));
     return boost::units::quantity<R>(sigma);
   }
 
-#define ADD_DERIVED_GETTER(NAME, UNIT, ...)                              \
-  template<typename R = UNIT, typename A = t::cm>                        \
-  boost::units::quantity<R> get##NAME(boost::units::quantity<A> z) const \
-  {                                                                      \
-    static_assert(std::is_same<typename R::dimension_type,               \
-                               typename UNIT::dimension_type>::value,    \
-                  "Dimensions Error: Requested return type for "          \
-                  "get##NAME(...) method "                               \
-                  "has wrong dimensions. Should have the same dimensions as "#UNIT);                              \
-    static_assert(std::is_same<typename A::dimension_type,               \
-                               typename t::cm::dimension_type>::value,   \
-                  "Dimensions Error: argument to get##NAME(...) method " \
-                  "has wrong dimensions.");                              \
-    return boost::units::quantity<R>(__VA_ARGS__);                       \
+#define ADD_DERIVED_GETTER(NAME, UNIT, ...)                                 \
+  template<typename R = UNIT, typename A = t::cm>                           \
+  boost::units::quantity<R> get##NAME(boost::units::quantity<A> z) const    \
+  {                                                                         \
+    static_assert(                                                          \
+        std::is_same<typename R::dimension_type,                            \
+                     typename UNIT::dimension_type>::value,                 \
+        "Dimensions Error: Requested return type for "                      \
+        "get##NAME(...) method "                                            \
+        "has wrong dimensions. Should have the same dimensions as " #UNIT); \
+    static_assert(std::is_same<typename A::dimension_type,                  \
+                               typename t::cm::dimension_type>::value,      \
+                  "Dimensions Error: argument to get##NAME(...) method "    \
+                  "has wrong dimensions.");                                 \
+    return boost::units::quantity<R>(__VA_ARGS__);                          \
   }
 
-  ADD_DERIVED_GETTER(BeamFourSigmaDiameter, t::cm, 4. * this->getBeamStandardDeviation(z));
+  ADD_DERIVED_GETTER(FourSigmaDiameter, t::cm,
+                     4. * this->getBeamStandardDeviation(z));
 
 #undef ADD_DERIVED_GETTER
 };

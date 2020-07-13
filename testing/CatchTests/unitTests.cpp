@@ -72,7 +72,7 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
     {
       beam.setWavelength(0.633 * t::micrometer());
 
-      AND_WHEN("the beam waist diameter is set to 2 mm")
+      AND_WHEN("the 1/e squared beam waist diameter is set to 2 mm")
       {
         beam.setOneOverE2WaistDiameter(2 * t::millimeter());
 
@@ -81,11 +81,29 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
           CHECK(beam.getRayleighRange<t::meter>().value() ==
                 Approx(4.96302157));
         }
-        THEN("the full angle divergence is 2*0.20149 mrad")
+        THEN("the half-angle 1/e squared divergence is 0.20149 mrad")
+        {
+          CHECK(beam.getOneOverESquaredHalfAngleDivergence<t::milliradian>().value()
+                    ==
+                Approx(0.20149));
+        }
+        THEN("the full-angle 1/e squared divergence is 2*0.20149 mrad")
         {
           CHECK(beam.getOneOverE2FullAngleDivergence<t::milliradian>().value()
                     ==
                 Approx(2*0.20149));
+        }
+        THEN("the full-angle 1/e divergence is 2*0.20149/sqrt(2) mrad")
+        {
+          CHECK(beam.getOneOverEFullAngleDivergence<t::milliradian>().value()
+                    ==
+                Approx(2*0.20149/sqrt(2)));
+        }
+        THEN("the half-angle 1/e divergence is 0.20149/sqrt(2) mrad")
+        {
+          CHECK(beam.getOneOverEHalfAngleDivergence<t::milliradian>().value()
+                    ==
+                Approx(0.20149/sqrt(2)));
         }
         THEN("the radius of curvature at 10 m is 12.46315831 m")
         {
@@ -101,6 +119,16 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
                       .value() == Approx(4.498820));
             CHECK(beam.getOneOverE2Radius<t::millimeter>(12. * t::meter())
                       .value() == Approx(4.498820 / 2));
+            CHECK(beam.getOneOverESquaredDiameter<t::millimeter>(12. * t::meter())
+                      .value() == Approx(4.498820));
+            CHECK(beam.getOneOverESquaredRadius<t::millimeter>(12. * t::meter())
+                      .value() == Approx(4.498820 / 2));
+            CHECK(beam.getOneOverEDiameter<t::millimeter>(12. * t::meter())
+                      .value() == Approx(4.498820/sqrt(2)));
+            CHECK(beam.getOneOverERadius<t::millimeter>(12. * t::meter())
+                      .value() == Approx(4.498820 / 2 / sqrt(2)));
+            CHECK(beam.getFourSigmaDiameter<t::millimeter>(12. * t::meter())
+                      .value() == Approx(4.498820));
           }
           AND_THEN("the radius of curvature at 12 m is 12.46315831 m")
           {
@@ -189,18 +217,18 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
       {
         CHECK(beam.getOneOverE2WaistRadius().value() == Approx(1));
       }
-      THEN("second moment waist diameter is 1 cm")
+      THEN("four sigma waist diameter is 2 cm")
       {
-        CHECK(beam.getSecondMomentWaistDiameter().value() == Approx(1));
+        CHECK(beam.getWaistFourSigmaDiameter().value() == Approx(2));
       }
-      THEN("second moment waist radius is 0.5 cm")
+      THEN("waist standard deviation is 0.5 cm")
       {
-        CHECK(beam.getSecondMomentWaistRadius().value() == Approx(0.5));
+        CHECK(beam.getWaistStandardDeviation().value() == Approx(0.5));
       }
     }
-    WHEN("second moment waist diameter is set to 2 cm")
+    WHEN("waist four sigma diameter is set to 4 cm")
     {
-      beam.setSecondMomentWaistDiameter(2*i::cm);
+      beam.setWaistFourSigmaDiameter(4*i::cm);
       THEN("1/e squared waist diameter is 4 cm")
       {
         CHECK(beam.getOneOverESquaredWaistDiameter().value() == Approx(4));
@@ -421,39 +449,39 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
 
     double phi = 532e-9 / M_PI / 2e-3;
 
-    CHECK(beam.getDiffractionLimitedDivergence());
+    CHECK(beam.getUseDiffractionLimitedDivergence());
     CHECK(beam.getOneOverE2HalfAngleDiffractionLimitedDivergence<t::rad>()
               .value() == Approx(phi));
     CHECK(beam.getOneOverE2HalfAngleDivergence<t::rad>().value() ==
           Approx(phi));
-    CHECK(beam.getBeamQualityFactor().value() == Approx(1));
+    CHECK(beam.getBeamPropagationFactor().value() == Approx(1));
 
     beam.setOneOverE2FullAngleDivergence(1. * i::mrad);
-    CHECK(!beam.getDiffractionLimitedDivergence());
+    CHECK(!beam.getUseDiffractionLimitedDivergence());
     CHECK(beam.getOneOverE2HalfAngleDiffractionLimitedDivergence<t::rad>()
               .value() == Approx(phi));
     CHECK(beam.getOneOverE2HalfAngleDivergence().value() == Approx(0.5));
-    CHECK(beam.getBeamQualityFactor().value() > 1);
-    CHECK(beam.getBeamQualityFactor().value() == Approx(0.0005 / phi));
+    CHECK(beam.getBeamPropagationFactor().value() > 1);
+    CHECK(beam.getBeamPropagationFactor().value() == Approx(0.0005 / phi));
 
-    beam.setDiffractionLimitedDivergence(true);
+    beam.setUseDiffractionLimitedDivergence(true);
     CHECK(beam.getOneOverE2HalfAngleDiffractionLimitedDivergence<t::rad>()
               .value() == Approx(phi));
     CHECK(beam.getOneOverE2HalfAngleDivergence<t::rad>().value() ==
           Approx(phi));
-    CHECK(beam.getBeamQualityFactor().value() == Approx(1));
+    CHECK(beam.getBeamPropagationFactor().value() == Approx(1));
 
-    beam.setDiffractionLimitedDivergence(false);
+    beam.setUseDiffractionLimitedDivergence(false);
     CHECK(beam.getOneOverE2HalfAngleDiffractionLimitedDivergence<t::rad>()
               .value() == Approx(phi));
     CHECK(beam.getOneOverE2HalfAngleDivergence<t::rad>().value() ==
           Approx(0.0005));
-    CHECK(beam.getBeamQualityFactor().value() == Approx(0.0005 / phi));
+    CHECK(beam.getBeamPropagationFactor().value() == Approx(0.0005 / phi));
 
     beam.setOneOverE2FullAngleDivergence(
         phi * i::rad);  // divergence set to a value that is lower than
                         // physically possible
-    CHECK(beam.getBeamQualityFactor().value() < 1);
+    CHECK(beam.getBeamPropagationFactor().value() < 1);
 
     beam.setOneOverEFullAngleDivergence(0 * i::mrad);
     beam.setOneOverEWaistDiameter(2 * i::mm);
@@ -463,7 +491,7 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
     CHECK(beam.getOneOverEDiameter(10 * i::m).value() == Approx(0.2));
     CHECK(beam.getOneOverEDiameter(100 * i::m).value() == Approx(0.2));
     CHECK(beam.getOneOverEDiameter(1000 * i::m).value() == Approx(0.2));
-    CHECK(beam.getBeamQualityFactor().value() == Approx(0));
+    CHECK(beam.getBeamPropagationFactor().value() == Approx(0));
 
     beam.setOneOverEFullAngleDivergence(100 * i::mrad);
     CHECK(beam.getOneOverEDiameter<t::cm>(0 * i::m).value() == Approx(0.2));
@@ -473,7 +501,7 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
           Approx(0.2 + 10000 * 0.1).epsilon(0.01));
     CHECK(beam.getOneOverEDiameter<t::cm>(1000 * i::m).value() ==
           Approx(0.2 + 100000 * 0.1).epsilon(0.01));
-    CHECK(beam.getBeamQualityFactor().value() > 1);
+    CHECK(beam.getBeamPropagationFactor().value() > 1);
   }
 }
 
@@ -491,7 +519,7 @@ SCENARIO("Complex Beam Parameter Calculations", "[GaussianBeam]")
     {
       auto q = beam.getComplexBeamParameter<t::centimeter>(8 * t::meter());
       std::cout << "q: " << q << std::endl;
-      auto one_over_q = complex<double>(1., 0.) / q;
+      auto one_over_q = std::complex<double>(1., 0.) / q;
 
       auto R = beam.getRadiusOfCurvature<t::centimeter>(8 * t::meter());
       auto one_over_R = 1. / R;

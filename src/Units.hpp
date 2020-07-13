@@ -141,4 +141,70 @@ using namespace boost;
 using namespace boost::units;
 using namespace boost::units::i;
 
+
+// define multiplication between int's and quantity<unit>'s
+// otherwise, we can't do this
+// quantity<t::m> L(3.*m);
+// quantity<t::m> L2 = 3*L; // error
+// quantity<t::m> L2 = 3.*L; // OK
+template <typename U, typename T>
+boost::units::quantity<U, T> operator*(int a, boost::units::quantity<U, T> b)
+{
+  return static_cast<T>(a) * b;
+}
+
+template <typename U, typename T>
+boost::units::quantity<U, T> operator*(boost::units::quantity<U, T> b, int a)
+{
+  return static_cast<T>(a) * b;
+}
+
+// define multiplication between int's and units, so that template type
+// deduction will work.
+// otherwise, we can't do this
+//
+// template<typename U>
+// void Func( quantity<U> q );
+// ...
+// Func(3*m); // error
+// Func(3.*m); // OK
+template <typename U, typename T>
+boost::units::quantity<boost::units::unit<U, T> > operator*(
+    int a, boost::units::unit<U, T> u)
+{
+  return static_cast<double>(a) * u;
+}
+
+template <typename U, typename T>
+boost::units::quantity<boost::units::unit<U, T> > operator*(
+    boost::units::unit<U, T> u, int a)
+{
+  return static_cast<double>(a) * u;
+}
+
+// define division of quantity<unit>'s by ints
+// otherwise, we can't do this
+// quantity<t::m> L(3.*m);
+// quantity<t::m> L2 = L/3; // error
+// quantity<t::m> L2 = L/3.; // OK
+template <typename U, typename T>
+boost::units::quantity<U, T>
+operator/(boost::units::quantity<U, T> b, int a)
+{
+  return b / static_cast<T>(a);
+}
+
+// define division of int by quantity<unit>
+// otherwise, we can't do this
+// quantity<t::s> T(2.*s);
+// quantity<t::Hz> L2 = 1/T; // error
+// quantity<t::Hz> L2 = 1./T.; // OK
+template <typename U, typename T>
+boost::units::quantity<typename boost::units::divide_typeof_helper<t::dimensionless, U>::type, T>
+operator/(int a, boost::units::quantity<U, T> b)
+{
+  return static_cast<T>(a)/b;
+}
+
+
 #endif  // include protector

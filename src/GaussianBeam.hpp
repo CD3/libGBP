@@ -10,12 +10,9 @@
 #include <complex>
 #include <iostream>
 
-#include "OpticalElements/OpticalElementInterface.hpp"
 #include "LaserBeam.hpp"
+#include "OpticalElements/OpticalElementInterface.hpp"
 
-using std::complex;
-
-static constexpr double sqrt2 = 1.41421356237;
 /** @class
  * @brief A class implementing Gaussian Beam calculations.
  * @author C.D. Clark III
@@ -27,547 +24,238 @@ static constexpr double sqrt2 = 1.41421356237;
  * @todo: implement methods to get electric field and irradiance at given (r,z)
  * coordinate.
  */
-class GaussianBeam
+class GaussianLaserBeam : public LaserBeam
 {
- public:
  protected:
-  // Note on case: we are capitalizing member names here so that
-  //               we can use macros to generate the accessor functions.
+  constexpr const double sqrt2() { return 1.41421356237; }
+  constexpr const double sqrt_ln2(){return  0.8325546111576977; }
 
-  quantity<t::hertz> Frequency;  ///< frequency of the light
-  quantity<t::nanometer>
-                          Wavelength;  ///< wavelength of light in the propagation medium
-  quantity<t::centimeter> WaistPosition;  ///< position of the beam waist
-  quantity<t::centimeter>
-      OneOverE2WaistRadius;  ///< radius (1/e^2) of the beam waist
-  quantity<t::radian>
-                      WaistPhase;  ///< phase of the electric field at beam waist position.
-  quantity<t::watt>   Power;  ///< total power in the beam
-  quantity<t::radian> OneOverE2HalfAngleDivergence;  ///< beam divergence
-  bool                DiffractionLimitedDivergence =
-      true;  ///< flag indicating if the divergence should be compured from the
-             ///< defraction limit or not
-  quantity<t::centimeter>
-      CurrentPosition;  ///< the current position in the beam.
+#define ADD_MEMBER(NAME, UNIT)                                               \
+ protected:                                                                  \
+  boost::units::quantity<UNIT, double> m_##NAME;                             \
+                                                                             \
+ public:                                                                     \
+  template<typename R = UNIT>                                                \
+  boost::units::quantity<R> get##NAME() const                                \
+  {                                                                          \
+    static_assert(std::is_same<typename R::dimension_type,                   \
+                               typename UNIT::dimension_type>::value,        \
+                  "Dimensions Error: Requested return type for get##NAME() " \
+                  "method has wrong dimensions.");                           \
+    return boost::units::quantity<R>(m_##NAME);                              \
+  }                                                                          \
+  template<typename A>                                                       \
+  void set##NAME(boost::units::quantity<A> a)                                \
+  {                                                                          \
+    static_assert(                                                           \
+        std::is_same<typename A::dimension_type,                             \
+                     typename UNIT::dimension_type>::value,                  \
+        "Dimensions Error: Argument type of set##NAME(...) method has "      \
+        "wrong dimensions.");                                                \
+    m_##NAME = boost::units::quantity<UNIT>(a);                              \
+  }
 
- public:
-  // MACROS
+  ADD_MEMBER(CurrentPosition, t::cm);
+  ADD_MEMBER(WaistPhase, t::rad);
+
+#undef ADD_MEMBER
+#define ADD_DERIVED_GETTER(NAME, UNIT, ...)                           \
+ public: \
+  template<typename R = UNIT>                                         \
+  boost::units::quantity<R> get##NAME() const                         \
+  {                                                                   \
+    static_assert(std::is_same<typename R::dimension_type,            \
+                               typename UNIT::dimension_type>::value, \
+                  "Dimensions Error: Requested return type for "      \
+                  "get##NAME() method "                               \
+                  "has wrong dimensions.");                           \
+    return boost::units::quantity<R>(__VA_ARGS__);                    \
+  }
+
+#define ADD_DERIVED_SETTER(NAME, UNIT, ...)                            \
+  template<typename A = UNIT>                                          \
+  void set##NAME(boost::units::quantity<A> arg)                        \
+  {                                                                    \
+    static_assert(std::is_same<typename A::dimension_type,             \
+                               typename UNIT::dimension_type>::value, \
+                  "Dimensions Error: Argument type of "                \
+                  "set##NAME(...) method "                             \
+                  "has wrong dimensions.");                            \
+    __VA_ARGS__;                                                       \
+  }
+
+  // provide getters and setters for all of the common beam width conventions
+  //
+  // the theory of Gaussian beams is almost always formulated in terms of the beam
+  // radius, but we almost always will want to work with the beam diameter. this
+  // setter allows the user to set the beam diameter, even through we are storing
+  // the radius.
+  //
+  // Siegman shows that if we use the beam standard deviation, the usual beam propagation equations
+  // can be used.
+  ADD_DERIVED_GETTER(OneOverESquaredWaistRadius,        t::cm, 2.*this->getWaistStandardDeviation() );
+  ADD_DERIVED_SETTER(OneOverESquaredWaistRadius,        t::cm, this->setWaistStandardDeviation(arg/2.) );
+  ADD_DERIVED_GETTER(OneOverESquaredWaistDiameter,      t::cm, 2.*this->getOneOverESquaredWaistRadius() );
+  ADD_DERIVED_SETTER(OneOverESquaredWaistDiameter,      t::cm, this->setOneOverESquaredWaistRadius(arg/2.) );
+  ADD_DERIVED_GETTER(OneOverE2WaistRadius,              t::cm, this->getOneOverESquaredWaistRadius() );
+  ADD_DERIVED_SETTER(OneOverE2WaistRadius,              t::cm, this->setOneOverESquaredWaistRadius(arg) );
+  ADD_DERIVED_GETTER(OneOverE2WaistDiameter,            t::cm, this->getOneOverESquaredWaistDiameter() );
+  ADD_DERIVED_SETTER(OneOverE2WaistDiameter,            t::cm, this->setOneOverESquaredWaistDiameter(arg) );
+
+  ADD_DERIVED_GETTER(OneOverEWaistRadius,               t::cm, this->getOneOverESquaredWaistRadius()/sqrt2() );
+  ADD_DERIVED_SETTER(OneOverEWaistRadius,               t::cm, this->setOneOverESquaredWaistRadius(sqrt2()*arg) );
+  ADD_DERIVED_GETTER(OneOverEWaistDiameter,             t::cm, this->getOneOverESquaredWaistDiameter()/sqrt2() );
+  ADD_DERIVED_SETTER(OneOverEWaistDiameter,             t::cm, this->setOneOverESquaredWaistDiameter(sqrt2()*arg) );
+
+  ADD_DERIVED_GETTER(FullWidthHalfMaximumWaistRadius,   t::cm, this->getOneOverESquaredWaistRadius()*sqrt_ln2()/sqrt2() );
+  ADD_DERIVED_SETTER(FullWidthHalfMaximumWaistRadius,   t::cm, this->setOneOverESquaredWaistRadius(arg/sqrt2()/sqrt_ln2()) );
+  ADD_DERIVED_GETTER(FullWidthHalfMaximumWaistDiameter, t::cm, this->getOneOverESquaredWaistDiameter()*sqrt_ln2()/sqrt2() );
+  ADD_DERIVED_SETTER(FullWidthHalfMaximumWaistDiameter, t::cm, this->setOneOverESquaredWaistDiameter(arg*sqrt2()/sqrt_ln2()) );
+
+
+  ADD_DERIVED_GETTER(OneOverESquaredHalfAngleDivergence,        t::mrad, 2.*this->getAngularSpreadStandardDeviation() );
+  ADD_DERIVED_SETTER(OneOverESquaredHalfAngleDivergence,        t::mrad, this->setAngularSpreadStandardDeviation(arg/2.) );
+  ADD_DERIVED_GETTER(OneOverESquaredFullAngleDivergence,        t::mrad, 2.*this->getOneOverESquaredHalfAngleDivergence() );
+  ADD_DERIVED_SETTER(OneOverESquaredFullAngleDivergence,        t::mrad, this->setOneOverESquaredHalfAngleDivergence(arg/2.) );
+
+  ADD_DERIVED_GETTER(OneOverE2HalfAngleDivergence,        t::mrad, 2.*this->getAngularSpreadStandardDeviation() );
+  ADD_DERIVED_SETTER(OneOverE2HalfAngleDivergence,        t::mrad, this->setAngularSpreadStandardDeviation(arg/2.) );
+  ADD_DERIVED_GETTER(OneOverE2FullAngleDivergence,        t::mrad, 2.*this->getOneOverESquaredHalfAngleDivergence() );
+  ADD_DERIVED_SETTER(OneOverE2FullAngleDivergence,        t::mrad, this->setOneOverESquaredHalfAngleDivergence(arg/2.) );
+
+  ADD_DERIVED_GETTER(OneOverEHalfAngleDivergence,        t::mrad, this->getOneOverESquaredHalfAngleDivergence()/sqrt2() );
+  ADD_DERIVED_SETTER(OneOverEHalfAngleDivergence,        t::mrad, this->setOneOverESquaredHalfAngleDivergence(arg*sqrt2()) );
+  ADD_DERIVED_GETTER(OneOverEFullAngleDivergence,        t::mrad, this->getOneOverESquaredFullAngleDivergence()/sqrt2() );
+  ADD_DERIVED_SETTER(OneOverEFullAngleDivergence,        t::mrad, this->setOneOverESquaredFullAngleDivergence(arg*sqrt2()) );
+
+  ADD_DERIVED_GETTER(OneOverESquaredHalfAngleDiffractionLimitedDivergence, t::mrad, 2.*this->getDiffractionLimitedAngularSpreadStandardDeviation() );
+  ADD_DERIVED_GETTER(OneOverE2HalfAngleDiffractionLimitedDivergence,       t::mrad, 2.*this->getDiffractionLimitedAngularSpreadStandardDeviation() );
+  ADD_DERIVED_GETTER(OneOverESquaredFullAngleDiffractionLimitedDivergence, t::mrad, 2.*this->getOneOverESquaredHalfAngleDiffractionLimitedDivergence() );
+  ADD_DERIVED_GETTER(OneOverE2FullAngleDiffractionLimitedDivergence,       t::mrad, 2.*this->getOneOverE2HalfAngleDiffractionLimitedDivergence() );
+  ADD_DERIVED_GETTER(OneOverEHalfAngleDiffractionLimitedDivergence,        t::mrad, this->getOneOverESquaredHalfAngleDiffractionLimitedDivergence()/sqrt2() );
+  ADD_DERIVED_GETTER(OneOverEFullAngleDiffractionLimitedDivergence,        t::mrad, this->getOneOverESquaredFullAngleDiffractionLimitedDivergence()/sqrt2() );
+
+
+  ADD_DERIVED_GETTER(RayleighRange, t::cm,  this->getOneOverESquaredWaistRadius() / this->getOneOverESquaredHalfAngleDivergence<t::radian>().value());
+
+
+
+#undef ADD_DERIVED_GETTER
+#undef ADD_DERIVED_SETTER
+
+#define ADD_DERIVED_GETTER(NAME, UNIT, ...)                                 \
+  template<typename R = UNIT, typename A = t::cm>                           \
+  boost::units::quantity<R> get##NAME(boost::units::quantity<A> z) const    \
+  {                                                                         \
+    static_assert(                                                          \
+        std::is_same<typename R::dimension_type,                            \
+                     typename UNIT::dimension_type>::value,                 \
+        "Dimensions Error: Requested return type for "                      \
+        "get##NAME(...) method "                                            \
+        "has wrong dimensions. Should have the same dimensions as " #UNIT); \
+    static_assert(std::is_same<typename A::dimension_type,                  \
+                               typename t::cm::dimension_type>::value,      \
+                  "Dimensions Error: argument to get##NAME(...) method "    \
+                  "has wrong dimensions.");                                 \
+    return boost::units::quantity<R>(__VA_ARGS__);                          \
+  }
+
+  ADD_DERIVED_GETTER(OneOverESquaredDiameter,  t::cm, this->getFourSigmaDiameter(z));
+  ADD_DERIVED_GETTER(OneOverESquaredRadius,    t::cm, this->getOneOverESquaredDiameter(z)/2);
+  ADD_DERIVED_GETTER(OneOverE2Diameter,        t::cm, this->getOneOverESquaredDiameter(z));
+  ADD_DERIVED_GETTER(OneOverE2Radius,          t::cm, this->getOneOverESquaredRadius(z));
+  ADD_DERIVED_GETTER(OneOverEDiameter,         t::cm, this->getOneOverESquaredDiameter(z)/sqrt2());
+  ADD_DERIVED_GETTER(OneOverERadius,           t::cm, this->getOneOverESquaredRadius(z)/sqrt2());
+  ADD_DERIVED_GETTER(FullWidthHalfMaxDiameter, t::cm, this->getOneOverESquaredDiameter(z)*sqrt_ln2()/sqrt2());
+  ADD_DERIVED_GETTER(FullWidthHalfMaxRadius,   t::cm, this->getOneOverESquaredRadius(z)*sqrt_ln2()/sqrt2());
+
+  ADD_DERIVED_GETTER(OneOverESquaredArea,  decltype(i::cm*i::cm), M_PI * pow<2>(getOneOverESquaredRadius(z)) );
+  ADD_DERIVED_GETTER(OneOverE2Area,        decltype(i::cm*i::cm), M_PI * pow<2>(getOneOverE2Radius(z)) );
+  ADD_DERIVED_GETTER(OneOverEArea,         decltype(i::cm*i::cm), M_PI * pow<2>(getOneOverERadius(z)) );
+  ADD_DERIVED_GETTER(FullWidthHalfMaxArea, decltype(i::cm*i::cm), M_PI * pow<2>(getFullWidthHalfMaxRadius(z)) );
+
+  ADD_DERIVED_GETTER(RelativeWaistPosition, t::cm,                      this->template getWaistPosition<t::cm>() - boost::units::quantity<t::cm>(z));
+  ADD_DERIVED_GETTER(RadiusOfCurvature,     t::cm,                      -getRelativeWaistPosition(z) * (1 + pow<2>(getRayleighRange() / -getRelativeWaistPosition(z))));
+  ADD_DERIVED_GETTER(PeakIrradiance,        decltype(i::W/i::cm/i::cm), this->getPower()/this->getOneOverEArea(z));
+  ADD_DERIVED_GETTER(GouyPhase,             t::dimensionless,           t::dimensionless()*atan(boost::units::quantity<t::dimensionless>(z/this->getRayleighRange())).value() );
+
+
+#undef ADD_DERIVED_GETTER
+
+#define FORWARD_POSITION_DEPENDENT_METHODS(NAME, UNIT) \
+  template<typename R = UNIT>                          \
+  boost::units::quantity<R> get##NAME()                \
+      const {return this->get##NAME<R>(this->getCurrentPosition());}
+
+  FORWARD_POSITION_DEPENDENT_METHODS(OneOverESquaredDiameter,  t::cm);
+  FORWARD_POSITION_DEPENDENT_METHODS(OneOverESquaredRadius,    t::cm);
+  FORWARD_POSITION_DEPENDENT_METHODS(OneOverE2Diameter,        t::cm);
+  FORWARD_POSITION_DEPENDENT_METHODS(OneOverE2Radius,          t::cm);
+  FORWARD_POSITION_DEPENDENT_METHODS(OneOverEDiameter,         t::cm);
+  FORWARD_POSITION_DEPENDENT_METHODS(OneOverERadius,           t::cm);
+  FORWARD_POSITION_DEPENDENT_METHODS(FullWidthHalfMaxDiameter, t::mrad);
+  FORWARD_POSITION_DEPENDENT_METHODS(FullWidthHalfMaxRadius,   t::mrad);
+  FORWARD_POSITION_DEPENDENT_METHODS(OneOverESquaredArea,      decltype(i::cm*i::cm));
+  FORWARD_POSITION_DEPENDENT_METHODS(OneOverE2Area,            decltype(i::cm*i::cm));
+  FORWARD_POSITION_DEPENDENT_METHODS(OneOverEArea,             decltype(i::cm*i::cm));
+  FORWARD_POSITION_DEPENDENT_METHODS(FullWidthHalfMaxArea,     decltype(i::cm*i::cm));
+  FORWARD_POSITION_DEPENDENT_METHODS(RadiusOfCurvature,        t::cm);
+  FORWARD_POSITION_DEPENDENT_METHODS(RelativeWaistPosition,    t::cm);
+  FORWARD_POSITION_DEPENDENT_METHODS(PeakIrradiance,    decltype(i::W/i::cm/i::cm));
+  FORWARD_POSITION_DEPENDENT_METHODS(GouyPhase,    t::dimensionless);
+
+#undef FORWARD_POSITION_DEPENDENT_METHODS
 
   /**
-   * this macro creates one setter and two getters for a member quantity.
-   * units are handled automatically by the compiler magic (requires C++11
-   * compiler).
+   * Computes the complex beam parameter at the position specified.
    */
-  // clang-format off
-#define ATTRIBUTE_SETTER_AND_GETTER(NAME)\
-    typedef decltype(NAME) NAME##Type;\
-    typedef NAME##Type::unit_type NAME##Unit;\
-    typedef NAME##Type::value_type NAME##Value;\
-    \
-    template<typename T> void set##NAME(T v) { this->NAME = NAME##Type(v); }\
-    template<typename T> quantity<T,NAME##Value> get##NAME() const       { return quantity<T,NAME##Value>(this->NAME); }\
-    inline NAME##Type get##NAME() const { return this->get##NAME<NAME##Unit>(); }
-
-  // clang-format on
-
-  /**
-   * declares setters and getters for derived parameters (parameters that are
-   * not stored directly, but can be calculated from the state). user needs to
-   * define non-template versions, and then templated versions that do automatic
-   * unit conversion will be created. example:
-   *
-   * DERIVED_SETTER_AND_GETTER( OneOverE2WaistDiameter, quantity<t::cm> );
-   * OneOverE2WaistDiameterType getOneOverE2WaistDiameter() const {...}
-   * void setOneOverE2WaistDiameter( OneOverE2WaistDiameterType v ) {...}
-   */
-  // clang-format off
-#define DERIVED_SETTER_AND_GETTER(NAME, Q)\
-    typedef Q NAME##Type;\
-    typedef NAME##Type::unit_type NAME##Unit;\
-    typedef NAME##Type::value_type NAME##Value;\
-    \
-    template<typename T>\
-    void set##NAME(T v) {this->set##NAME( NAME##Type(v) );}\
-    template<typename T>\
-    quantity<T,NAME##Value> get##NAME() const { return quantity<T,NAME##Value>(this->get##NAME()); }\
-    \
-    inline NAME##Type get##NAME() const; \
-    inline void  set##NAME(NAME##Type v); \
-  // clang-format on
-
-  /** declares getter for a derived parameter (parameter that is calculated from
-   * member variables). user needs to define non-template version (see
-   * DERIVED_SETTER_AND_GETTER above).
-   */
-  // clang-format off
-#define DERIVED_GETTER( NAME, Q )\
-    typedef Q NAME##Type;\
-    typedef NAME##Type::unit_type NAME##Unit;\
-    typedef NAME##Type::value_type NAME##Value;\
-    \
-    template<typename T>\
-    quantity<T,NAME##Value> get##NAME() const {return quantity<T,NAME##Value>(this->get##NAME()); } \
-    \
-    inline NAME##Type get##NAME() const; \
-  // clang-format on
-
-  /**
-   * getter for derived parameters that depend on z.
-   * user needs to define non-template version, and templated versions that
-   * handle unit conversions will be created.
-   *
-   * example:
-   *
-   * Z_DEPENDENT_DERIVED_GETTER( OneOverE2Diameter, quantity<t::cm> );
-   * OneOverE2DiameterType getOneOverE2Diameter(CurrentPositionType z) const
-   * {...}
-   *
-   *
-   */
-  // clang-format off
-#define Z_DEPENDENT_DERIVED_GETTER( NAME, Q )\
-    typedef Q NAME##Type;\
-    typedef NAME##Type::unit_type NAME##Unit;\
-    typedef NAME##Type::value_type NAME##Value;\
-    \
-    template<typename T>\
-    quantity<T,NAME##Value> get##NAME(   ) const {return this->get##NAME<T>( this->getCurrentPosition());}\
-    NAME##Type  get##NAME(   ) const {return this->get##NAME(    this->getCurrentPosition());}\
-    template<typename T, typename V>\
-    quantity<T,NAME##Value> get##NAME(V z) const {return quantity<T,NAME##Value>( this->get##NAME( CurrentPositionType(z) ));}\
-    template<typename V>\
-    NAME##Type  get##NAME(V z) const {return NAME##Type(  this->get##NAME( CurrentPositionType(z) ));}\
-    \
-    inline NAME##Type get##NAME(CurrentPositionType z) const;
-  // clang-format on
-
-  // DECLARATIONS
-
-  ATTRIBUTE_SETTER_AND_GETTER(Frequency);
-  ATTRIBUTE_SETTER_AND_GETTER(Wavelength);
-  ATTRIBUTE_SETTER_AND_GETTER(WaistPosition);
-  ATTRIBUTE_SETTER_AND_GETTER(OneOverE2WaistRadius);
-  ATTRIBUTE_SETTER_AND_GETTER(WaistPhase);
-  ATTRIBUTE_SETTER_AND_GETTER(Power);
-  ATTRIBUTE_SETTER_AND_GETTER(CurrentPosition);
-
-  // methods to allow other conventions for setting beam size
-  DERIVED_SETTER_AND_GETTER(OneOverE2WaistDiameter, OneOverE2WaistRadiusType);
-  DERIVED_SETTER_AND_GETTER(OneOverEWaistRadius, OneOverE2WaistRadiusType);
-  DERIVED_SETTER_AND_GETTER(OneOverEWaistDiameter, OneOverE2WaistRadiusType);
-  DERIVED_SETTER_AND_GETTER(OneOverESquaredWaistRadius, OneOverE2WaistRadiusType);
-  DERIVED_SETTER_AND_GETTER(OneOverESquaredWaistDiameter, OneOverE2WaistRadiusType);
-  DERIVED_SETTER_AND_GETTER(SecondMomentWaistRadius, OneOverE2WaistRadiusType);
-  DERIVED_SETTER_AND_GETTER(SecondMomentWaistDiameter, OneOverE2WaistRadiusType);
-
-  DERIVED_SETTER_AND_GETTER(OneOverE2HalfAngleDivergence,
-                            quantity<t::milliradian>);
-  DERIVED_SETTER_AND_GETTER(OneOverE2FullAngleDivergence,
-                            quantity<t::milliradian>);
-  DERIVED_SETTER_AND_GETTER(OneOverEHalfAngleDivergence,
-                            quantity<t::milliradian>);
-  DERIVED_SETTER_AND_GETTER(OneOverEFullAngleDivergence,
-                            quantity<t::milliradian>);
-  DERIVED_SETTER_AND_GETTER(OneOverESquaredHalfAngleDivergence,
-                            quantity<t::milliradian>);
-  DERIVED_SETTER_AND_GETTER(OneOverESquaredFullAngleDivergence,
-                            quantity<t::milliradian>);
-  DERIVED_SETTER_AND_GETTER(SecondMomentHalfAngleDivergence,
-                            quantity<t::milliradian>);
-  DERIVED_SETTER_AND_GETTER(SecondMomentFullAngleDivergence,
-                            quantity<t::milliradian>);
-
-  DERIVED_GETTER(BeamQualityFactor, quantity<t::dimensionless>);
-  DERIVED_GETTER(OneOverE2HalfAngleDiffractionLimitedDivergence,
-                 quantity<t::milliradian>);
-
-  DERIVED_GETTER(FreeSpaceWavelength, WavelengthType);
-  DERIVED_GETTER(RayleighRange, OneOverE2WaistRadiusType);
-  DERIVED_GETTER(DiffractionLimitedOneOverE2HalfAngleDivergence,
-                 quantity<t::milliradian>);
-
-  Z_DEPENDENT_DERIVED_GETTER(OneOverE2Radius, OneOverE2WaistRadiusType);
-  Z_DEPENDENT_DERIVED_GETTER(OneOverERadius, OneOverE2WaistRadiusType);
-  Z_DEPENDENT_DERIVED_GETTER(OneOverE2Diameter, OneOverE2WaistRadiusType);
-  Z_DEPENDENT_DERIVED_GETTER(OneOverEDiameter, OneOverE2WaistRadiusType);
-  Z_DEPENDENT_DERIVED_GETTER(RadiusOfCurvature, WaistPositionType);
-  Z_DEPENDENT_DERIVED_GETTER(RelativeWaistPosition, WaistPositionType);
-  Z_DEPENDENT_DERIVED_GETTER(OneOverE2Area, quantity<t::centimeter_squared>);
-  Z_DEPENDENT_DERIVED_GETTER(OneOverEArea, quantity<t::centimeter_squared>);
-  Z_DEPENDENT_DERIVED_GETTER(PeakIrradiance,
-                             quantity<t::watt_per_centimeter_squared>);
-  Z_DEPENDENT_DERIVED_GETTER(GouyPhase, quantity<t::radian>);
-  typedef quantity<WaistPositionUnit, complex<double> > ComplexLengthType;
-  Z_DEPENDENT_DERIVED_GETTER(ComplexBeamParameter, ComplexLengthType);
-  // typedef quantity<t::volt_per_meter, complex<double> >
-  // ComplexElectricFieldType; Z_DEPENDENT_DERIVED_GETTER( ElectricField,
-  // ComplexElectricFieldType );
-
-  inline void setDiffractionLimitedDivergence(bool val);
-  inline bool getDiffractionLimitedDivergence() const;
-
-  // OTHER METHODS
-
-  template<typename T, typename U>
-  void transform(OpticalElementInterface<T>* elem, U z);
-  template<typename T>
-  void transform(OpticalElementInterface<T>* elem)
+  template<typename R = t::cm, typename A = t::cm>
+  boost::units::quantity<R,std::complex<double>> getComplexBeamParameter(
+      boost::units::quantity<A> z) const
   {
-    this->transform(elem, this->getCurrentPosition());
-  }
-};
-
-// the theory of Gaussian beams is almost always formulated in terms of the beam
-// radius, but we almost always will want to work with the beam diameter. this
-// setter allows the user to set the beam diameter, even through we are storing
-// the radius.
-void GaussianBeam::setOneOverE2WaistDiameter(OneOverE2WaistDiameterType v)
-{
-  this->setOneOverE2WaistRadius(OneOverE2WaistRadiusType(v) / 2.);
-}
-
-GaussianBeam::OneOverE2WaistDiameterType
-GaussianBeam::getOneOverE2WaistDiameter() const
-{
-  return 2. * this->getOneOverE2WaistRadius();
-}
-
-void GaussianBeam::setOneOverEWaistRadius(OneOverEWaistRadiusType v)
-{
-  this->setOneOverE2WaistRadius(sqrt2 * OneOverE2WaistRadiusType(v));
-}
-
-GaussianBeam::OneOverEWaistRadiusType
-GaussianBeam::getOneOverEWaistRadius()
-    const
-{
-  return this->getOneOverE2WaistRadius() / sqrt2;
-}
-
-void GaussianBeam::setOneOverEWaistDiameter(OneOverEWaistDiameterType v)
-{
-  this->setOneOverE2WaistRadius(OneOverE2WaistRadiusType(v) / sqrt2);
-}
-
-GaussianBeam::OneOverEWaistDiameterType
-GaussianBeam::getOneOverEWaistDiameter()
-    const
-{
-  return this->getOneOverE2WaistRadius() * sqrt2;
-}
-
-void GaussianBeam::setOneOverESquaredWaistRadius(OneOverESquaredWaistRadiusType v)
-{
-  this->setOneOverE2WaistRadius(OneOverE2WaistRadiusType(v));
-}
-
-GaussianBeam::OneOverESquaredWaistRadiusType
-GaussianBeam::getOneOverESquaredWaistRadius() const
-{
-  return this->getOneOverE2WaistRadius();
-}
-
-void GaussianBeam::setOneOverESquaredWaistDiameter(OneOverESquaredWaistDiameterType v)
-{
-  this->setOneOverE2WaistRadius(OneOverE2WaistRadiusType(v) / 2.);
-}
-
-GaussianBeam::OneOverESquaredWaistDiameterType
-GaussianBeam::getOneOverESquaredWaistDiameter() const
-{
-  return 2. * this->getOneOverE2WaistRadius();
-}
-
-void GaussianBeam::setSecondMomentWaistRadius(SecondMomentWaistRadiusType v)
-{
-  this->setOneOverE2WaistRadius(2.*OneOverE2WaistRadiusType(v));
-}
-
-GaussianBeam::SecondMomentWaistRadiusType
-GaussianBeam::getSecondMomentWaistRadius() const
-{
-  return this->getOneOverE2WaistRadius()/2.;
-}
-
-void GaussianBeam::setSecondMomentWaistDiameter(SecondMomentWaistDiameterType v)
-{
-  this->setOneOverE2WaistRadius(OneOverE2WaistRadiusType(v));
-}
-
-GaussianBeam::SecondMomentWaistDiameterType
-GaussianBeam::getSecondMomentWaistDiameter() const
-{
-  return this->getOneOverE2WaistRadius();
-}
-
-
-
-
-
-void GaussianBeam::setDiffractionLimitedDivergence(bool val)
-{
-  this->DiffractionLimitedDivergence = val;
-}
-
-bool GaussianBeam::getDiffractionLimitedDivergence() const
-{
-  return this->DiffractionLimitedDivergence;
-}
-
-GaussianBeam::FreeSpaceWavelengthType GaussianBeam::getFreeSpaceWavelength()
-    const
-{
-  auto val = constants::SpeedOfLight / this->getFrequency<t::hertz>();
-
-  return FreeSpaceWavelengthType(val);
-}
-
-GaussianBeam::RayleighRangeType GaussianBeam::getRayleighRange() const
-{
-  auto val = this->getOneOverE2WaistRadius() /
-             this->getOneOverE2HalfAngleDivergence<t::radian>().value();
-  return RayleighRangeType(val);
-}
-
-GaussianBeam::BeamQualityFactorType GaussianBeam::getBeamQualityFactor() const
-{
-  if (this->DiffractionLimitedDivergence) {
-    return BeamQualityFactorType::from_value(1);
-  }
-
-  return BeamQualityFactorType(
-      OneOverE2HalfAngleDivergence /
-      getOneOverE2HalfAngleDiffractionLimitedDivergence());
-}
-
-GaussianBeam::OneOverE2HalfAngleDivergenceType
-GaussianBeam::getOneOverE2HalfAngleDiffractionLimitedDivergence() const
-{
-  auto val = getWavelength<t::nanometer>() /
-             (M_PI * this->getOneOverE2WaistRadius<t::nanometer>()) *
-             t::radian();
-
-  return OneOverE2HalfAngleDiffractionLimitedDivergenceType(val);
-}
-
-void GaussianBeam::setOneOverE2HalfAngleDivergence(
-    OneOverE2HalfAngleDivergenceType val)
-{
-  this->OneOverE2HalfAngleDivergence = quantity<t::radian>(val);
-  this->DiffractionLimitedDivergence = false;
-}
-
-
-
-
-
-
-GaussianBeam::OneOverE2HalfAngleDivergenceType
-GaussianBeam::getOneOverE2HalfAngleDivergence() const
-{
-  if (this->DiffractionLimitedDivergence)
-    return this->getOneOverE2HalfAngleDiffractionLimitedDivergence();
-  return OneOverE2HalfAngleDivergenceType(this->OneOverE2HalfAngleDivergence);
-}
-
-void GaussianBeam::setOneOverE2FullAngleDivergence(
-    OneOverE2FullAngleDivergenceType val)
-{
-  this->setOneOverE2HalfAngleDivergence(val / 2.);
-}
-
-GaussianBeam::OneOverE2FullAngleDivergenceType
-GaussianBeam::getOneOverE2FullAngleDivergence() const
-{
-  return 2. * getOneOverE2HalfAngleDivergence();
-}
-
-void GaussianBeam::setOneOverEHalfAngleDivergence(
-    OneOverEHalfAngleDivergenceType val)
-{
-  this->setOneOverE2HalfAngleDivergence(val * sqrt2);
-}
-
-GaussianBeam::OneOverEHalfAngleDivergenceType
-GaussianBeam::getOneOverEHalfAngleDivergence() const
-{
-  return getOneOverE2HalfAngleDivergence() / sqrt2;
-}
-
-void GaussianBeam::setOneOverEFullAngleDivergence(
-    OneOverEFullAngleDivergenceType val)
-{
-  this->setOneOverEHalfAngleDivergence(val / 2.);
-}
-
-GaussianBeam::OneOverEFullAngleDivergenceType
-GaussianBeam::getOneOverEFullAngleDivergence() const
-{
-  return getOneOverEHalfAngleDivergence() * 2.;
-}
-
-void GaussianBeam::setOneOverESquaredHalfAngleDivergence(
-    OneOverESquaredHalfAngleDivergenceType val)
-{
-  this->setOneOverE2HalfAngleDivergence(val);
-}
-
-GaussianBeam::OneOverESquaredHalfAngleDivergenceType
-GaussianBeam::getOneOverESquaredHalfAngleDivergence() const
-{
-  return getOneOverE2HalfAngleDivergence();
-}
-
-void GaussianBeam::setOneOverESquaredFullAngleDivergence(
-    OneOverESquaredFullAngleDivergenceType val)
-{
-  this->setOneOverE2HalfAngleDivergence(val / 2.);
-}
-
-GaussianBeam::OneOverESquaredFullAngleDivergenceType
-GaussianBeam::getOneOverESquaredFullAngleDivergence() const
-{
-  return getOneOverE2HalfAngleDivergence() * 2.;
-}
-
-void GaussianBeam::setSecondMomentHalfAngleDivergence(
-    SecondMomentHalfAngleDivergenceType val)
-{
-  this->setOneOverE2HalfAngleDivergence(val);
-}
-
-GaussianBeam::SecondMomentHalfAngleDivergenceType
-GaussianBeam::getSecondMomentHalfAngleDivergence() const
-{
-  return getOneOverE2HalfAngleDivergence();
-}
-
-void GaussianBeam::setSecondMomentFullAngleDivergence(
-    SecondMomentFullAngleDivergenceType val)
-{
-  this->setOneOverE2HalfAngleDivergence(val / 2.);
-}
-
-GaussianBeam::SecondMomentFullAngleDivergenceType
-GaussianBeam::getSecondMomentFullAngleDivergence() const
-{
-  return getOneOverE2HalfAngleDivergence() * 2.;
-}
-
-
-
-
-
-
-GaussianBeam::OneOverE2RadiusType GaussianBeam::getOneOverE2Radius(
-    CurrentPositionType z) const
-{
-  auto dz = -getRelativeWaistPosition(z);
-
-  auto val =
-      getOneOverE2WaistRadius() *
-      root<2>(1 +
-              pow<2>(getOneOverE2HalfAngleDivergence<t::radian>().value() *
-                     OneOverE2WaistRadiusType(dz) / getOneOverE2WaistRadius()));
-
-  return OneOverE2RadiusType(val);
-}
-
-GaussianBeam::OneOverE2DiameterType GaussianBeam::getOneOverE2Diameter(
-    CurrentPositionType z) const
-{
-  return OneOverE2DiameterType(2. * getOneOverE2Radius(z));
-}
-
-GaussianBeam::OneOverERadiusType GaussianBeam::getOneOverERadius(
-    CurrentPositionType z) const
-{
-  return OneOverERadiusType(getOneOverE2Radius(z) / sqrt2);
-}
-
-GaussianBeam::OneOverEDiameterType GaussianBeam::getOneOverEDiameter(
-    CurrentPositionType z) const
-{
-  return OneOverEDiameterType(2. * getOneOverERadius(z));
-}
-
-GaussianBeam::RadiusOfCurvatureType GaussianBeam::getRadiusOfCurvature(
-    CurrentPositionType z) const
-{
-  auto dz = -getRelativeWaistPosition(z);
-
-  auto val = dz * (1 + pow<2>(getRayleighRange() / dz));
-
-  return RadiusOfCurvatureType(val);
-}
-
-GaussianBeam::ComplexBeamParameterType GaussianBeam::getComplexBeamParameter(
-    CurrentPositionType z) const
-{
-  auto dz = -getRelativeWaistPosition<ComplexBeamParameterUnit>(z);
+    static_assert(
+        std::is_same<typename R::dimension_type,
+                     typename t::cm::dimension_type>::value,
+        "Dimensions Error: Requested return type for "
+        "getBeamStandardDeviation(...) method "
+        "has wrong dimensions. Should have same dimensions as t::cm.");
+    static_assert(
+        std::is_same<typename A::dimension_type,
+                     typename t::cm::dimension_type>::value,
+        "Dimensions Error: argument to getBeamStandardDeviation(...) method "
+        "has wrong dimensions.");
+  auto dz = -this->getRelativeWaistPosition<R>(z);
 
   double real, imag;
 
   real = dz.value();
-  imag = getRayleighRange<ComplexBeamParameterUnit>().value();
+  imag = this->getRayleighRange<R>().value();
 
-  return ComplexBeamParameterType::from_value(complex<double>(real, imag));
-}
+  return boost::units::quantity<R,std::complex<double>>::from_value(std::complex<double>(real, imag));
+  }
 
-GaussianBeam::RelativeWaistPositionType GaussianBeam::getRelativeWaistPosition(
-    CurrentPositionType z) const
-{
-  auto val = RelativeWaistPositionType(getWaistPosition()) -
-             RelativeWaistPositionType(z);
+  /**
+   * Computes the complex beam parameter at the current position.
+   */
+  template<typename R = t::cm, typename A = t::cm>
+  boost::units::quantity<R,std::complex<double>> getComplexBeamParameter() const
+  {
+    return this->getComplexBeamParameter<R>(this->getCurrentPosition());
+  }
 
-  return val;
-}
-
-GaussianBeam::OneOverE2AreaType GaussianBeam::getOneOverE2Area(
-    CurrentPositionType z) const
-{
-  auto val = M_PI * pow<2>(getOneOverE2Radius(z));
-
-  return OneOverE2AreaType(val);
-}
-
-GaussianBeam::OneOverEAreaType GaussianBeam::getOneOverEArea(
-    CurrentPositionType z) const
-{
-  auto val = M_PI * pow<2>(getOneOverERadius(z));
-
-  return OneOverEAreaType(val);
-}
-
-GaussianBeam::PeakIrradianceType GaussianBeam::getPeakIrradiance(
-    CurrentPositionType z) const
-{
-  // Note: peak irradiance is P/A **when using 1/e beam diameter**.
-  //       for 1/e2 diameter, it will be  2*P/A.
-  auto val = getPower() / getOneOverEArea(z);
-
-  return PeakIrradianceType(val);
-}
-
-GaussianBeam::GouyPhaseType GaussianBeam::getGouyPhase(
-    CurrentPositionType z) const
-{
-  auto val = atan(z / getRayleighRange<CurrentPositionUnit>());
-
-  return GouyPhaseType(val);
-}
+  // OTHER METHODS
 
 template<typename T, typename U>
-void GaussianBeam::transform(OpticalElementInterface<T>* elem, U z)
+void transform(OpticalElementInterface<T>* elem, U z)
 {
-  complex<double> qi  = this->getComplexBeamParameter<T>(z).value();
-  auto            RTM = elem->getRTMatrix();
-  double          A   = RTM(0, 0);
-  double          B   = RTM(0, 1);
-  double          C   = RTM(1, 0);
-  double          D   = RTM(1, 1);
+  std::complex<double> qi  = this->getComplexBeamParameter<T>(z).value();
+  auto                 RTM = elem->getRTMatrix();
+  double               A   = RTM(0, 0);
+  double               B   = RTM(0, 1);
+  double               C   = RTM(1, 0);
+  double               D   = RTM(1, 1);
 
-  complex<double> qf = (A * qi + B) / (C * qi + D);
+  std::complex<double> qf = (A * qi + B) / (C * qi + D);
 
   // q = x + i y = z - i z_R
   //
@@ -597,5 +285,18 @@ void GaussianBeam::transform(OpticalElementInterface<T>* elem, U z)
   this->setOneOverE2WaistRadius(
       sqrt(qf.imag() * this->getWavelength<T>().value() / M_PI) * T());
 }
+  template<typename T>
+  void transform(OpticalElementInterface<T>* elem)
+  {
+    this->transform(elem, this->getCurrentPosition());
+  }
+};
+
+
+
+
+
+
+using GaussianBeam = GaussianLaserBeam;
 
 #endif

@@ -89,7 +89,7 @@ SCENARIO("LaserBeam can be configured and compute beam width at range")
           }
           THEN("the beam four sigma diameter at 12 m is 4.498820 mm")
           {
-            CHECK(beam.getBeamFourSigmaDiameter<t::millimeter>(12. * t::meter())
+            CHECK(beam.getFourSigmaDiameter<t::millimeter>(12. * t::meter())
                       .value() == Approx(4.498820));
           }
         }
@@ -125,7 +125,7 @@ SCENARIO("LaserBeam can be configured and compute beam width at range")
               beam.setAngularSpreadStandardDeviation(
                   beam.getDiffractionLimitedAngularSpreadStandardDeviation<
                       t::milliradian>());
-              CHECK(beam.getBeamFourSigmaDiameter<t::millimeter>(18. * i::m)
+              CHECK(beam.getFourSigmaDiameter<t::millimeter>(18. * i::m)
                         .value() == Approx(270.94538));
             }
           }

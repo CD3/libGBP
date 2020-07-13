@@ -2,6 +2,7 @@
 
 #include "GaussianBeam.hpp"
 #include "OpticalElements/ThinLens.hpp"
+
 SCENARIO("Gaussian beams can be focused by a lens" )
 {
   GIVEN("An ideal, collimated Gaussian beam with wavelength 500 nm, D_L = 5 mm")
