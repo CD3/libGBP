@@ -5,9 +5,9 @@
 #include <fstream>
 
 
-#include "GaussianBeam.hpp"
-#include "OpticalElements/SphericalInterface.hpp"
-#include "Builders/BeamBuilder.hpp"
+#include <libGBP/GaussianBeam.hpp>
+#include <libGBP/OpticalElements/SphericalInterface.hpp>
+#include <libGBP/Builders/BeamBuilder.hpp>
 
 TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
 {
@@ -62,8 +62,8 @@ TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
 
 }
 
-#include "GaussianBeam.hpp"
-#include "Builders/BeamBuilder.hpp"
+#include <libGBP/GaussianBeam.hpp>
+#include <libGBP/Builders/BeamBuilder.hpp>
 
 TEST_CASE( "BeamBuilder Tests" )
 {

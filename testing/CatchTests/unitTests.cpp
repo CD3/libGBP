@@ -8,7 +8,7 @@
 #define WRITE2(a, b) std::cout << a << " " << b << std::endl
 #define WRITE3(a, b, c) std::cout << a << " " << b << " " << c << std::endl
 
-#include "GaussianBeam.hpp"
+#include <libGBP/GaussianBeam.hpp>
 SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
 {
   GIVEN("An uninitialized GaussianBeam instance")
@@ -505,7 +505,7 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
   }
 }
 
-#include "GaussianBeam.hpp"
+#include <libGBP/GaussianBeam.hpp>
 SCENARIO("Complex Beam Parameter Calculations", "[GaussianBeam]")
 {
   GaussianBeam beam;
@@ -534,7 +534,7 @@ SCENARIO("Complex Beam Parameter Calculations", "[GaussianBeam]")
   }
 }
 
-#include "OpticalElements/ThinLens.hpp"
+#include <libGBP/OpticalElements/ThinLens.hpp>
 SCENARIO("Thin lens class calculations", "[OpticalElements]")
 {
   WHEN("lens is created")
@@ -589,7 +589,7 @@ SCENARIO("Thin lens class calculations", "[OpticalElements]")
   }
 }
 
-#include "OpticalElements/FlatInterface.hpp"
+#include <libGBP/OpticalElements/FlatInterface.hpp>
 SCENARIO("Flat interface class calculations", "[OpticalElements]")
 {
   WHEN("interface is created")
@@ -656,7 +656,7 @@ SCENARIO("Flat interface class calculations", "[OpticalElements]")
   }
 }
 
-#include "OpticalElements/SphericalInterface.hpp"
+#include <libGBP/OpticalElements/SphericalInterface.hpp>
 SCENARIO("Spherical interface class calculations", "[OpticalElements]")
 {
   WHEN("interface is created")
@@ -723,7 +723,7 @@ SCENARIO("Spherical interface class calculations", "[OpticalElements]")
   }
 }
 
-#include "OpticalElements/Filter.hpp"
+#include <libGBP/OpticalElements/Filter.hpp>
 SCENARIO(
     "Filter class calculations"
     "[OpticalElements]")
@@ -748,7 +748,7 @@ SCENARIO(
   }
 }
 
-#include "Media/LinearAbsorber.hpp"
+#include <libGBP/Media/LinearAbsorber.hpp>
 SCENARIO(
     "Linear absorber calculations"
     "[OpticalElements]")
@@ -780,10 +780,10 @@ SCENARIO(
   }
 }
 
-#include "Builders/BeamBuilder.hpp"
-#include "GaussianBeam.hpp"
-#include "OpticalElements/SphericalInterface.hpp"
-#include "OpticalElements/ThinLens.hpp"
+#include <libGBP/Builders/BeamBuilder.hpp>
+#include <libGBP/GaussianBeam.hpp>
+#include <libGBP/OpticalElements/SphericalInterface.hpp>
+#include <libGBP/OpticalElements/ThinLens.hpp>
 TEST_CASE("Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]")
 {
   GaussianBeam beam;
@@ -1013,8 +1013,8 @@ TEST_CASE("Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]")
   }
 }
 
-#include "Builders/BeamBuilder.hpp"
-#include "GaussianBeam.hpp"
+#include <libGBP/Builders/BeamBuilder.hpp>
+#include <libGBP/GaussianBeam.hpp>
 TEST_CASE("BeamBuilder Tests", "[Builders,GuassianBeam]")
 {
   BeamBuilder config;
@@ -1101,7 +1101,7 @@ TEST_CASE("BeamBuilder Tests", "[Builders,GuassianBeam]")
   }
 }
 
-#include "Builders/OpticalElementBuilder.hpp"
+#include <libGBP/Builders/OpticalElementBuilder.hpp>
 TEST_CASE("OpticalElementBuilder tests", "[Builders,OpticalElements]")
 {
   OpticalElementBuilder<t::centimeter> OEBuilder;
@@ -1184,12 +1184,12 @@ TEST_CASE("OpticalElementBuilder tests", "[Builders,OpticalElements]")
   }
 }
 
-#include "Builders/BeamBuilder.hpp"
-#include "Builders/OpticalSystemBuilder.hpp"
-#include "GaussianBeam.hpp"
-#include "OpticalElements/SphericalInterface.hpp"
-#include "OpticalElements/ThinLens.hpp"
-#include "OpticalSystem.hpp"
+#include <libGBP/Builders/BeamBuilder.hpp>
+#include <libGBP/Builders/OpticalSystemBuilder.hpp>
+#include <libGBP/GaussianBeam.hpp>
+#include <libGBP/OpticalElements/SphericalInterface.hpp>
+#include <libGBP/OpticalElements/ThinLens.hpp>
+#include <libGBP/OpticalSystem.hpp>
 TEST_CASE("Optical Systems", "[OpticalSystem]")
 {
   SECTION("manual configuration")
@@ -1285,9 +1285,9 @@ TEST_CASE("Optical Systems", "[OpticalSystem]")
   }
 }
 
-#include "Builders/MediaStackBuilder.hpp"
-#include "Media/LinearAbsorber.hpp"
-#include "MediaStack.hpp"
+#include <libGBP/Builders/MediaStackBuilder.hpp>
+#include <libGBP/Media/LinearAbsorber.hpp>
+#include <libGBP/MediaStack.hpp>
 TEST_CASE("Media Stack")
 {
   SECTION("boundaries configuration")
@@ -1425,7 +1425,7 @@ TEST_CASE("Media Stack")
   }
 }
 
-#include "GBPCalc.hpp"
+#include <libGBP/GBPCalc.hpp>
 TEST_CASE("GBPCalc tests")
 {
   ptree configTree;
@@ -1503,8 +1503,8 @@ TEST_CASE("GBPCalc tests")
   CHECK(z_vals[4].value() == Approx(12));
 }
 
-#include "GaussianBeam.hpp"
-#include "OpticalElements/ThinLens.hpp"
+#include <libGBP/GaussianBeam.hpp>
+#include <libGBP/OpticalElements/ThinLens.hpp>
 TEST_CASE("Gaussian Beam Examples", "[GuassianBeam,Examples]")
 {
   SECTION("Basic Example")

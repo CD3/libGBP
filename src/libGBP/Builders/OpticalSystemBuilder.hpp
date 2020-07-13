@@ -8,7 +8,7 @@
  */
 
 #include "Builder.hpp"
-#include "OpticalSystem.hpp"
+#include "../OpticalSystem.hpp"
 
 template<typename LengthUnitType>
 class OpticalSystemBuilder : public Builder<OpticalSystem<LengthUnitType> >

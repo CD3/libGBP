@@ -11,7 +11,7 @@
 
 #include <Eigen/Dense>
 
-#include "Units.hpp"
+#include "../Units.hpp"
 
 /** @class OpticalElementInterface
  * @brief Abstract class that defines the interface an optical element must

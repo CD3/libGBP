@@ -5,7 +5,7 @@
  * binary to check that we don't get multiply defined symbols.
  */
 
-#include "GaussianBeam.hpp"
+#include <libGBP/GaussianBeam.hpp>
 SCENARIO("GaussianBeam ODR" )
 {
   GaussianBeam beam;

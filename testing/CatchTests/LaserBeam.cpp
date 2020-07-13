@@ -1,4 +1,4 @@
-#include "LaserBeam.hpp"
+#include <libGBP/LaserBeam.hpp>
 
 #include "catch.hpp"
 

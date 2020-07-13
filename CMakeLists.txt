@@ -18,10 +18,10 @@ GIT_VERSION(libGBP)
 message( STATUS "libGBP version: ${libGBP_VERSION}")
 
 # need to run configure_file twice
-configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}_version.h.in"
-                "${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME}_version.h")
-configure_file( "${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME}_version.h"
-                "${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME}_version.h")
+configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/version.h.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/include/libGBP/version.h")
+configure_file( "${CMAKE_CURRENT_BINARY_DIR}/include/libGBP/version.h"
+                "${CMAKE_CURRENT_BINARY_DIR}/include/libGBP/version.h")
 
 
 set( cxx_needed_features
@@ -42,29 +42,29 @@ target_include_directories( ${LIB_NAME} INTERFACE
 target_sources(
   ${LIB_NAME}
   INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Units.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/GaussianBeam.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/GBPCalc.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/OpticalSystem.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/MediaStack.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Constants.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ptree.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Media/BaseMedia.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Media/LinearAbsorber.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Media/MediaInterface.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/OpticalElements/OpticalElementInterface.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/OpticalElements/FlatInterface.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/OpticalElements/SphericalInterface.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/OpticalElements/BaseOpticalElement.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/OpticalElements/Interface.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/OpticalElements/ThinLens.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/OpticalElements/Filter.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Builders/Builder.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Builders/MediaBuilder.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Builders/OpticalSystemBuilder.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Builders/OpticalElementBuilder.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Builders/BeamBuilder.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/Builders/MediaStackBuilder.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Units.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/GaussianBeam.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/GBPCalc.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalSystem.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/MediaStack.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Constants.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/utils/ptree.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Media/BaseMedia.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Media/LinearAbsorber.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Media/MediaInterface.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/OpticalElementInterface.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/FlatInterface.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/SphericalInterface.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/BaseOpticalElement.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/Interface.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/ThinLens.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/Filter.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Builders/Builder.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Builders/MediaBuilder.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Builders/OpticalSystemBuilder.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Builders/OpticalElementBuilder.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Builders/BeamBuilder.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Builders/MediaStackBuilder.hpp>
 )
 
 target_link_libraries(${LIB_NAME} INTERFACE Boost::boost Eigen3::Eigen)

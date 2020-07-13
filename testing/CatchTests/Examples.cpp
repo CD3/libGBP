@@ -1,7 +1,7 @@
 #include "catch.hpp"
 
-#include "GaussianBeam.hpp"
-#include "OpticalElements/ThinLens.hpp"
+#include <libGBP/GaussianBeam.hpp>
+#include <libGBP/OpticalElements/ThinLens.hpp>
 
 SCENARIO("Gaussian beams can be focused by a lens" )
 {

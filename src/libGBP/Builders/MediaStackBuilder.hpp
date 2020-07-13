@@ -7,9 +7,9 @@
  * @date 07/29/16
  */
 
-#include "Builder.hpp"
+#include "./Builder.hpp"
 #include "MediaBuilder.hpp"
-#include "MediaStack.hpp"
+#include "../MediaStack.hpp"
 
 using boost::property_tree::keyIntComp;
 

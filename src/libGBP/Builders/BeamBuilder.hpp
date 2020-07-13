@@ -25,8 +25,8 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include "Builder.hpp"
-#include "GaussianBeam.hpp"
+#include "./Builder.hpp"
+#include "../GaussianBeam.hpp"
 
 using std::vector;
 
