@@ -36,16 +36,67 @@ SCENARIO("Gaussian beams can be focused by a lens" )
   }
 }
 
-SCENARIO("Beam quality factor increases diameter at range." )
+TEST_CASE("The beam propagation (beam quality) factor increases diameter at range." )
 {
-  GIVEN("A Gaussian beam with M^2 value of 2")
-  {
-    WHEN("Measuring a 500 nm beam with 10 um waist 1 meter away")
-    {
-      THEN("The beam diameter will be larger by a factor of 2.")
-      {
-      }
+  GaussianBeam beam;
+  beam.setWavelength(500*i::nm);
+  beam.setOneOverESquaredWaistDiameter(10*i::um);
 
-    }
-  }
+  // by default, the diffraction limited divergence will be used.
+  auto w_z_1 = beam.getOneOverESquaredDiameter(10*cm);
+
+  beam.setOneOverESquaredHalfAngleDivergence( 2*beam.getOneOverESquaredHalfAngleDiffractionLimitedDivergence() );
+
+  auto w_z_2 = beam.getOneOverESquaredDiameter(10*cm);
+
+  CHECK( beam.getBeamPropagationFactor() == Approx(2) );
+  CHECK( w_z_2.value() == Approx(2*w_z_1.value()) );
+
+}
+
+
+TEST_CASE("Non-ideal beams can be propagated with an 'embedded Gaussian'" )
+{
+
+  GaussianBeam beam;
+  double M = sqrt(2);
+  beam.setWavelength(500*i::nm);
+
+  // embedded Gaussian
+  beam.setOneOverESquaredWaistDiameter(10*i::um/M);
+  auto w_z_1 = M*beam.getOneOverESquaredDiameter(10*cm);
+  CHECK( beam.getBeamPropagationFactor() == Approx(1) );
+
+  // actual Gaussian
+  beam.setOneOverESquaredWaistDiameter(10*i::um);
+  beam.setOneOverESquaredHalfAngleDivergence( M*M*beam.getOneOverESquaredHalfAngleDiffractionLimitedDivergence() );
+
+  auto w_z_2 = beam.getOneOverESquaredDiameter(10*cm);
+
+  CHECK( beam.getBeamPropagationFactor() == Approx(2) );
+  CHECK( w_z_2.value() == Approx(w_z_1.value()) );
+
+
+}
+
+TEST_CASE("Non-ideal beams have a larger beam waist for the same divergence and a larger divergence for the same beam waist." )
+{
+  double w0 = 500e-9/M_PI/20e-3;
+  double theta = 500e-9/M_PI/10e-6;
+
+  GaussianBeam beam;
+  beam.setWavelength(500*i::nm);
+
+  beam.setOneOverESquaredHalfAngleDivergence(20*i::mrad);
+  beam.adjustWaistSizeToBeamPropagationFactor(3*t::dimensionless{});
+  CHECK( beam.getOneOverESquaredHalfAngleDivergence<t::rad>().value() == Approx(20e-3));
+  CHECK( beam.getOneOverESquaredRadius<t::m>().value() == Approx(w0*3));
+
+  beam.setOneOverESquaredWaistRadius(10*i::um);
+  beam.adjustDivergenceToBeamPropagationFactor(3*t::dimensionless{});
+  CHECK( beam.getOneOverESquaredWaistRadius<t::m>().value() == Approx(10e-6));
+  CHECK( beam.getOneOverESquaredHalfAngleDivergence<t::rad>().value() == Approx(theta*3));
+
+
+  
 }

@@ -78,6 +78,58 @@ class LaserBeam
     m_UseDiffractionLimitedDivergence = false;
   }
 
+  /**
+   * Adjusts (sets) the angular spread of the beam (divergence) to give the specified
+   * propagation factor (M^2) for the current waist size.
+   *
+   * Requires wavelength and waist standard deviation to be set.
+   */
+  template<typename A>                                                   
+  void adjustAngularSpreadStandardDeviationToBeamPropagationFactor(boost::units::quantity<A> a)                           
+  {                                                                    
+    static_assert(                                                        
+        std::is_same<typename A::dimension_type,                         
+                     typename t::dimensionless::dimension_type>::value,             
+        "Dimensions Error: Argument type of adjustAngularSpreadStandardDeviationToBeamPropagationFactor(...) method has "
+        "wrong dimensions.");                                         
+    this->setAngularSpreadStandardDeviation(boost::units::quantity<t::dimensionless>(a).value()*this->getDiffractionLimitedAngularSpreadStandardDeviation());
+  }
+
+  /**
+   * Adjusts (sets) the waist standard deviation (size) to give the specified
+   * propagation factor (M^2) for the current divergence.
+   *
+   * Requires wavelength and angular spread standard deviation to be set.
+   */
+  template<typename A>                                                   
+  void adjustWaistStandardDeviationToBeamPropagationFactor(boost::units::quantity<A> a)                           
+  {                                                                    
+    static_assert(                                                        
+        std::is_same<typename A::dimension_type,                         
+                     typename t::dimensionless::dimension_type>::value,             
+        "Dimensions Error: Argument type of adjustAngularSpreadStandardDeviationToBeamPropagationFactor(...) method has "
+        "wrong dimensions.");                                         
+    this->setWaistStandardDeviation( boost::units::quantity<t::dimensionless>(a).value()*this->getDiffractionLimitedWaistStandardDeviation());
+  }
+
+  /**
+   * This function is just an alias for adjustAngularSpreadStandardDeviationForBeamPropagationFactor(...)
+   */
+  template<typename A>                                                   
+  void adjustDivergenceToBeamPropagationFactor(boost::units::quantity<A> a)                           
+  {                                                                    
+    this->adjustAngularSpreadStandardDeviationToBeamPropagationFactor(a);
+  }
+
+  /**
+   * This function is just an alias for adjustWaistStandardDeviationForBeamPropagationFactor(...)
+   */
+  template<typename A>                                                   
+  void adjustWaistSizeToBeamPropagationFactor(boost::units::quantity<A> a)                           
+  {                                                                    
+    this->adjustWaistStandardDeviationToBeamPropagationFactor(a);
+  }
+
 #undef ADD_MEMBER
 
 #define ADD_DERIVED_GETTER(NAME, UNIT, ...)                           \
@@ -121,6 +173,10 @@ class LaserBeam
       BeamPropagationFactor, t::dimensionless,
       this->getAngularSpreadStandardDeviation<t::rad>() /
           this->getDiffractionLimitedAngularSpreadStandardDeviation<t::rad>());
+  ADD_DERIVED_GETTER(
+      BeamParameterProduct, decltype(i::mm*i::mrad),
+      this->getWaistStandardDeviation<t::mm>() *
+          this->getAngularSpreadStandardDeviation<t::mrad>() );
 #undef ADD_DERIVED_GETTER
 #undef ADD_DERIVED_SETTER
 
@@ -160,7 +216,7 @@ class LaserBeam
                   "getDiffractionLimitedWaistStandardDeviation() method "
                   "has wrong dimensions.");
     auto sigma_0 = this->getWavelength() / (4 * M_PI) /
-                   this->getAngularSpreadStandardDeviation();
+                   this->getAngularSpreadStandardDeviation<t::rad>().value();
     return boost::units::quantity<R>(sigma_0);
   }
 
@@ -213,3 +269,4 @@ class LaserBeam
 
 #undef ADD_DERIVED_GETTER
 };
+
