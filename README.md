@@ -1,4 +1,4 @@
-# libGPB
+# libGBP
 
 A C++ library for doing Laser Beam Propagation calculations.
 
