@@ -2,6 +2,7 @@
 
 #include <libGBP/GaussianBeam.hpp>
 #include <libGBP/OpticalElements/ThinLens.hpp>
+#include <libGBP/OpticalElements/SphericalInterface.hpp>
 
 SCENARIO("Gaussian beams can be focused by a lens" )
 {
@@ -99,4 +100,54 @@ TEST_CASE("Non-ideal beams have a larger beam waist for the same divergence and 
 
 
   
+}
+
+TEST_CASE("Retinal image size")
+{
+  double A = 1;
+  double B1 = 7.516e-1;
+  double B2 = -4.484e-3;
+  double B3 = -1.503e1;
+  double C1 = 1.641e-2;
+  double C2 = 8.596e-2;
+  double C3 = -1.028e3;
+  double l;
+
+  GaussianBeam beam;
+  beam.setOneOverESquaredWaistDiameter(4.24*i::mm);
+
+  SphericalInterface<t::centimeter> cornea;
+  cornea.setRadiusOfCurvature(6.1*i::mm);
+  cornea.setInitialRefractiveIndex(1);
+
+  SECTION("589 nm reference")
+  {
+    beam.setWavelength(589*i::nm);
+
+    l = beam.getWavelength<t::um>().value();
+    double n = sqrt(A + B1*l*l/(l*l - C1)
+                      + B2*l*l/(l*l - C2)
+                      + B3*l*l/(l*l - C3));
+    cornea.setFinalRefractiveIndex(n);
+
+    beam.transform(&cornea);
+
+    CHECK(beam.getWaistPosition<t::mm>().value() == Approx(24.4).epsilon(0.01));
+  }
+  SECTION("1300 nm")
+  {
+    beam.setWavelength(1300*i::nm);
+
+    l = beam.getWavelength<t::um>().value();
+    double n = sqrt(A + B1*l*l/(l*l - C1)
+                      + B2*l*l/(l*l - C2)
+                      + B3*l*l/(l*l - C3));
+    cornea.setFinalRefractiveIndex(n);
+
+    beam.transform(&cornea);
+
+    CHECK(beam.getOneOverESquaredDiameter<t::um>(2.44*i::cm).value() == Approx(180).epsilon(0.5));
+  }
+
+
 }
