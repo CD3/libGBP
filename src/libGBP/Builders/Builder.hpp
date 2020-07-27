@@ -36,7 +36,7 @@ CLASS* createInstance_imp(const boost::false_type&)
 template<typename BASE_CLASS, typename DERIVED_CLASS>
 BASE_CLASS* createInstance()
 {
-  return createInstance_imp<DERIVED_CLASS>(is_abstract<DERIVED_CLASS>());
+  return createInstance_imp<DERIVED_CLASS>(std::is_abstract<DERIVED_CLASS>());
 }
 
 template<typename BASE_CLASS>
