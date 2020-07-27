@@ -2,6 +2,6 @@
 
 namespace constants
 {
-const quantity<t::meter_per_second> SpeedOfLight =
+const boost::units::quantity<t::meter_per_second> SpeedOfLight =
     299792458. * t::meter_per_second();
 }

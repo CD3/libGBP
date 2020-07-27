@@ -27,8 +27,8 @@
 class GaussianLaserBeam : public LaserBeam
 {
  protected:
-  constexpr const double sqrt2() { return 1.41421356237; }
-  constexpr const double sqrt_ln2(){return  0.8325546111576977; }
+  constexpr const double sqrt2() const { return 1.41421356237; }
+  constexpr const double sqrt_ln2() const {return  0.8325546111576977; }
 
 #define ADD_MEMBER(NAME, UNIT)                                               \
  protected:                                                                  \
