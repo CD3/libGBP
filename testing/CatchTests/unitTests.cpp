@@ -113,6 +113,13 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
         AND_WHEN("the beam waist position is set to 2 m")
         {
           beam.setWaistPosition(2 * t::meter());
+          THEN("the diameter at 0 m is greater than the beam waist diameter")
+          {
+            CHECK(beam.getOneOverE2Diameter<t::millimeter>(0. * t::meter())
+                      .value() != Approx( beam.getOneOverE2WaistDiameter().value() ));
+            CHECK(beam.getOneOverE2Diameter<t::millimeter>(0. * t::meter())
+                      .value() >  beam.getOneOverE2WaistDiameter().value());
+          }
           THEN("the diameter at 12 m is 4.498820 mm")
           {
             CHECK(beam.getOneOverE2Diameter<t::millimeter>(12. * t::meter())
@@ -129,11 +136,49 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
                       .value() == Approx(4.498820 / 2 / sqrt(2)));
             CHECK(beam.getFourSigmaDiameter<t::millimeter>(12. * t::meter())
                       .value() == Approx(4.498820));
+
+            
           }
           AND_THEN("the radius of curvature at 12 m is 12.46315831 m")
           {
             CHECK(
                 beam.getRadiusOfCurvature<t::meter>(12. * t::meter()).value() ==
+                Approx(12.46315831));
+          }
+        }
+        AND_WHEN("the beam waist position is set to -2 m")
+        {
+          beam.setWaistPosition(-2 * t::meter());
+          THEN("the diameter at 0 m is greater than the beam waist diameter")
+          {
+            CHECK(beam.getOneOverE2Diameter<t::millimeter>(0. * t::meter())
+                      .value() != Approx( beam.getOneOverE2WaistDiameter().value() ));
+            CHECK(beam.getOneOverE2Diameter<t::millimeter>(0. * t::meter())
+                      .value() >  beam.getOneOverE2WaistDiameter().value());
+          }
+          THEN("the diameter at 8 m is 4.498820 mm")
+          {
+            CHECK(beam.getOneOverE2Diameter<t::millimeter>(8. * t::meter())
+                      .value() == Approx(4.498820));
+            CHECK(beam.getOneOverE2Radius<t::millimeter>(8. * t::meter())
+                      .value() == Approx(4.498820 / 2));
+            CHECK(beam.getOneOverESquaredDiameter<t::millimeter>(8. * t::meter())
+                      .value() == Approx(4.498820));
+            CHECK(beam.getOneOverESquaredRadius<t::millimeter>(8. * t::meter())
+                      .value() == Approx(4.498820 / 2));
+            CHECK(beam.getOneOverEDiameter<t::millimeter>(8. * t::meter())
+                      .value() == Approx(4.498820/sqrt(2)));
+            CHECK(beam.getOneOverERadius<t::millimeter>(8. * t::meter())
+                      .value() == Approx(4.498820 / 2 / sqrt(2)));
+            CHECK(beam.getFourSigmaDiameter<t::millimeter>(8. * t::meter())
+                      .value() == Approx(4.498820));
+
+            
+          }
+          AND_THEN("the radius of curvature at 8 m is 12.46315831 m")
+          {
+            CHECK(
+                beam.getRadiusOfCurvature<t::meter>(8. * t::meter()).value() ==
                 Approx(12.46315831));
           }
         }

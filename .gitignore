@@ -5,3 +5,4 @@ build*/
 src/version.h
 setup-and-update-utils.sh
 compile_commands.json
+.clangd/
