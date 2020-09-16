@@ -11,11 +11,6 @@
 #include <libGBP/GaussianBeam.hpp>
 SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
 {
-  using namespace units;
-  using namespace units::i;
-  using namespace units;
-  using namespace units::i;
-
   GIVEN("An uninitialized GaussianBeam instance")
   {
     GaussianBeam beam;
@@ -558,10 +553,6 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
 #include <libGBP/GaussianBeam.hpp>
 SCENARIO("Complex Beam Parameter Calculations", "[GaussianBeam]")
 {
-  using namespace units;
-  using namespace units::i;
-  using namespace units;
-  using namespace units::i;
   GaussianBeam beam;
   WHEN("the beam is configured")
   {
@@ -591,8 +582,6 @@ SCENARIO("Complex Beam Parameter Calculations", "[GaussianBeam]")
 #include <libGBP/OpticalElements/ThinLens.hpp>
 SCENARIO("Thin lens class calculations", "[OpticalElements]")
 {
-  using namespace units;
-  using namespace units::i;
   WHEN("lens is created")
   {
     ThinLens<t::centimeter> lens;
@@ -648,8 +637,6 @@ SCENARIO("Thin lens class calculations", "[OpticalElements]")
 #include <libGBP/OpticalElements/FlatInterface.hpp>
 SCENARIO("Flat interface class calculations", "[OpticalElements]")
 {
-  using namespace units;
-  using namespace units::i;
   WHEN("interface is created")
   {
     FlatInterface<t::centimeter> interface;
@@ -717,8 +704,6 @@ SCENARIO("Flat interface class calculations", "[OpticalElements]")
 #include <libGBP/OpticalElements/SphericalInterface.hpp>
 SCENARIO("Spherical interface class calculations", "[OpticalElements]")
 {
-  using namespace units;
-  using namespace units::i;
   WHEN("interface is created")
   {
     SphericalInterface<t::centimeter> interface;
@@ -788,8 +773,6 @@ SCENARIO(
     "Filter class calculations"
     "[OpticalElements]")
 {
-  using namespace units;
-  using namespace units::i;
   GIVEN("a filter")
   {
     Filter filter;
@@ -815,8 +798,6 @@ SCENARIO(
     "Linear absorber calculations"
     "[OpticalElements]")
 {
-  using namespace units;
-  using namespace units::i;
   GIVEN("a linear absorber")
   {
     LinearAbsorber<t::cm> absorber;
@@ -850,9 +831,6 @@ SCENARIO(
 #include <libGBP/OpticalElements/ThinLens.hpp>
 TEST_CASE("Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]")
 {
-  using namespace units::i;
-  using namespace boost::units;
-
   GaussianBeam beam;
   BeamBuilder  config;
 
@@ -1084,9 +1062,6 @@ TEST_CASE("Gaussian Beam Transformations", "[OpticalElements,GuassianBeam]")
 #include <libGBP/GaussianBeam.hpp>
 TEST_CASE("BeamBuilder Tests", "[Builders,GuassianBeam]")
 {
-  using namespace units::i;
-  using namespace boost::units;
-
   BeamBuilder config;
 
   SECTION("Internal Units")
@@ -1174,9 +1149,6 @@ TEST_CASE("BeamBuilder Tests", "[Builders,GuassianBeam]")
 #include <libGBP/Builders/OpticalElementBuilder.hpp>
 TEST_CASE("OpticalElementBuilder tests", "[Builders,OpticalElements]")
 {
-  using namespace units::i;
-  using namespace boost::units;
-
   OpticalElementBuilder<t::centimeter> OEBuilder;
   OpticalElement_ptr<t::centimeter>    elem;
 
@@ -1265,9 +1237,6 @@ TEST_CASE("OpticalElementBuilder tests", "[Builders,OpticalElements]")
 #include <libGBP/OpticalSystem.hpp>
 TEST_CASE("Optical Systems", "[OpticalSystem]")
 {
-  using namespace units::i;
-  using namespace boost::units;
-
   SECTION("manual configuration")
   {
     GaussianBeam                 beam;
@@ -1366,9 +1335,6 @@ TEST_CASE("Optical Systems", "[OpticalSystem]")
 #include <libGBP/MediaStack.hpp>
 TEST_CASE("Media Stack")
 {
-  using namespace units::i;
-  using namespace boost::units;
-
   SECTION("boundaries configuration")
   {
     MediaStack<t::centimeter> stack;
@@ -1507,9 +1473,6 @@ TEST_CASE("Media Stack")
 #include <libGBP/GBPCalc.hpp>
 TEST_CASE("GBPCalc tests")
 {
-  using namespace units::i;
-  using namespace boost::units;
-
   ptree configTree;
   configTree.put("beam.wavelength", 444);
   configTree.put("beam.waist.position", 0);
@@ -1589,9 +1552,6 @@ TEST_CASE("GBPCalc tests")
 #include <libGBP/OpticalElements/ThinLens.hpp>
 TEST_CASE("Gaussian Beam Examples", "[GuassianBeam,Examples]")
 {
-  using namespace units::i;
-  using namespace boost::units;
-
   SECTION("Basic Example")
   {
     GaussianBeam beam;

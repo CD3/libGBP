@@ -9,5 +9,5 @@
 SCENARIO("GaussianBeam ODR" )
 {
   GaussianBeam beam;
-  beam.setWavelength( 810*units::i::nm );
+  beam.setWavelength( 810*i::nm );
 }
