@@ -11,23 +11,25 @@
 
 TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
 {
+  using namespace units::i;
+  using namespace boost::units;
 
   GaussianBeam beam;
 
-  SphericalInterface<t::centimeter> cornea;
+  SphericalInterface<units::t::centimeter> cornea;
   cornea.setRadiusOfCurvature( 6.1*mm );
   cornea.setInitialRefractiveIndex( 1.0    );
   cornea.setFinalRefractiveIndex(   1.3369 );
 
-  beam.setPower(         5*mW );
+  beam.setPower(         5*units::i::mW );
 
 
   int N = 100;
-  auto minDiam = quantity<t::centimeter>(10*um);
-  auto maxDiam = quantity<t::centimeter>(1*cm);
+  auto minDiam = quantity<units::t::centimeter>(10*um);
+  auto maxDiam = quantity<units::t::centimeter>(1*cm);
   auto dDiam   = (maxDiam-minDiam)/(N-1.);
-  auto minDiv  = quantity<t::milliradian>(1*mrad);
-  auto maxDiv  = quantity<t::milliradian>(100*mrad);
+  auto minDiv  = quantity<units::t::milliradian>(1*mrad);
+  auto maxDiv  = quantity<units::t::milliradian>(100*mrad);
   auto dDiv    = (maxDiv-minDiv)/(N-1.);
   auto z = 2.44*cm;
 
@@ -48,11 +50,11 @@ TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
         continue;
       }
 
-      out << beam.getOneOverE2Diameter<t::centimeter>() << " ";
-      out << beam.getOneOverE2HalfAngleDivergence<t::milliradian>() << " ";
+      out << beam.getOneOverE2Diameter<units::t::centimeter>() << " ";
+      out << beam.getOneOverE2HalfAngleDivergence<units::t::milliradian>() << " ";
       beam.transform( &cornea, 0*cm );
-      out << beam.getOneOverE2Diameter<t::centimeter>(z) << " ";
-      out << beam.getOneOverE2HalfAngleDivergence<t::milliradian>() << " ";
+      out << beam.getOneOverE2Diameter<units::t::centimeter>(z) << " ";
+      out << beam.getOneOverE2HalfAngleDivergence<units::t::milliradian>() << " ";
       out<<"\n";
 
     }
@@ -67,27 +69,30 @@ TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
 
 TEST_CASE( "BeamBuilder Tests" )
 {
+  using namespace units::i;
+  using namespace boost::units;
+
   BeamBuilder config;
 
   SECTION("Internal Units")
   {
     config.setWavelength(532*nm).setOneOverE2FullAngleDivergence(2.5*mrad);
 
-    CHECK( config.getWavelength<t::nanometer>().value().value() == Approx(532) );
-    CHECK( config.getOneOverE2FullAngleDivergence<t::milliradian>().value().value() == Approx(2.5) );
+    CHECK( config.getWavelength<units::t::nanometer>().value().value() == Approx(532) );
+    CHECK( config.getOneOverE2FullAngleDivergence<units::t::milliradian>().value().value() == Approx(2.5) );
   }
 
   SECTION("Unit Conversions")
   {
     config.setWavelength(0.532*um).setOneOverE2FullAngleDivergence(0.0025*rad);
 
-    CHECK( config.getWavelength<t::nanometer>().value().value() == Approx(532) );
-    CHECK( config.getOneOverE2FullAngleDivergence<t::milliradian>().value().value() == Approx(2.5) );
+    CHECK( config.getWavelength<units::t::nanometer>().value().value() == Approx(532) );
+    CHECK( config.getOneOverE2FullAngleDivergence<units::t::milliradian>().value().value() == Approx(2.5) );
 
     config.setWavelength(0.444*um).setOneOverE2FullAngleDivergence(0.001*rad);
 
-    CHECK( config.getWavelength<t::nanometer>().value().value() == Approx(444) );
-    CHECK( config.getOneOverE2FullAngleDivergence<t::milliradian>().value().value() == Approx(1) );
+    CHECK( config.getWavelength<units::t::nanometer>().value().value() == Approx(444) );
+    CHECK( config.getOneOverE2FullAngleDivergence<units::t::milliradian>().value().value() == Approx(1) );
   }
 
   SECTION("Arrays")
@@ -100,13 +105,13 @@ TEST_CASE( "BeamBuilder Tests" )
     CHECK( config.Position.size() == 2 );
     CHECK( config.OneOverE2Diameter.size() == 2 );
 
-    CHECK( config.getWavelength<t::nanometer>().value().value() == Approx(532) );
-    CHECK( config.getPosition<t::centimeter>().value().value() == Approx(1) );
-    CHECK( config.getPosition<t::centimeter>(0).value().value() == Approx(1) );
-    CHECK( config.getPosition<t::centimeter>(1).value().value() == Approx(10) );
-    CHECK( config.getOneOverE2Diameter<t::centimeter>().value().value() == Approx(0.2) );
-    CHECK( config.getOneOverE2Diameter<t::centimeter>(0).value().value() == Approx(0.2) );
-    CHECK( config.getOneOverE2Diameter<t::centimeter>(1).value().value() == Approx(0.4) );
+    CHECK( config.getWavelength<units::t::nanometer>().value().value() == Approx(532) );
+    CHECK( config.getPosition<units::t::centimeter>().value().value() == Approx(1) );
+    CHECK( config.getPosition<units::t::centimeter>(0).value().value() == Approx(1) );
+    CHECK( config.getPosition<units::t::centimeter>(1).value().value() == Approx(10) );
+    CHECK( config.getOneOverE2Diameter<units::t::centimeter>().value().value() == Approx(0.2) );
+    CHECK( config.getOneOverE2Diameter<units::t::centimeter>(0).value().value() == Approx(0.2) );
+    CHECK( config.getOneOverE2Diameter<units::t::centimeter>(1).value().value() == Approx(0.4) );
   }
 
   SECTION("Beam configuration")
@@ -120,10 +125,10 @@ TEST_CASE( "BeamBuilder Tests" )
     config.configure(beam);
 
     CHECK( beam.getWavelength().value() == Approx(532) );
-    CHECK( beam.getOneOverE2WaistDiameter<t::millimeter>().value() == Approx( 2*0.033868 ) );
-    CHECK( beam.getRayleighRange<t::millimeter>().value() == Approx( 6.77357) );
-    CHECK( beam.getRadiusOfCurvature<t::millimeter>(0*mm).value() == Approx( 250.09 ) );
-    CHECK( beam.getWaistPosition<t::millimeter>().value() == Approx( -249.908 ) );
+    CHECK( beam.getOneOverE2WaistDiameter<units::t::millimeter>().value() == Approx( 2*0.033868 ) );
+    CHECK( beam.getRayleighRange<units::t::millimeter>().value() == Approx( 6.77357) );
+    CHECK( beam.getRadiusOfCurvature<units::t::millimeter>(0*mm).value() == Approx( 250.09 ) );
+    CHECK( beam.getWaistPosition<units::t::millimeter>().value() == Approx( -249.908 ) );
 
   }
 
@@ -138,10 +143,10 @@ TEST_CASE( "BeamBuilder Tests" )
     config.configure(beam);
 
     CHECK( beam.getWavelength().value() == Approx(532) );
-    CHECK( beam.getOneOverE2WaistDiameter<t::millimeter>().value() == Approx( 2*0.033868 ) );
-    CHECK( beam.getRayleighRange<t::millimeter>().value() == Approx( 6.77357) );
-    CHECK( beam.getRadiusOfCurvature<t::millimeter>(1200*mm).value() == Approx( 250.09 ) );
-    CHECK( beam.getWaistPosition<t::millimeter>().value() == Approx( 1200-249.908 ) );
+    CHECK( beam.getOneOverE2WaistDiameter<units::t::millimeter>().value() == Approx( 2*0.033868 ) );
+    CHECK( beam.getRayleighRange<units::t::millimeter>().value() == Approx( 6.77357) );
+    CHECK( beam.getRadiusOfCurvature<units::t::millimeter>(1200*mm).value() == Approx( 250.09 ) );
+    CHECK( beam.getWaistPosition<units::t::millimeter>().value() == Approx( 1200-249.908 ) );
 
   }
 }

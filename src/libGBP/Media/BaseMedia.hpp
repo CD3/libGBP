@@ -19,8 +19,8 @@ template<typename LengthUnitType>
 class BaseMedia : public MediaInterface<LengthUnitType>
 {
  public:
-  virtual double getTransmission(quantity<LengthUnitType> zi,
-                                 quantity<LengthUnitType> zf) const
+  virtual double getTransmission(boost::units::quantity<LengthUnitType> zi,
+                                 boost::units::quantity<LengthUnitType> zf) const
   {
     return 1;
   }

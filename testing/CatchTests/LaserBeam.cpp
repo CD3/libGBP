@@ -2,6 +2,7 @@
 
 #include "catch.hpp"
 
+using namespace units;
 SCENARIO("LaserBeam can be configured and compute beam width at range")
 {
   GIVEN("An uninitialized LaserBeam instance")

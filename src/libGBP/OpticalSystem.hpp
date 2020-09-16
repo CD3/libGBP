@@ -19,7 +19,7 @@ template<typename LengthUnitType>
 class OpticalSystem
 {
  public:
-  typedef std::pair<quantity<LengthUnitType>,
+  typedef std::pair<boost::units::quantity<LengthUnitType>,
                     OpticalElement_ptr<LengthUnitType> >
                                  ElementType;
   typedef std::list<ElementType> ElementsType;
@@ -50,7 +50,7 @@ template<typename U>
 OpticalSystem<T>& OpticalSystem<T>::addElement(OpticalElement_ptr<T> elem,
                                                U                     position)
 {
-  elements.push_back({quantity<T>(position), elem});
+  elements.push_back({boost::units::quantity<T>(position), elem});
   elements.sort();
   return *this;
 }
@@ -83,7 +83,7 @@ void OpticalSystem<T>::transform(GaussianBeam* beam, U zi, V zf)
 {
   for (auto it = elements.begin(); it != elements.end(); it++) {
     // only apply elements that are between zi and zf
-    if (it->first >= quantity<T>(zi) && it->first <= quantity<T>(zf))
+    if (it->first >= boost::units::quantity<T>(zi) && it->first <= boost::units::quantity<T>(zf))
       beam->transform(it->second.get(), it->first);
   }
 }

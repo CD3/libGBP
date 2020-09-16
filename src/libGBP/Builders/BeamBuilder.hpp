@@ -24,6 +24,7 @@
 
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/optional.hpp>
 
 #include "./Builder.hpp"
 #include "../GaussianBeam.hpp"
@@ -32,22 +33,22 @@ using std::vector;
 
 struct BeamBuilder : public Builder<GaussianBeam> {
 #define ADD_ATTRIBUTE(name, unit, n)                            \
-  vector<quantity<unit> > name;                                 \
+  vector<boost::units::quantity<unit> > name;                                 \
   template<typename T>                                          \
   BeamBuilder& set##name(T v, int i = -1)                       \
   {                                                             \
     if (i < 0 && this->name.size() < n)                         \
-      this->name.push_back(quantity<unit>(v));                  \
+      this->name.push_back(boost::units::quantity<unit>(v));                  \
     if (i < 0 && this->name.size() >= n)                        \
-      this->name[n - 1] = quantity<unit>(v);                    \
-    if (i >= 0 && i + 1 < n) this->name[i] = quantity<unit>(v); \
+      this->name[n - 1] = boost::units::quantity<unit>(v);                    \
+    if (i >= 0 && i + 1 < n) this->name[i] = boost::units::quantity<unit>(v); \
     return *this;                                               \
   }                                                             \
   template<typename T>                                          \
-  optional<quantity<T> > get##name(int i = 0)                   \
+  boost::optional<boost::units::quantity<T> > get##name(int i = 0)                   \
   {                                                             \
     if (i < name.size()) {                                      \
-      return quantity<T>(name[i]);                              \
+      return boost::units::quantity<T>(name[i]);                              \
     }                                                           \
     return boost::none;                                         \
   }                                                             \
@@ -60,16 +61,16 @@ struct BeamBuilder : public Builder<GaussianBeam> {
     }                                                           \
   }
 
-  ADD_ATTRIBUTE(Wavelength, t::nanometer, 1);
-  ADD_ATTRIBUTE(FreeSpaceWavelength, t::nanometer, 1);
-  ADD_ATTRIBUTE(Frequency, t::nanometer, 1);
-  ADD_ATTRIBUTE(OneOverE2FullAngleDivergence, t::milliradian, 1);
-  ADD_ATTRIBUTE(OneOverE2Diameter, t::centimeter, 2);
-  ADD_ATTRIBUTE(Position, t::centimeter, 2);
-  ADD_ATTRIBUTE(WaistPosition, t::centimeter, 1);
-  ADD_ATTRIBUTE(OneOverE2WaistDiameter, t::centimeter, 1);
-  ADD_ATTRIBUTE(Power, t::watt, 1);
-  ADD_ATTRIBUTE(CurrentPosition, t::centimeter, 1);
+  ADD_ATTRIBUTE(Wavelength, units::t::nanometer, 1);
+  ADD_ATTRIBUTE(FreeSpaceWavelength, units::t::nanometer, 1);
+  ADD_ATTRIBUTE(Frequency, units::t::nanometer, 1);
+  ADD_ATTRIBUTE(OneOverE2FullAngleDivergence, units::t::milliradian, 1);
+  ADD_ATTRIBUTE(OneOverE2Diameter, units::t::centimeter, 2);
+  ADD_ATTRIBUTE(Position, units::t::centimeter, 2);
+  ADD_ATTRIBUTE(WaistPosition, units::t::centimeter, 1);
+  ADD_ATTRIBUTE(OneOverE2WaistDiameter, units::t::centimeter, 1);
+  ADD_ATTRIBUTE(Power, units::t::watt, 1);
+  ADD_ATTRIBUTE(CurrentPosition, units::t::centimeter, 1);
 
   void configure(GaussianBeam* beam);
   void configure(GaussianBeam& beam) { this->configure(&beam); }
@@ -85,16 +86,16 @@ struct BeamBuilder : public Builder<GaussianBeam> {
 void BeamBuilder::configure(GaussianBeam* beam)
 {
   if (this->hasWavelength())
-    beam->setWavelength(this->getWavelength<t::nanometer>().value());
+    beam->setWavelength(this->getWavelength<units::t::nanometer>().value());
 
-  if (this->hasPower()) beam->setPower(this->getPower<t::watt>().value());
+  if (this->hasPower()) beam->setPower(this->getPower<units::t::watt>().value());
 
   if (this->hasOneOverE2WaistDiameter())
     beam->setOneOverE2WaistDiameter(
-        this->getOneOverE2WaistDiameter<t::centimeter>().value());
+        this->getOneOverE2WaistDiameter<units::t::centimeter>().value());
 
   if (this->hasWaistPosition())
-    beam->setWaistPosition(this->getWaistPosition<t::centimeter>().value());
+    beam->setWaistPosition(this->getWaistPosition<units::t::centimeter>().value());
 
   if (!this->hasOneOverE2WaistDiameter()) {
     if (this->hasWavelength() &&
@@ -103,30 +104,30 @@ void BeamBuilder::configure(GaussianBeam* beam)
 
       // \Theta   = \frac{2\lambda}{\pi \omega_0}
       // \omega_0 = \frac{2\lambda}{\pi \Theta  }
-      quantity<t::centimeter> waistRadius =
-          2. * beam->getWavelength<t::centimeter>() /
-          quantity_cast<double>(M_PI *
-                                this->getOneOverE2FullAngleDivergence<t::radian>().value());
+      boost::units::quantity<units::t::centimeter> waistRadius =
+          2. * beam->getWavelength<units::t::centimeter>() /
+          boost::units::quantity_cast<double>(M_PI *
+                                this->getOneOverE2FullAngleDivergence<units::t::radian>().value());
       beam->setOneOverE2WaistRadius(waistRadius);
 
       if (this->hasOneOverE2Diameter()) {  // if the diameter at some location is known,
                                   // then we can determine where the beam waist
                                   // is
-        if (this->getOneOverE2Diameter<t::centimeter>() < 2. * waistRadius)
+        if (this->getOneOverE2Diameter<units::t::centimeter>() < 2. * waistRadius)
           throw std::runtime_error(
               "BEAM CONFIGURATION ERROR: configured beam diameter is smaller "
               "than the beam waist diameter based on wavelength and "
               "divergence.");
 
-        quantity<t::centimeter> pos = 0 * cm;
+        boost::units::quantity<units::t::centimeter> pos = 0 * units::i::cm;
         if (this->hasPosition())
-          pos = this->getPosition<t::centimeter>().value();
+          pos = this->getPosition<units::t::centimeter>().value();
 
-        quantity<t::centimeter> waistPosition =
+        boost::units::quantity<units::t::centimeter> waistPosition =
             pos -
-            beam->getRayleighRange<t::centimeter>() *
-                sqrt(pow<2>(this->getOneOverE2Diameter<t::centimeter>().value() /
-                            beam->getOneOverE2WaistDiameter<t::centimeter>()) -
+            beam->getRayleighRange<units::t::centimeter>() *
+                sqrt(pow<2>(this->getOneOverE2Diameter<units::t::centimeter>().value() /
+                            beam->getOneOverE2WaistDiameter<units::t::centimeter>()) -
                      1.);
         beam->setWaistPosition(waistPosition);
       }
@@ -137,11 +138,11 @@ void BeamBuilder::configure(GaussianBeam* beam)
     beam->setFrequency(
         constants::SpeedOfLight /
         (this->hasFreeSpaceWavelength()
-             ? this->getFreeSpaceWavelength<t::nanometer>().value()
-             : this->getWavelength<t::nanometer>().value()));
+             ? this->getFreeSpaceWavelength<units::t::nanometer>().value()
+             : this->getWavelength<units::t::nanometer>().value()));
 
   if (this->hasCurrentPosition())
-    beam->setCurrentPosition(this->getCurrentPosition<t::centimeter>().value());
+    beam->setCurrentPosition(this->getCurrentPosition<units::t::centimeter>().value());
 }
 
 void BeamBuilder::configure(GaussianBeam* beam, const ptree& configTree)
@@ -158,20 +159,20 @@ void BeamBuilder::configure(GaussianBeam* beam, const ptree& configTree)
     }                                             \
   }
 
-  SET(Wavelength, "wavelength", value * nm);
-  SET(Power, "power", value * W);
-  SET(OneOverE2FullAngleDivergence, "divergence", value * mrad);
-  SET(WaistPosition, "waist.position", value * cm);
-  SET(OneOverE2WaistDiameter, "waist.diameter", value * cm);
-  SET(CurrentPosition, "current_position", value * cm);
+  SET(Wavelength, "wavelength", value * units::i::nm);
+  SET(Power, "power", value * units::i::W);
+  SET(OneOverE2FullAngleDivergence, "divergence", value * units::i::mrad);
+  SET(WaistPosition, "waist.position", value * units::i::cm);
+  SET(OneOverE2WaistDiameter, "waist.diameter", value * units::i::cm);
+  SET(CurrentPosition, "current_position", value * units::i::cm);
 
   auto profiles = configTree.get_child_optional("profiles");
   if (profiles) {
     for (auto& iter : profiles.value()) {
       tree = &iter.second;
-      SET(Position, "position", value * cm);
-      SET(OneOverE2Diameter, "diameter", value * cm);
-      SET(OneOverE2Diameter, "radius", 2. * value * cm);
+      SET(Position, "position", value * units::i::cm);
+      SET(OneOverE2Diameter, "diameter", value * units::i::cm);
+      SET(OneOverE2Diameter, "radius", 2. * value * units::i::cm);
     }
   }
 

@@ -38,11 +38,11 @@ class LaserBeam
     m_##NAME = boost::units::quantity<UNIT>(a);                              \
   }
 
-  ADD_MEMBER(Wavelength, t::nm);
-  ADD_MEMBER(Frequency, t::Hz);
-  ADD_MEMBER(Power, t::W);
-  ADD_MEMBER(WaistStandardDeviation, t::cm);
-  ADD_MEMBER(WaistPosition, t::cm);
+  ADD_MEMBER(Wavelength, units::t::nm);
+  ADD_MEMBER(Frequency, units::t::Hz);
+  ADD_MEMBER(Power, units::t::W);
+  ADD_MEMBER(WaistStandardDeviation, units::t::cm);
+  ADD_MEMBER(WaistPosition, units::t::cm);
 
  protected:
   bool m_UseDiffractionLimitedDivergence = true;
@@ -51,13 +51,13 @@ class LaserBeam
   inline bool getUseDiffractionLimitedDivergence() const{return m_UseDiffractionLimitedDivergence;}
 
  protected:
-  boost::units::quantity<t::mrad,double> m_AngularSpreadStandardDeviation;
+  boost::units::quantity<units::t::mrad,double> m_AngularSpreadStandardDeviation;
  public:
-  template<typename R = t::mrad> 
+  template<typename R = units::t::mrad> 
   boost::units::quantity<R> getAngularSpreadStandardDeviation() const
   {                                                                 
     static_assert(std::is_same<typename R::dimension_type,         
-                               typename t::mrad::dimension_type>::value,        
+                               typename units::t::mrad::dimension_type>::value,        
                   "Dimensions Error: Requested return type for getAngularSpreadStandardDeviation() " 
                   "method has wrong dimensions.");                          
     if(m_UseDiffractionLimitedDivergence)
@@ -71,10 +71,10 @@ class LaserBeam
   {                                                                    
     static_assert(                                                        
         std::is_same<typename A::dimension_type,                         
-                     typename t::mrad::dimension_type>::value,             
+                     typename units::t::mrad::dimension_type>::value,             
         "Dimensions Error: Argument type of setAngularSpreadStandardDeviation(...) method has "
         "wrong dimensions.");                                         
-    m_AngularSpreadStandardDeviation = boost::units::quantity<t::mrad>(a);                      
+    m_AngularSpreadStandardDeviation = boost::units::quantity<units::t::mrad>(a);                      
     m_UseDiffractionLimitedDivergence = false;
   }
 
@@ -89,10 +89,10 @@ class LaserBeam
   {                                                                    
     static_assert(                                                        
         std::is_same<typename A::dimension_type,                         
-                     typename t::dimensionless::dimension_type>::value,             
+                     typename units::t::dimensionless::dimension_type>::value,             
         "Dimensions Error: Argument type of adjustAngularSpreadStandardDeviationToBeamPropagationFactor(...) method has "
         "wrong dimensions.");                                         
-    this->setAngularSpreadStandardDeviation(boost::units::quantity<t::dimensionless>(a).value()*this->getDiffractionLimitedAngularSpreadStandardDeviation());
+    this->setAngularSpreadStandardDeviation(boost::units::quantity<units::t::dimensionless>(a).value()*this->getDiffractionLimitedAngularSpreadStandardDeviation());
   }
 
   /**
@@ -106,10 +106,10 @@ class LaserBeam
   {                                                                    
     static_assert(                                                        
         std::is_same<typename A::dimension_type,                         
-                     typename t::dimensionless::dimension_type>::value,             
+                     typename units::t::dimensionless::dimension_type>::value,             
         "Dimensions Error: Argument type of adjustAngularSpreadStandardDeviationToBeamPropagationFactor(...) method has "
         "wrong dimensions.");                                         
-    this->setWaistStandardDeviation( boost::units::quantity<t::dimensionless>(a).value()*this->getDiffractionLimitedWaistStandardDeviation());
+    this->setWaistStandardDeviation( boost::units::quantity<units::t::dimensionless>(a).value()*this->getDiffractionLimitedWaistStandardDeviation());
   }
 
   /**
@@ -150,33 +150,33 @@ class LaserBeam
   void set##NAME(boost::units::quantity<A> arg)                        \
   {                                                                    \
     static_assert(std::is_same<typename A::dimension_type,             \
-                               typename t::nm::dimension_type>::value, \
+                               typename units::t::nm::dimension_type>::value, \
                   "Dimensions Error: Argument type of "                \
                   "set##NAME(...) method "                             \
                   "has wrong dimensions.");                            \
     __VA_ARGS__;                                                       \
   }
 
-  ADD_DERIVED_GETTER(FreeSpaceWavelength, t::nm,
-                     constants::SpeedOfLight / this->getFrequency<t::hertz>());
-  ADD_DERIVED_SETTER(FreeSpaceWavelength, t::nm,
+  ADD_DERIVED_GETTER(FreeSpaceWavelength, units::t::nm,
+                     constants::SpeedOfLight / this->getFrequency<units::t::hertz>());
+  ADD_DERIVED_SETTER(FreeSpaceWavelength, units::t::nm,
                      this->setFrequency(constants::SpeedOfLight / arg));
-  ADD_DERIVED_GETTER(WaistFourSigmaDiameter, t::cm,
+  ADD_DERIVED_GETTER(WaistFourSigmaDiameter, units::t::cm,
                      this->getWaistStandardDeviation() * 4.);
-  ADD_DERIVED_SETTER(WaistFourSigmaDiameter, t::cm,
+  ADD_DERIVED_SETTER(WaistFourSigmaDiameter, units::t::cm,
                      this->setWaistStandardDeviation(arg / 4.));
   /**
    * Computes the M^2 beam propagation factor (sometimes called the "beam
    * quality") from the beam divergence and beam waist size.
    */
   ADD_DERIVED_GETTER(
-      BeamPropagationFactor, t::dimensionless,
-      this->getAngularSpreadStandardDeviation<t::rad>() /
-          this->getDiffractionLimitedAngularSpreadStandardDeviation<t::rad>());
+      BeamPropagationFactor, units::t::dimensionless,
+      this->getAngularSpreadStandardDeviation<units::t::rad>() /
+          this->getDiffractionLimitedAngularSpreadStandardDeviation<units::t::rad>());
   ADD_DERIVED_GETTER(
-      BeamParameterProduct, decltype(i::mm*i::mrad),
-      this->getWaistStandardDeviation<t::mm>() *
-          this->getAngularSpreadStandardDeviation<t::mrad>() );
+      BeamParameterProduct, decltype(units::i::mm*units::i::mrad),
+      this->getWaistStandardDeviation<units::t::mm>() *
+          this->getAngularSpreadStandardDeviation<units::t::mrad>() );
 #undef ADD_DERIVED_GETTER
 #undef ADD_DERIVED_SETTER
 
@@ -185,20 +185,20 @@ class LaserBeam
    *
    * Requires that WaistStandardDeviation and Wavelength are both set.
    */
-  template<typename R = t::mrad>
+  template<typename R = units::t::mrad>
   boost::units::quantity<R>
   getDiffractionLimitedAngularSpreadStandardDeviation() const
   {
     static_assert(
         std::is_same<typename R::dimension_type,
-                     typename t::mrad::dimension_type>::value,
+                     typename units::t::mrad::dimension_type>::value,
         "Dimensions Error: Requested return type for "
         "getDiffractionLimitedAngularSpreadStandardDeviation() method "
         "has wrong dimensions.");
-    auto sigma_theta = boost::units::quantity<t::dimensionless>(
+    auto sigma_theta = boost::units::quantity<units::t::dimensionless>(
                            this->getWavelength() / (4 * M_PI) /
                            this->getWaistStandardDeviation()) *
-                       i::rad;
+                       units::i::rad;
     return boost::units::quantity<R>(sigma_theta);
   }
 
@@ -207,16 +207,16 @@ class LaserBeam
    *
    * Requires that AngularSpreadStandardDeviation and Wavelength are both set.
    */
-  template<typename R = t::cm>
+  template<typename R = units::t::cm>
   boost::units::quantity<R> getDiffractionLimitedWaistStandardDeviation() const
   {
     static_assert(std::is_same<typename R::dimension_type,
-                               typename t::cm::dimension_type>::value,
+                               typename units::t::cm::dimension_type>::value,
                   "Dimensions Error: Requested return type for "
                   "getDiffractionLimitedWaistStandardDeviation() method "
                   "has wrong dimensions.");
     auto sigma_0 = this->getWavelength() / (4 * M_PI) /
-                   this->getAngularSpreadStandardDeviation<t::rad>().value();
+                   this->getAngularSpreadStandardDeviation<units::t::rad>().value();
     return boost::units::quantity<R>(sigma_0);
   }
 
@@ -224,31 +224,31 @@ class LaserBeam
    * Computes the beam standard deviation (a measure of width) at a specified
    * position.
    */
-  template<typename R = t::cm, typename A = t::cm>
+  template<typename R = units::t::cm, typename A = units::t::cm>
   boost::units::quantity<R> getBeamStandardDeviation(
       boost::units::quantity<A> z) const
   {
     static_assert(
         std::is_same<typename R::dimension_type,
-                     typename t::cm::dimension_type>::value,
+                     typename units::t::cm::dimension_type>::value,
         "Dimensions Error: Requested return type for "
         "getBeamStandardDeviation(...) method "
-        "has wrong dimensions. Should have same dimensions as t::cm.");
+        "has wrong dimensions. Should have same dimensions as units::t::cm.");
     static_assert(
         std::is_same<typename A::dimension_type,
-                     typename t::cm::dimension_type>::value,
+                     typename units::t::cm::dimension_type>::value,
         "Dimensions Error: argument to getBeamStandardDeviation(...) method "
         "has wrong dimensions.");
-    auto sigma = root<2>(
-        pow<2>(m_WaistStandardDeviation) +
-        pow<2>(boost::units::quantity<t::rad>(this->getAngularSpreadStandardDeviation()))
+    auto sigma = boost::units::root<2>(
+        boost::units::pow<2>(m_WaistStandardDeviation) +
+        boost::units::pow<2>(boost::units::quantity<units::t::rad>(this->getAngularSpreadStandardDeviation()))
                 .value() *
-            pow<2>(boost::units::quantity<t::cm>(z) - m_WaistPosition));
+            boost::units::pow<2>(boost::units::quantity<units::t::cm>(z) - m_WaistPosition));
     return boost::units::quantity<R>(sigma);
   }
 
 #define ADD_DERIVED_GETTER(NAME, UNIT, ...)                                 \
-  template<typename R = UNIT, typename A = t::cm>                           \
+  template<typename R = UNIT, typename A = units::t::cm>                           \
   boost::units::quantity<R> get##NAME(boost::units::quantity<A> z) const    \
   {                                                                         \
     static_assert(                                                          \
@@ -258,13 +258,13 @@ class LaserBeam
         "get##NAME(...) method "                                            \
         "has wrong dimensions. Should have the same dimensions as " #UNIT); \
     static_assert(std::is_same<typename A::dimension_type,                  \
-                               typename t::cm::dimension_type>::value,      \
+                               typename units::t::cm::dimension_type>::value,      \
                   "Dimensions Error: argument to get##NAME(...) method "    \
                   "has wrong dimensions.");                                 \
     return boost::units::quantity<R>(__VA_ARGS__);                          \
   }
 
-  ADD_DERIVED_GETTER(FourSigmaDiameter, t::cm,
+  ADD_DERIVED_GETTER(FourSigmaDiameter, units::t::cm,
                      4. * this->getBeamStandardDeviation(z));
 
 #undef ADD_DERIVED_GETTER

@@ -15,7 +15,7 @@ template<typename LengthUnitType>
 class MediaStack
 {
  public:
-  typedef std::pair<quantity<LengthUnitType>, Media_ptr<LengthUnitType> >
+  typedef std::pair<boost::units::quantity<LengthUnitType>, Media_ptr<LengthUnitType> >
                                   BoundaryType;
   typedef std::list<BoundaryType> BoundariesType;
 
@@ -57,7 +57,7 @@ template<typename T>
 template<typename U>
 MediaStack<T>& MediaStack<T>::addBoundary(Media_ptr<T> abs, U position)
 {
-  boundaries.push_back({quantity<T>(position), abs});
+  boundaries.push_back({boost::units::quantity<T>(position), abs});
   boundaries.sort();
   return *this;
 }
@@ -72,8 +72,8 @@ template<typename T>
 template<typename U, typename V>
 double MediaStack<T>::getTransmission(U zi, V zf) const
 {
-  quantity<T> zi_ = quantity<T>(zi);
-  quantity<T> zf_ = quantity<T>(zf);
+  boost::units::quantity<T> zi_ = boost::units::quantity<T>(zi);
+  boost::units::quantity<T> zf_ = boost::units::quantity<T>(zf);
   // . - initial point
   // x - final point
   //   . |          |   |     | x        // all boundaries are between zi and zf
@@ -92,7 +92,7 @@ double MediaStack<T>::getTransmission(U zi, V zf) const
   }
 
   double      transmission = 1;
-  quantity<T> zi__, zf__;
+  boost::units::quantity<T> zi__, zf__;
   zi__ = zi_;
   while (incBoundaries.size() > 0) {
     zf__ = incBoundaries.front()->first;

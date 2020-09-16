@@ -22,7 +22,7 @@ class BaseOpticalElement : public OpticalElementInterface<T>
   virtual MatrixType  getRTMatrix() const { return MatrixType::Identity(); };
   virtual double      getPowerLoss() const { return 0; }
   virtual double      getWavelengthScaleFactor() const { return 1; }
-  virtual quantity<T> getPositionShift() const { return 0 * T(); }
+  virtual boost::units::quantity<T> getPositionShift() const { return 0 * T(); }
 };
 
 #endif  // include protector

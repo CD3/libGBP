@@ -17,13 +17,13 @@
 
 
 template<typename CLASS>
-CLASS* createInstance_imp(const boost::true_type&)
+CLASS* createInstance_imp(const std::true_type&)
 {
   return nullptr;
 }
 
 template<typename CLASS>
-CLASS* createInstance_imp(const boost::false_type&)
+CLASS* createInstance_imp(const std::false_type&)
 {
   return new CLASS();
 }

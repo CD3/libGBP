@@ -9,7 +9,7 @@
 
 #include "BaseOpticalElement.hpp"
 
-class Filter : public BaseOpticalElement<t::centimeter>
+class Filter : public BaseOpticalElement<units::t::centimeter>
 {
  public:
   // the required interface

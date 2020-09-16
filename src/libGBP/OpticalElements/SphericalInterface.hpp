@@ -17,21 +17,21 @@ class SphericalInterface : public Interface<T>
   Eigen::Matrix<double, 2, 2> getRTMatrix() const;
 
  protected:
-  quantity<T> radiusOfCurvature;
+  boost::units::quantity<T> radiusOfCurvature;
 
  public:
   // radiusOfCurvature getters and setters
   template<typename U>
   void setRadiusOfCurvature(U v)
   {
-    this->radiusOfCurvature = quantity<T>(v);
+    this->radiusOfCurvature = boost::units::quantity<T>(v);
   }  ///< performs unit conversion and sets radiusOfCurvature
   template<typename U>
-  quantity<U> getRadiusOfCurvature() const
+  boost::units::quantity<U> getRadiusOfCurvature() const
   {
-    return quantity<U>(this->radiusOfCurvature);
+    return boost::units::quantity<U>(this->radiusOfCurvature);
   }  ///< returns radiusOfCurvature in specified units
-  inline quantity<T> getRadiusOfCurvature() const
+  inline boost::units::quantity<T> getRadiusOfCurvature() const
   {
     return this->getRadiusOfCurvature<T>();
   }  ///< returns radiusOfCurvature in internal units (T)

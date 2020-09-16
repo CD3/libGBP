@@ -11,8 +11,8 @@ template<typename LengthUnitType>
 class MediaInterface
 {
  public:
-  virtual double getTransmission(quantity<LengthUnitType> zi,
-                                 quantity<LengthUnitType> zf)
+  virtual double getTransmission(boost::units::quantity<LengthUnitType> zi,
+                                 boost::units::quantity<LengthUnitType> zf)
       const = 0;  ///< returns percentage of power transmitted through absorber
                   ///< between positions zi and zf.
 };

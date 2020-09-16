@@ -103,7 +103,7 @@ class OpticalElementInterface
       const = 0;  ///< return the Ray Transfer matrix for the element. NOTE:
                   ///< elements MUST be returned in units of LengthUnitType or
                   ///< inverse LengthUnitType.
-  virtual quantity<LengthUnitType> getPositionShift()
+  virtual boost::units::quantity<LengthUnitType> getPositionShift()
       const = 0;  ///< return the difference in the position (z coordinate) that
                   ///< the complex beam parameter corresponds to after it passes
                   ///< through the element.
@@ -124,7 +124,7 @@ class OpticalElementAdapter : public OpticalElementInterface<U>
  public:
   OpticalElementAdapter(T &ref) : t(ref) {}
   Eigen::Matrix<double, 2, 2> getRTMatrix() const { return t.getRTMatrix(); }
-  quantity<U> getPositionShift() const { return t.getPositionShift(); }
+  boost::units::quantity<U> getPositionShift() const { return t.getPositionShift(); }
   double      getPowerLoss() const { return t.getPowerLoss(); }
   double      getWavelengthScaleFactor() const
   {

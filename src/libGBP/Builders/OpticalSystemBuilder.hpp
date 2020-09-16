@@ -27,7 +27,7 @@ void OpticalSystemBuilder<T>::configure(OpticalSystem<T>* system,
   if (!elementsConfig) return;
 
   OpticalElementBuilder<T> builder;
-  quantity<T>              position;
+  boost::units::quantity<T>              position;
 
   for (auto& iter : elementsConfig.value()) {
     position = iter.second.get<double>("position", 0) * T();

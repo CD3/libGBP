@@ -25,7 +25,7 @@ class GBPCalc
   std::shared_ptr<OpticalSystem<LengthUnitType> > optics;
   std::shared_ptr<MediaStack<LengthUnitType> >    media;
   std::shared_ptr<GaussianBeam>                   beam;
-  std::vector<quantity<LengthUnitType> >          evaluation_points;
+  std::vector<boost::units::quantity<LengthUnitType> >          evaluation_points;
 
  public:
   void configure(const ptree& configTree);

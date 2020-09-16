@@ -29,6 +29,7 @@ set( cxx_needed_features
    )
 
 find_package( Boost REQUIRED )
+find_package( BoostUnitDefinitions REQUIRED )
 find_package( Eigen3 3.0 REQUIRED)
 
 string( REGEX REPLACE "^lib" "" LIB_NAME ${PROJECT_NAME} )
@@ -67,7 +68,7 @@ target_sources(
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Builders/MediaStackBuilder.hpp>
 )
 
-target_link_libraries(${LIB_NAME} INTERFACE Boost::boost Eigen3::Eigen)
+target_link_libraries(${LIB_NAME} INTERFACE Boost::boost Eigen3::Eigen BoostUnitDefinitions::BoostUnitDefinitions)
 
 if( STANDALONE )
 add_subdirectory( testing )
@@ -104,6 +105,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
 "include(CMakeFindDependencyMacro)
 find_dependency(Boost)
 find_dependency( Eigen3 )
+find_dependency( BoostUnitDefinitions )
 add_library( Eigen3::eigen3 INTERFACE IMPORTED )
 set_property( TARGET Eigen3::eigen3 PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
 include(\${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Targets.cmake)
