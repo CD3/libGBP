@@ -89,7 +89,7 @@ install( TARGETS ${LIB_NAME} EXPORT ${PROJECT_NAME}Targets
   INCLUDES DESTINATION include/libGBP
 )
 install(DIRECTORY src/
-  DESTINATION include/libGBP
+  DESTINATION include
   FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h"
 )
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/
