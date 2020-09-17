@@ -38,7 +38,7 @@ add_library( ${PROJECT_NAME}::${LIB_NAME} ALIAS ${LIB_NAME} )
 target_include_directories( ${LIB_NAME} INTERFACE
   $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/src>
   $<BUILD_INTERFACE:${${PROJECT_NAME}_BINARY_DIR}>
-  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+  $<INSTALL_INTERFACE:include/>
 )
 target_sources(
   ${LIB_NAME}
@@ -93,7 +93,7 @@ install(DIRECTORY src/
   FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h"
 )
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/
-  DESTINATION include/libGBP
+  DESTINATION include
   FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h"
 )
 install(EXPORT ${PROJECT_NAME}Targets
