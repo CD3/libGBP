@@ -15,7 +15,7 @@
 #include "Builders/OpticalSystemBuilder.hpp"
 
 /** @class GBPCalc
- * @brief Calculator class to peroform Gaussian Beam Propagation calculations.
+ * @brief Calculator class to perform Gaussian Beam Propagation calculations.
  * @author C.D. Clark III
  */
 template<typename LengthUnitType>

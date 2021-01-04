@@ -1,0 +1,21 @@
+parametric_runs.0.parameters.0.name = 
+parametric_runs.0.parameters.0.min = 
+parametric_runs.0.parameters.0.max = 
+parametric_runs.0.parameters.0.n =
+logging.prefix =
+beam.wavelength = 
+beam.power = 
+beam.divergence = 
+beam.waist.position = 
+beam.waist.diameter = 
+beam.current_position = 
+# media_stack.
+optical_system.elements.0.position = 
+optical_system.elements.0.focal_length = 
+optical_system.elements.1.refractive_index.initial = 
+optical_system.elements.1.refractive_index.final = 
+optical_system.elements.1.radius_of_curvature = 
+evaluation_points.z.min = -100
+evaluation_points.z.max = 15
+evaluation_points.z.n   = 115
+
