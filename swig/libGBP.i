@@ -1,14 +1,9 @@
 %module libGBP
 // NOTE: everything between %{ and %} gets copied verbatim into the *_wrap.cxx file
 %{
-#include "GaussianBeam.hpp"
-#include "OpticalElements/ThinLens.hpp"
-
-#define SET( name, unit ) \
-void   set##name##DP( double v ){ $self->set##name( v*unit); } \
-
-#define GET( name, unit ) \
-double get##name##DP(          ){ return quantity_cast<double>( $self->get##name() ); }
+#include <libGBP/GaussianBeam.hpp>
+#include <libGBP/OpticalElements/OpticalElementInterface.hpp>
+#include <libGBP/OpticalElements/ThinLens.hpp>
 
 %}
 
@@ -21,109 +16,123 @@ Q_   = ureg.Quantity
 %}
 
 
-%include <std_string.i>
-%include <std_complex.i>
+/* %include <std_string.i> */
+/* %include <std_complex.i> */
 
-%define pySET(class, name, unit)
+
+%define cppPROPERTY(NAME, UNIT)
+void   set##NAME##DP( double v ){ $self->set##NAME( v*UNIT); } \
+double get##NAME##DP(          ){ return quantity_cast<double>( $self->get##NAME() ); }
+%enddef
+%define cppROPROPERTY(NAME, UNIT)
+double get##NAME##DP(          ){ return quantity_cast<double>( $self->get##NAME() ); }
+%enddef
+
+%define pyPROPERTY(CLASS, NAME, UNIT)
 %pythoncode %{
-@ureg.wraps( None, (None,ureg('unit')), True )
-def set##name (self,v):
-  return self.set##name##DP(v)
-class.set##name  = set##name 
+@ureg.wraps( None, (None,'UNIT'), True )
+def set##NAME (self,v):
+  return self.set##NAME##DP(v)
+CLASS.set##NAME  = set##NAME 
+@ureg.wraps( 'UNIT', None, True )
+def get##NAME (self):
+  return self.get##NAME##DP()
+CLASS.get##NAME = get##NAME 
+%}
+%enddef
+%define pyROPROPERTY(CLASS, NAME, UNIT)
+%pythoncode %{
+@ureg.wraps( 'UNIT', None, True )
+def get##NAME (self):
+  return self.get##NAME##DP()
+CLASS.get##NAME = get##NAME 
 %}
 %enddef
 
-%define pyGET(class, name, unit)
-%pythoncode %{
-@ureg.wraps( ureg('unit'), None, True )
-def get##name (self):
-  return self.get##name##DP()
-class.get##name = get##name 
-%}
-%enddef
+
+// OPTICS
+                                         
+
+
+template<typename T>
+class ThinLens
+{
+
+public:
+
+%extend {
+
+cppPROPERTY(FocalLength, T());
+
+}
+
+};
+
+%template(ThinLens) ThinLens<t::centimeter>;
+pyPROPERTY(ThinLens, FocalLength, centimeter);
 
 
 
+// Beams
 
-
-
-/*  ____                     _             ____                       */
-/* / ___| __ _ _   _ ___ ___(_) __ _ _ __ | __ )  ___  __ _ _ __ ___  */
-/*| |  _ / _` | | | / __/ __| |/ _` | '_ \|  _ \ / _ \/ _` | '_ ` _ \ */
-/*| |_| | (_| | |_| \__ \__ \ | (_| | | | | |_) |  __/ (_| | | | | | |*/
-/* \____|\__,_|\__,_|___/___/_|\__,_|_| |_|____/ \___|\__,_|_| |_| |_|*/
-                                                                    
 
 class GaussianBeam
 {
 
 public:
+  inline void setUseDiffractionLimitedDivergence(bool val);
+  inline bool getUseDiffractionLimitedDivergence();
 
 %extend {
 
-SET(Frequency, hertz);
-GET(Frequency, hertz);
-SET(Wavelength, nanometer);
-GET(Wavelength, nanometer);
-SET(WaistPosition, centimeter);
-GET(WaistPosition, centimeter);
-SET(WaistDiameter, centimeter);
-GET(WaistDiameter, centimeter);
-SET(Power, watt);
-GET(Power, watt);
-SET(CurrentPosition, centimeter);
-GET(CurrentPosition, centimeter);
+cppPROPERTY(Frequency, hertz);
+cppPROPERTY(Wavelength, nanometer);
+cppPROPERTY(WaistPosition, centimeter);
+cppPROPERTY(OneOverEWaistDiameter, centimeter);
+cppPROPERTY(OneOverEFullAngleDivergence, milliradian);
+cppPROPERTY(OneOverE2WaistRadius, centimeter);
+cppPROPERTY(OneOverE2HalfAngleDivergence, milliradian);
+cppPROPERTY(Power, watt);
+cppPROPERTY(CurrentPosition, centimeter);
 
-GET(FreeSpaceWavelength, nanometer);
-GET(RayleighRange, centimeter);
+cppROPROPERTY(BeamPropagationFactor, dimensionless);
+cppROPROPERTY(FreeSpaceWavelength, nanometer);
+cppROPROPERTY(RayleighRange, centimeter);
+cppROPROPERTY(OneOverEFullAngleDiffractionLimitedDivergence, milliradian);
 
-/*void transformDP(OpticalElementInterface<T>* elem, double z){ $self->transform(elem, z*centimeter); }*/
+double getOneOverEDiameterDP( double v ){ return quantity_cast<double>( $self->getOneOverEDiameter(v*i::cm) ); }
+
+void transformDP(ThinLens<t::centimeter> elem, double z){ $self->transform(&elem, z*centimeter); }
 
 
 }
 
 };
 
-pySET(GaussianBeam, Frequency, hertz);
-pyGET(GaussianBeam, Frequency, hertz);
-pySET(GaussianBeam, Wavelength, nanometer);
-pyGET(GaussianBeam, Wavelength, nanometer);
-pySET(GaussianBeam, WaistPosition, centimeter);
-pyGET(GaussianBeam, WaistPosition, centimeter);
-pySET(GaussianBeam, WaistDiameter, centimeter);
-pyGET(GaussianBeam, WaistDiameter, centimeter);
-pySET(GaussianBeam, Power, watt);
-pyGET(GaussianBeam, Power, watt);
-pySET(GaussianBeam, CurrentPosition, centimeter);
-pyGET(GaussianBeam, CurrentPosition, centimeter);
+pyPROPERTY(GaussianBeam, Frequency, hertz);
+pyPROPERTY(GaussianBeam, Wavelength, nanometer);
+pyPROPERTY(GaussianBeam, WaistPosition, centimeter);
+pyPROPERTY(GaussianBeam, OneOverEWaistDiameter, centimeter);
+pyPROPERTY(GaussianBeam, OneOverEFullAngleDivergence, milliradian);
+pyPROPERTY(GaussianBeam, OneOverE2WaistRadius, centimeter);
+pyPROPERTY(GaussianBeam, OneOverE2HalfAngleDivergence, milliradian);
+pyPROPERTY(GaussianBeam, Power, watt);
+pyPROPERTY(GaussianBeam, CurrentPosition, centimeter);
 
-pyGET(GaussianBeam, FreeSpaceWavelength, nanometer);
-pyGET(GaussianBeam, RayleighRange, centimeter);
+pyROPROPERTY(GaussianBeam, BeamPropagationFactor, dimensionless);
+pyROPROPERTY(GaussianBeam, FreeSpaceWavelength, nanometer);
+pyROPROPERTY(GaussianBeam, RayleighRange, centimeter);
+pyROPROPERTY(GaussianBeam, OneOverEFullAngleDiffractionLimitedDivergence, milliradian);
 
-
-
-/* _____ _     _       _                   */
-/*|_   _| |__ (_)_ __ | |    ___ _ __  ___ */
-/*  | | | '_ \| | '_ \| |   / _ \ '_ \/ __|*/
-/*  | | | | | | | | | | |__|  __/ | | \__ \*/
-/*  |_| |_| |_|_|_| |_|_____\___|_| |_|___/*/
-                                         
-
-
-template<typename T>
-class ThinLens 
-{
-
-public:
-
-%extend {
-
-SET(FocalLength, T);
-GET(FocalLength, T);
-
-}
-
-};
-
-pySET(ThinLens, FocalLength, centimeter);
-pyGET(ThinLens, FocalLength, centimeter);
+%pythoncode %{
+@ureg.wraps( 'cm', (None,'cm'), True )
+def getOneOverEDiameter(self,v):
+  return self.getOneOverEDiameterDP(v)
+GaussianBeam.getOneOverEDiameter = getOneOverEDiameter
+%}
+%pythoncode %{
+@ureg.wraps( None, (None,None,'cm'), True )
+def transform(self,e,v):
+  return self.transformDP(e,v)
+GaussianBeam.transform = transform
+%}

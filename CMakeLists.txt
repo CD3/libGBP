@@ -1,5 +1,7 @@
 cmake_minimum_required( VERSION 3.14 )
 
+option(PYTHON_BINDINGS "Build Python bindings." ON)
+
 if( TARGET libGBP )
   return()
 endif( TARGET libGBP )
@@ -75,13 +77,6 @@ add_subdirectory( testing )
 configure_file( GBP.doxygen.in ${CMAKE_CURRENT_BINARY_DIR}/GBP.doxygen )
 endif()
 
-
-
-
-
-
-
-
 install( TARGETS ${LIB_NAME} EXPORT ${PROJECT_NAME}Targets
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
@@ -145,3 +140,13 @@ INCLUDE(CPack)
 
 
 
+
+if(PYTHON_BINDINGS)
+  find_package(Python3 REQUIRED COMPONENTS Development)
+  find_package(SWIG REQUIRED)
+  include(${SWIG_USE_FILE})
+  set_property(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/swig/libGBP.i" PROPERTY CPLUSPLUS ON)
+  swig_add_library( py${LIB_NAME} TYPE SHARED LANGUAGE python SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/swig/libGBP.i")
+  swig_link_libraries(py${LIB_NAME} PRIVATE ${LIB_NAME} Python3::Module)
+endif()
