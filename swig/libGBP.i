@@ -4,6 +4,9 @@
 #include <libGBP/GaussianBeam.hpp>
 #include <libGBP/OpticalElements/OpticalElementInterface.hpp>
 #include <libGBP/OpticalElements/ThinLens.hpp>
+#include <libGBP/GBPCalc.hpp>
+#include <vector>
+#include <utility>
 
 %}
 
@@ -16,8 +19,9 @@ Q_   = ureg.Quantity
 %}
 
 
-/* %include <std_string.i> */
-/* %include <std_complex.i> */
+%include <std_string.i>
+%include <std_vector.i>
+%include <std_pair.i>
 
 
 %define cppPROPERTY(NAME, UNIT)
@@ -129,10 +133,68 @@ pyROPROPERTY(GaussianBeam, OneOverEFullAngleDiffractionLimitedDivergence, millir
 def getOneOverEDiameter(self,v):
   return self.getOneOverEDiameterDP(v)
 GaussianBeam.getOneOverEDiameter = getOneOverEDiameter
+@ureg.wraps( 'cm', (None), True )
+def getOneOverEDiameterAtCurrentPosition(self):
+  return self.getOneOverEDiameterDP(self.getCurrentPosition().to("cm").magnitude)
+GaussianBeam.getOneOverEDiameterAtCurrentPosition = getOneOverEDiameterAtCurrentPosition
 %}
 %pythoncode %{
 @ureg.wraps( None, (None,None,'cm'), True )
 def transform(self,e,v):
   return self.transformDP(e,v)
 GaussianBeam.transform = transform
+%}
+
+
+
+
+template<typename LengthUnitType>
+class GBPCalc
+{
+  public:
+
+  void clear();
+
+  %extend {
+
+  void configure(std::string configString) {
+    std::stringstream ss;
+    ss << configString;
+
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_json(ss,pt);
+    self->configure(pt);
+
+  }
+
+  std::vector<GaussianBeam> calculateBeam()
+  {
+    std::vector<GaussianBeam> v;
+
+    auto connection = self->sig_calculatedBeam.connect(
+    [&v](const GaussianBeam& beam)
+    {
+      v.push_back( beam );
+    }
+    );
+    self->calculate();
+    connection.disconnect();
+
+    return v;
+  }
+
+
+  }
+};
+
+
+%template(GBPCalc) GBPCalc<t::centimeter>;
+%template(vector) std::vector<double>;
+%template(beam_vector) std::vector<GaussianBeam>;
+
+%pythoncode %{
+@ureg.wraps( 'cm', None, True )
+def calculateOneOverEDiameters(self):
+  return self.calculateOneOverEDiametersDP()
+GBPCalc.calculateOneOverEDiameters = calculateOneOverEDiameters
 %}

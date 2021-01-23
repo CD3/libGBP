@@ -33,6 +33,8 @@ class GBPCalc
 
   template<typename V>
   GaussianBeam getBeam(V z);
+  const std::vector<boost::units::quantity<LengthUnitType> >& getEvaluationPoints() const;
+
 
   void calculate();
 
@@ -59,6 +61,13 @@ GaussianBeam GBPCalc<T>::getBeam(V z)
   beam.setCurrentPosition(z);
 
   return beam;
+}
+
+template<typename T>
+const std::vector<boost::units::quantity<T> >&
+GBPCalc<T>::getEvaluationPoints() const
+{
+  return this->evaluation_points;
 }
 
 template<typename T>
