@@ -1,5 +1,4 @@
-#ifndef Media_LinearAbsorber_hpp
-#define Media_LinearAbsorber_hpp
+#pragma once
 
 /** @file LinearAbsorber.hpp
  * @brief
@@ -7,14 +6,16 @@
  * @date 07/27/16
  */
 
-#include "BaseMedia.hpp"
+#include "./BaseMedia.hpp"
 
+namespace libGBP
+{
 template<typename LengthUnitType>
 class LinearAbsorber : public BaseMedia<LengthUnitType>
 {
  protected:
   typedef typename boost::units::divide_typeof_helper<units::t::dimensionless, LengthUnitType>::type
-                              InvLengthUnitType;
+      InvLengthUnitType;
   boost::units::quantity<InvLengthUnitType> absorptionCoefficient;
 
  public:
@@ -56,4 +57,4 @@ double LinearAbsorber<LengthUnitType>::getTransmission(T zi, U zf) const
   return transmission;
 }
 
-#endif  // include protector
+}  // namespace libGBP

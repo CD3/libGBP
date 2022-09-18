@@ -7,6 +7,7 @@
 #include <libGBP/GBPCalc.hpp>
 #include <vector>
 #include <utility>
+using namespace libGBP;
 
 %}
 
@@ -26,10 +27,10 @@ Q_   = ureg.Quantity
 
 %define cppPROPERTY(NAME, UNIT)
 void   set##NAME##DP( double v ){ $self->set##NAME( v*UNIT); } \
-double get##NAME##DP(          ){ return quantity_cast<double>( $self->get##NAME() ); }
+double get##NAME##DP(          ){ return boost::units::quantity_cast<double>( $self->get##NAME() ); }
 %enddef
 %define cppROPROPERTY(NAME, UNIT)
-double get##NAME##DP(          ){ return quantity_cast<double>( $self->get##NAME() ); }
+double get##NAME##DP(          ){ return boost::units::quantity_cast<double>( $self->get##NAME() ); }
 %enddef
 
 %define pyPROPERTY(CLASS, NAME, UNIT)
@@ -104,7 +105,7 @@ cppROPROPERTY(FreeSpaceWavelength, nanometer);
 cppROPROPERTY(RayleighRange, centimeter);
 cppROPROPERTY(OneOverEFullAngleDiffractionLimitedDivergence, milliradian);
 
-double getOneOverEDiameterDP( double v ){ return quantity_cast<double>( $self->getOneOverEDiameter(v*i::cm) ); }
+double getOneOverEDiameterDP( double v ){ return boost::units::quantity_cast<double>( $self->getOneOverEDiameter(v*i::cm) ); }
 
 void transformDP(ThinLens<t::centimeter> elem, double z){ $self->transform(&elem, z*centimeter); }
 

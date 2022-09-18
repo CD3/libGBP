@@ -8,6 +8,8 @@
 
 #include "./BeamTransformation_Base.hpp"
 
+namespace libGBP
+{
 class Filter : public BeamTransformation_Base<units::t::centimeter>
 {
  public:
@@ -50,3 +52,4 @@ inline double Filter::getPowerLoss() const
   return loss;
 }
 
+}  // namespace libGBP

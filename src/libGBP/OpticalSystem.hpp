@@ -1,5 +1,4 @@
-#ifndef OpticalSystem_hpp
-#define OpticalSystem_hpp
+#pragma once
 
 /** @file OpticalSystem.hpp
  * @brief An optical system consists of a set of optical elements.
@@ -14,6 +13,8 @@
 #include "Builders/OpticalElementBuilder.hpp"
 #include "GaussianBeam.hpp"
 #include "BeamTransformations/BeamTransformation_Interface.hpp"
+
+namespace libGBP {
 
 template<typename LengthUnitType>
 class OpticalSystem
@@ -94,4 +95,4 @@ void OpticalSystem<T>::transform(GaussianBeam* beam)
   this->transform(beam, elements.front().first, elements.back().first);
 }
 
-#endif  // include protector
+}

@@ -9,6 +9,8 @@
 #include <libGBP/BeamTransformations/SphericalInterface.hpp>
 #include <libGBP/Builders/BeamBuilder.hpp>
 
+using namespace libGBP;
+
 TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )
 {
 

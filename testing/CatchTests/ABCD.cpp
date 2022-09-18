@@ -4,6 +4,7 @@
 #include <libGBP/BeamTransformations/SphericalInterface.hpp>
 #include <libGBP/BeamTransformations/ThinLens.hpp>
 #include <libGBP/BeamTransformations/Translation.hpp>
+using namespace libGBP;
 
 TEST_CASE("ABCD Matrix Transormations")
 {

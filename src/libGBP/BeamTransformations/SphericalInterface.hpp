@@ -8,6 +8,8 @@
 
 #include "./Interface.hpp"
 
+namespace libGBP
+{
 template<typename T>
 class SphericalInterface : public Interface<T>
 {
@@ -49,3 +51,4 @@ Eigen::Matrix<double, 2, 2> SphericalInterface<T>::getRTMatrix() const
   return mat;
 }
 
+}  // namespace libGBP

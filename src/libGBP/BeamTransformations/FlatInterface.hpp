@@ -8,6 +8,8 @@
 
 #include "./Interface.hpp"
 
+namespace libGBP
+{
 template<typename T>
 class FlatInterface : public Interface<T>
 {
@@ -24,3 +26,4 @@ Eigen::Matrix<double, 2, 2> FlatInterface<T>::getRTMatrix() const
 
   return mat;
 }
+}  // namespace libGBP

@@ -1,5 +1,4 @@
-#ifndef OpticalElements_OpticalElementBuilder_h
-#define OpticalElements_OpticalElementBuilder_h
+#pragma once
 
 /** @file OpticalElementBuilder.h
  * @brief
@@ -16,6 +15,8 @@
 #include "../BeamTransformations/BeamTransformation_Interface.hpp"
 #include "../BeamTransformations/SphericalInterface.hpp"
 #include "../BeamTransformations/ThinLens.hpp"
+
+namespace libGBP {
 
 template<typename LengthUnitType>
 class OpticalElementBuilder
@@ -76,4 +77,4 @@ void OpticalElementBuilder<T>::configure(BeamTransformation_Interface<T>* elem,
   }
 }
 
-#endif  // include protector
+}

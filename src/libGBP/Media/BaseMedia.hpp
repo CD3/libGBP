@@ -1,5 +1,4 @@
-#ifndef Media_BaseMedia_hpp
-#define Media_BaseMedia_hpp
+#pragma once
 
 /** @file BaseMedia.hpp
  * @brief
@@ -13,7 +12,9 @@
  * @author C.D. Clark III
  */
 
-#include "MediaInterface.hpp"
+#include "./MediaInterface.hpp"
+
+namespace libGBP {
 
 template<typename LengthUnitType>
 class BaseMedia : public MediaInterface<LengthUnitType>
@@ -26,4 +27,4 @@ class BaseMedia : public MediaInterface<LengthUnitType>
   }
 };
 
-#endif  // include protector
+}

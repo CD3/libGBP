@@ -8,7 +8,8 @@
  */
 
 #include "./BeamTransformation_Base.hpp"
-
+namespace libGBP
+{
 template<typename T>
 class Interface : public BeamTransformation_Base<T>
 {
@@ -44,3 +45,4 @@ class Interface : public BeamTransformation_Base<T>
     return this->finalRefractiveIndex;
   }  ///< returns finalRefractiveIndex
 };
+}  // namespace libGBP

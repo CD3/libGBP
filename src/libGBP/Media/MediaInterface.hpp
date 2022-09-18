@@ -1,5 +1,4 @@
-#ifndef Media_MediaInterface_hpp
-#define Media_MediaInterface_hpp
+#pragma once
 
 /** @file Media.hpp
  * @brief
@@ -7,6 +6,8 @@
  * @date 07/27/16
  */
 
+namespace libGBP
+{
 template<typename LengthUnitType>
 class MediaInterface
 {
@@ -20,4 +21,4 @@ class MediaInterface
 template<typename T>
 using Media_ptr = std::shared_ptr<MediaInterface<T> >;
 
-#endif  // include protector
+}  // namespace libGBP

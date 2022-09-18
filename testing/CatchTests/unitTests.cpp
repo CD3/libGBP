@@ -9,6 +9,9 @@
 #define WRITE3(a, b, c) std::cout << a << " " << b << " " << c << std::endl
 
 #include <libGBP/GaussianBeam.hpp>
+
+using namespace libGBP;
+
 SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
 {
   GIVEN("An uninitialized GaussianBeam instance")

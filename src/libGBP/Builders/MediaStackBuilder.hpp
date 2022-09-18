@@ -1,5 +1,4 @@
-#ifndef Builders_MediaStackBuilder_hpp
-#define Builders_MediaStackBuilder_hpp
+#pragma once
 
 /** @file MediaStackBuilder.hpp
  * @brief
@@ -8,10 +7,12 @@
  */
 
 #include "./Builder.hpp"
-#include "MediaBuilder.hpp"
+#include "./MediaBuilder.hpp"
 #include "../MediaStack.hpp"
 
 using boost::property_tree::keyIntComp;
+
+namespace libGBP {
 
 /** @class MediaStackBuilder
  * @brief
@@ -75,4 +76,4 @@ void MediaStackBuilder<T>::configure(MediaStack<T>* stack,
     stack->addBoundary(stack->getBackgroundMedia(), T() * backPosition.value());
 }
 
-#endif  // include protector
+}

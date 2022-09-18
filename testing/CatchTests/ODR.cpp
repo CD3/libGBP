@@ -6,6 +6,8 @@
  */
 
 #include <libGBP/GaussianBeam.hpp>
+
+using namespace libGBP;
 SCENARIO("GaussianBeam ODR" )
 {
   GaussianBeam beam;

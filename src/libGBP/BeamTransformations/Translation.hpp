@@ -7,7 +7,8 @@
  */
 
 #include "./BeamTransformation_Base.hpp"
-
+namespace libGBP
+{
 template<typename T>
 class Translation : public BeamTransformation_Base<T>
 {
@@ -45,3 +46,4 @@ Eigen::Matrix<double, 2, 2> Translation<T>::getRTMatrix() const
   return mat;
 }
 
+}  // namespace libGBP

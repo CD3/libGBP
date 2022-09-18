@@ -1,5 +1,4 @@
-#ifndef MediaStack_hpp
-#define MediaStack_hpp
+#pragma once
 
 /** @file MediaStack.hpp
  * @brief
@@ -11,12 +10,14 @@
 
 #include "Media/MediaInterface.hpp"
 
+namespace libGBP
+{
 template<typename LengthUnitType>
 class MediaStack
 {
  public:
   typedef std::pair<boost::units::quantity<LengthUnitType>, Media_ptr<LengthUnitType> >
-                                  BoundaryType;
+      BoundaryType;
   typedef std::list<BoundaryType> BoundariesType;
 
  protected:
@@ -86,15 +87,15 @@ double MediaStack<T>::getTransmission(U zi, V zf) const
   // we determine what boundaries are between zi and zf
   std::queue<decltype(boundaries.begin())> incBoundaries;
   auto                                     currentMedia = backgroundMedia;
-  for (auto it = boundaries.begin(); it != boundaries.end(); it++) {
-    if (zi_ < it->first && it->first < zf_) incBoundaries.push(it);
-    if (zi_ > it->first) currentMedia = it->second;
+  for(auto it = boundaries.begin(); it != boundaries.end(); it++) {
+    if(zi_ < it->first && it->first < zf_) incBoundaries.push(it);
+    if(zi_ > it->first) currentMedia = it->second;
   }
 
-  double      transmission = 1;
+  double                    transmission = 1;
   boost::units::quantity<T> zi__, zf__;
   zi__ = zi_;
-  while (incBoundaries.size() > 0) {
+  while(incBoundaries.size() > 0) {
     zf__ = incBoundaries.front()->first;
     transmission *= currentMedia->getTransmission(zi__, zf__);
     zi__         = zf__;
@@ -108,4 +109,4 @@ double MediaStack<T>::getTransmission(U zi, V zf) const
   return transmission;
 }
 
-#endif  // include protector
+}  // namespace libGBP

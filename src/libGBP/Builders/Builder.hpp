@@ -1,5 +1,4 @@
-#ifndef Builder_hpp
-#define Builder_hpp
+#pragma once
 
 /** @file Builder.hpp
  * @brief
@@ -15,7 +14,8 @@
 
 #include "../utils/ptree.hpp"
 
-
+namespace libGBP
+{
 template<typename CLASS>
 CLASS* createInstance_imp(const std::true_type&)
 {
@@ -67,8 +67,8 @@ std::string Builder<T>::getTypeName(std::string name)
 {
   std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
-  for (auto mapping : namesMap) {
-    if (std::regex_match(name, std::regex(mapping.first)))
+  for(auto mapping : namesMap) {
+    if(std::regex_match(name, std::regex(mapping.first)))
       return mapping.second;
   }
 
@@ -106,4 +106,4 @@ void Builder<T>::addType(std::string typeName, factoryFunc func)
   creators[typeName] = func;
 }
 
-#endif  // include protector
+}  // namespace libGBP

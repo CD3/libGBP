@@ -1,5 +1,4 @@
-#ifndef GaussianBeam_hpp
-#define GaussianBeam_hpp
+#pragma once
 
 /** @file GaussianBeam.hpp
  * @brief Class representing a Guassian beam.
@@ -13,6 +12,7 @@
 #include "./BeamTransformations/BeamTransformation_Interface.hpp"
 #include "./LaserBeam.hpp"
 
+namespace libGBP {
 /** @class
  * @brief A class implementing Gaussian Beam calculations.
  * @author C.D. Clark III
@@ -303,5 +303,5 @@ class GaussianLaserBeam : public LaserBeam
 };
 
 using GaussianBeam = GaussianLaserBeam;
+}
 
-#endif

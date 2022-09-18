@@ -1,5 +1,4 @@
-#ifndef GBPCalc_hpp
-#define GBPCalc_hpp
+#pragma once
 
 /** @file GBPCalc.hpp
  * @brief
@@ -14,6 +13,7 @@
 #include "Builders/MediaStackBuilder.hpp"
 #include "Builders/OpticalSystemBuilder.hpp"
 
+namespace libGBP {
 /** @class GBPCalc
  * @brief Calculator class to perform Gaussian Beam Propagation calculations.
  * @author C.D. Clark III
@@ -126,5 +126,5 @@ void GBPCalc<T>::calculate()
     sig_calculatedBeam(this->getBeam(z));
   }
 }
+}
 
-#endif  // include protector

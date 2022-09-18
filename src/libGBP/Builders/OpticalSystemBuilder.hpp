@@ -1,5 +1,4 @@
-#ifndef Builders_OpticalSystemBuilder_hpp
-#define Builders_OpticalSystemBuilder_hpp
+#pragma once
 
 /** @file OpticalSystemBuilder.hpp
  * @brief
@@ -7,8 +6,10 @@
  * @date 07/25/16
  */
 
-#include "Builder.hpp"
+#include "./Builder.hpp"
 #include "../OpticalSystem.hpp"
+
+namespace libGBP {
 
 template<typename LengthUnitType>
 class OpticalSystemBuilder : public Builder<OpticalSystem<LengthUnitType> >
@@ -36,4 +37,4 @@ void OpticalSystemBuilder<T>::configure(OpticalSystem<T>* system,
   }
 }
 
-#endif  // include protector
+}

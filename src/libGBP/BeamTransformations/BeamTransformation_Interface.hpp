@@ -11,7 +11,8 @@
 #include <Eigen/Dense>
 
 #include "../Units.hpp"
-
+namespace libGBP
+{
 /** @class BeamTransformation_Interface
  * @brief Abstract class that defines the interface a beam transform must
  * implement.
@@ -130,9 +131,9 @@ class BeamTransformAdapter : public BeamTransformation_Interface<U>
  public:
   BeamTransformAdapter(T &ref) : t(ref) {}
   Eigen::Matrix<double, 2, 2> getRTMatrix() const { return t.getRTMatrix(); }
-  boost::units::quantity<U> getPositionShift() const { return t.getPositionShift(); }
-  double      getPowerLoss() const { return t.getPowerLoss(); }
-  double      getWavelengthScaleFactor() const
+  boost::units::quantity<U>   getPositionShift() const { return t.getPositionShift(); }
+  double                      getPowerLoss() const { return t.getPowerLoss(); }
+  double                      getWavelengthScaleFactor() const
   {
     return t.getWavelengthScaleFactor();
   }
@@ -141,3 +142,4 @@ class BeamTransformAdapter : public BeamTransformation_Interface<U>
 template<typename T>
 using BeamTransformation_ptr = std::shared_ptr<BeamTransformation_Interface<T> >;
 
+}  // namespace libGBP

@@ -4,6 +4,8 @@
 #include <libGBP/BeamTransformations/ThinLens.hpp>
 #include <libGBP/BeamTransformations/SphericalInterface.hpp>
 
+using namespace libGBP;
+
 SCENARIO("Gaussian beams can be focused by a lens" )
 {
   GIVEN("An ideal, collimated Gaussian beam with wavelength 500 nm, D_L = 5 mm")

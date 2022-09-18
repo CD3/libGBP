@@ -1,5 +1,4 @@
-#ifndef Builders_MediaBuilder_hpp
-#define Builders_MediaBuilder_hpp
+#pragma once
 
 /** @file MediaBuilder.hpp
  * @brief
@@ -7,10 +6,12 @@
  * @date 07/29/16
  */
 
-#include "./Builder.hpp"
 #include "../Media/LinearAbsorber.hpp"
 #include "../Media/MediaInterface.hpp"
+#include "./Builder.hpp"
 
+namespace libGBP
+{
 /** @class MediaBuilder
  * @brief
  * @author C.D. Clark III
@@ -40,11 +41,11 @@ void MediaBuilder<T>::configure(MediaInterface<T>* media,
 {
   {
     auto ptr = dynamic_cast<LinearAbsorber<T>*>(media);
-    if (ptr != nullptr) {
+    if(ptr != nullptr) {
       ptr->setAbsorptionCoefficient(
           configTree.get<double>("absorption_coefficient") / T());
     }
   }
 }
 
-#endif  // include protector
+}  // namespace libGBP

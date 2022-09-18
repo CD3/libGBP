@@ -1,5 +1,4 @@
-#ifndef BeamBuilder_hpp
-#define BeamBuilder_hpp
+#pragma once
 
 /** @file BeamBuilder.hpp
  * @brief A class that can configure a GaussianBeam based on various scenarios.
@@ -22,43 +21,44 @@
  */
 #include <vector>
 
+#include <boost/optional.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/optional.hpp>
 
-#include "./Builder.hpp"
 #include "../GaussianBeam.hpp"
+#include "./Builder.hpp"
 
 using std::vector;
-
+namespace libGBP
+{
 struct BeamBuilder : public Builder<GaussianBeam> {
-#define ADD_ATTRIBUTE(name, unit, n)                            \
-  vector<boost::units::quantity<unit> > name;                                 \
-  template<typename T>                                          \
-  BeamBuilder& set##name(T v, int i = -1)                       \
-  {                                                             \
-    if (i < 0 && this->name.size() < n)                         \
-      this->name.push_back(boost::units::quantity<unit>(v));                  \
-    if (i < 0 && this->name.size() >= n)                        \
-      this->name[n - 1] = boost::units::quantity<unit>(v);                    \
-    if (i >= 0 && i + 1 < n) this->name[i] = boost::units::quantity<unit>(v); \
-    return *this;                                               \
-  }                                                             \
-  template<typename T>                                          \
-  boost::optional<boost::units::quantity<T> > get##name(int i = 0)                   \
-  {                                                             \
-    if (i < name.size()) {                                      \
-      return boost::units::quantity<T>(name[i]);                              \
-    }                                                           \
-    return boost::none;                                         \
-  }                                                             \
-  bool has##name(int i = 0)                                     \
-  {                                                             \
-    if (i < name.size()) {                                      \
-      return true;                                              \
-    } else {                                                    \
-      return false;                                             \
-    }                                                           \
+#define ADD_ATTRIBUTE(name, unit, n)                                         \
+  vector<boost::units::quantity<unit> > name;                                \
+  template<typename T>                                                       \
+  BeamBuilder& set##name(T v, int i = -1)                                    \
+  {                                                                          \
+    if(i < 0 && this->name.size() < n)                                       \
+      this->name.push_back(boost::units::quantity<unit>(v));                 \
+    if(i < 0 && this->name.size() >= n)                                      \
+      this->name[n - 1] = boost::units::quantity<unit>(v);                   \
+    if(i >= 0 && i + 1 < n) this->name[i] = boost::units::quantity<unit>(v); \
+    return *this;                                                            \
+  }                                                                          \
+  template<typename T>                                                       \
+  boost::optional<boost::units::quantity<T> > get##name(int i = 0)           \
+  {                                                                          \
+    if(i < name.size()) {                                                    \
+      return boost::units::quantity<T>(name[i]);                             \
+    }                                                                        \
+    return boost::none;                                                      \
+  }                                                                          \
+  bool has##name(int i = 0)                                                  \
+  {                                                                          \
+    if(i < name.size()) {                                                    \
+      return true;                                                           \
+    } else {                                                                 \
+      return false;                                                          \
+    }                                                                        \
   }
 
   ADD_ATTRIBUTE(Wavelength, units::t::nanometer, 1);
@@ -85,42 +85,42 @@ struct BeamBuilder : public Builder<GaussianBeam> {
 
 void BeamBuilder::configure(GaussianBeam* beam)
 {
-  if (this->hasWavelength())
+  if(this->hasWavelength())
     beam->setWavelength(this->getWavelength<units::t::nanometer>().value());
 
-  if (this->hasPower()) beam->setPower(this->getPower<units::t::watt>().value());
+  if(this->hasPower()) beam->setPower(this->getPower<units::t::watt>().value());
 
-  if (this->hasOneOverE2WaistDiameter())
+  if(this->hasOneOverE2WaistDiameter())
     beam->setOneOverE2WaistDiameter(
         this->getOneOverE2WaistDiameter<units::t::centimeter>().value());
 
-  if (this->hasWaistPosition())
+  if(this->hasWaistPosition())
     beam->setWaistPosition(this->getWaistPosition<units::t::centimeter>().value());
 
-  if (!this->hasOneOverE2WaistDiameter()) {
-    if (this->hasWavelength() &&
-        this->hasOneOverE2FullAngleDivergence()) {  // if the divergence is known, then we can
-                                  // determine the beam waist diameter
+  if(!this->hasOneOverE2WaistDiameter()) {
+    if(this->hasWavelength() &&
+       this->hasOneOverE2FullAngleDivergence()) {  // if the divergence is known, then we can
+                                                   // determine the beam waist diameter
 
       // \Theta   = \frac{2\lambda}{\pi \omega_0}
       // \omega_0 = \frac{2\lambda}{\pi \Theta  }
       boost::units::quantity<units::t::centimeter> waistRadius =
           2. * beam->getWavelength<units::t::centimeter>() /
           boost::units::quantity_cast<double>(M_PI *
-                                this->getOneOverE2FullAngleDivergence<units::t::radian>().value());
+                                              this->getOneOverE2FullAngleDivergence<units::t::radian>().value());
       beam->setOneOverE2WaistRadius(waistRadius);
 
-      if (this->hasOneOverE2Diameter()) {  // if the diameter at some location is known,
-                                  // then we can determine where the beam waist
-                                  // is
-        if (this->getOneOverE2Diameter<units::t::centimeter>() < 2. * waistRadius)
+      if(this->hasOneOverE2Diameter()) {  // if the diameter at some location is known,
+                                          // then we can determine where the beam waist
+                                          // is
+        if(this->getOneOverE2Diameter<units::t::centimeter>() < 2. * waistRadius)
           throw std::runtime_error(
               "BEAM CONFIGURATION ERROR: configured beam diameter is smaller "
               "than the beam waist diameter based on wavelength and "
               "divergence.");
 
         boost::units::quantity<units::t::centimeter> pos = 0 * units::i::cm;
-        if (this->hasPosition())
+        if(this->hasPosition())
           pos = this->getPosition<units::t::centimeter>().value();
 
         boost::units::quantity<units::t::centimeter> waistPosition =
@@ -134,14 +134,14 @@ void BeamBuilder::configure(GaussianBeam* beam)
     }
   }
 
-  if (!this->hasFrequency())
+  if(!this->hasFrequency())
     beam->setFrequency(
         constants::SpeedOfLight /
         (this->hasFreeSpaceWavelength()
              ? this->getFreeSpaceWavelength<units::t::nanometer>().value()
              : this->getWavelength<units::t::nanometer>().value()));
 
-  if (this->hasCurrentPosition())
+  if(this->hasCurrentPosition())
     beam->setCurrentPosition(this->getCurrentPosition<units::t::centimeter>().value());
 }
 
@@ -153,7 +153,7 @@ void BeamBuilder::configure(GaussianBeam* beam, const ptree& configTree)
 #define SET(name, key, val)                       \
   {                                               \
     auto param = tree->get_optional<double>(key); \
-    if (param) {                                  \
+    if(param) {                                   \
       auto value = param.value();                 \
       builder.set##name(val);                     \
     }                                             \
@@ -167,8 +167,8 @@ void BeamBuilder::configure(GaussianBeam* beam, const ptree& configTree)
   SET(CurrentPosition, "current_position", value * units::i::cm);
 
   auto profiles = configTree.get_child_optional("profiles");
-  if (profiles) {
-    for (auto& iter : profiles.value()) {
+  if(profiles) {
+    for(auto& iter : profiles.value()) {
       tree = &iter.second;
       SET(Position, "position", value * units::i::cm);
       SET(OneOverE2Diameter, "diameter", value * units::i::cm);
@@ -181,4 +181,4 @@ void BeamBuilder::configure(GaussianBeam* beam, const ptree& configTree)
 #undef SET
 }
 
-#endif  // include protector
+}  // namespace libGBP

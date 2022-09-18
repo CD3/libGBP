@@ -11,6 +11,8 @@
 #include "Constants.hpp"
 #include "Units.hpp"
 
+namespace libGBP {
+
 class LaserBeam
 {
 #define ADD_MEMBER(NAME, UNIT)                                               \
@@ -270,3 +272,4 @@ class LaserBeam
 #undef ADD_DERIVED_GETTER
 };
 
+}

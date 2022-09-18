@@ -2,6 +2,8 @@
 
 #include "catch.hpp"
 
+using namespace libGBP;
+
 SCENARIO("LaserBeam can be configured and compute beam width at range")
 {
   GIVEN("An uninitialized LaserBeam instance")
