@@ -31,7 +31,7 @@ void OpticalSystemBuilder<T>::configure(OpticalSystem<T>* system,
 
   for (auto& iter : elementsConfig.value()) {
     position = iter.second.get<double>("position", 0) * T();
-    system->addElement(OpticalElement_ptr<T>(builder.build(iter.second)),
+    system->addElement(BeamTransformation_ptr<T>(builder.build(iter.second)),
                        position);
   }
 }

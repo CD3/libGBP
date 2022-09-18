@@ -1,21 +1,20 @@
-#ifndef OpticalElements_BaseOpticalElement_hpp
-#define OpticalElements_BaseOpticalElement_hpp
+#pragma once
 
-#include "OpticalElementInterface.hpp"
+#include "./BeamTransformation_Interface.hpp"
 
-/** @file BaseOpticalElement.hpp
+/** @file BeamTransformation_Base.hpp
  * @brief
  * @author C.D. Clark III
  * @date 07/01/16
  */
 
-/** @class BaseOpticalElement
- * @brief Base class for optical elements that provides default implementations
+/** @class BeamTransformation_Base
+ * @brief Base class that implements the BeamTransformation_Interface and provides default implementations
  * for the required methods.
  * @author C.D. Clark III
  */
 template<typename T>
-class BaseOpticalElement : public OpticalElementInterface<T>
+class BeamTransformation_Base: public BeamTransformation_Interface<T>
 {
  public:
   typedef Eigen::Matrix<double, 2, 2> MatrixType;
@@ -24,5 +23,3 @@ class BaseOpticalElement : public OpticalElementInterface<T>
   virtual double      getWavelengthScaleFactor() const { return 1; }
   virtual boost::units::quantity<T> getPositionShift() const { return 0 * T(); }
 };
-
-#endif  // include protector

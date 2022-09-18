@@ -1,8 +1,7 @@
-#ifndef OpticalElementInterface_hpp
-#define OpticalElementInterface_hpp
+#pragma once
 
-/** @file OpticalElementInterface.hpp
- * @brief Definition of the optical element interface.
+/** @file BeamTransformation_Interface.hpp
+ * @brief Definition of the beam transformation interface
  * @author C.D. Clark III
  * @date 06/29/16
  */
@@ -13,21 +12,28 @@
 
 #include "../Units.hpp"
 
-/** @class OpticalElementInterface
- * @brief Abstract class that defines the interface an optical element must
+/** @class BeamTransformation_Interface
+ * @brief Abstract class that defines the interface a beam transform must
  * implement.
  * @author C.D. Clark III
  *
- * An optical element tranforms a Gaussian beam. Before a beam enters the
- * element, it has a beam waist size and position. After it exists the element,
- * it has a new waist size and position. The theory of Gaussian beam propagation
- * based on the paraxial wave equation accounts for the action of an optical
- * element with Ray Transfer Matircies (RTM)
- * (https://en.wikipedia.org/wiki/Ray_transfer_matrix_analysis). These are the
- * same matricies that are used to transform optical rays when ray tracing
+ * An beam transform tranforms a Gaussian beam. Before a beam transform is applied
+ * the beam has a beam waist size and position. After the transform is applied,
+ * it has a new waist size and position. The transformation can be described
+ * with a Ray Transfer Matrix (RTM). Ultimately, implementations of this
+ * class will construct a RTM.
+ *
+ * The theory of Gaussian beam propagation
+ * based on the paraxial wave equation accounts for the action of optical
+ * elements using an RTM (https://en.wikipedia.org/wiki/Ray_transfer_matrix_analysis).
+ * These are the  same matricies that are used to transform optical rays when ray tracing
  * through an optical system and they are convienent because the action of
  * multiple elements can be accounted for my simply multiplying their RTM
  * together.
+ *
+ * _Most_ classes that implement this interface will represent optical elements (lenses,
+ * refractive surfaces, etc) but a few will not. In the discussion below, we will
+ * refer to the transformation as an element.
  *
  * This method is often referred to as the "ABCD" law for Gaussian beams.
  * Basically, the RTM is a \f$2\times2\f$ matrix that can be written as \f[
@@ -88,7 +94,7 @@
  * actually corresponds to the position of the back surface of the lens.
  *
  * This shift needs to be known in order for the beam waist position to be
- * determined, so an optical element must provide a method to that the
+ * determined, so an optical element must provide a method to the
  * GaussianBeam instance can use to determine the new beam waist position.
  *
  * @tparam LengthUnitType the length unit that will be used for calculating
@@ -96,7 +102,7 @@
  */
 
 template<typename LengthUnitType>
-class OpticalElementInterface
+class BeamTransformation_Interface
 {
  public:
   virtual Eigen::Matrix<double, 2, 2> getRTMatrix()
@@ -116,13 +122,13 @@ class OpticalElementInterface
 };
 
 template<typename T, typename U>
-class OpticalElementAdapter : public OpticalElementInterface<U>
+class BeamTransformAdapter : public BeamTransformation_Interface<U>
 {
  private:
   T &t;
 
  public:
-  OpticalElementAdapter(T &ref) : t(ref) {}
+  BeamTransformAdapter(T &ref) : t(ref) {}
   Eigen::Matrix<double, 2, 2> getRTMatrix() const { return t.getRTMatrix(); }
   boost::units::quantity<U> getPositionShift() const { return t.getPositionShift(); }
   double      getPowerLoss() const { return t.getPowerLoss(); }
@@ -133,6 +139,5 @@ class OpticalElementAdapter : public OpticalElementInterface<U>
 };
 
 template<typename T>
-using OpticalElement_ptr = std::shared_ptr<OpticalElementInterface<T> >;
+using BeamTransformation_ptr = std::shared_ptr<BeamTransformation_Interface<T> >;
 
-#endif  // include protector

@@ -6,10 +6,10 @@
  * @date 07/01/16
  */
 
-#include "BaseOpticalElement.hpp"
+#include "./BeamTransformation_Base.hpp"
 
 template<typename T>
-class Translation : public BaseOpticalElement<T>
+class Translation : public BeamTransformation_Base<T>
 {
  public:
   // required by interface

@@ -13,14 +13,14 @@
 
 #include "Builders/OpticalElementBuilder.hpp"
 #include "GaussianBeam.hpp"
-#include "OpticalElements/OpticalElementInterface.hpp"
+#include "BeamTransformations/BeamTransformation_Interface.hpp"
 
 template<typename LengthUnitType>
 class OpticalSystem
 {
  public:
   typedef std::pair<boost::units::quantity<LengthUnitType>,
-                    OpticalElement_ptr<LengthUnitType> >
+                    BeamTransformation_ptr<LengthUnitType> >
                                  ElementType;
   typedef std::list<ElementType> ElementsType;
 
@@ -30,7 +30,7 @@ class OpticalSystem
  public:
   template<typename U>
   OpticalSystem<LengthUnitType>& addElement(
-      OpticalElement_ptr<LengthUnitType> elem, U position);
+      BeamTransformation_ptr<LengthUnitType> elem, U position);
 
   const ElementsType& getElements() const;
 
@@ -47,7 +47,7 @@ class OpticalSystem
 
 template<typename T>
 template<typename U>
-OpticalSystem<T>& OpticalSystem<T>::addElement(OpticalElement_ptr<T> elem,
+OpticalSystem<T>& OpticalSystem<T>::addElement(BeamTransformation_ptr<T> elem,
                                                U                     position)
 {
   elements.push_back({boost::units::quantity<T>(position), elem});

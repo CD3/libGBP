@@ -1,9 +1,9 @@
 #include "catch.hpp"
 
 #include <libGBP/GaussianBeam.hpp>
-#include <libGBP/OpticalElements/SphericalInterface.hpp>
-#include <libGBP/OpticalElements/ThinLens.hpp>
-#include <libGBP/OpticalElements/Translation.hpp>
+#include <libGBP/BeamTransformations/SphericalInterface.hpp>
+#include <libGBP/BeamTransformations/ThinLens.hpp>
+#include <libGBP/BeamTransformations/Translation.hpp>
 
 TEST_CASE("ABCD Matrix Transormations")
 {
@@ -24,7 +24,7 @@ TEST_CASE("ABCD Matrix Transormations")
     CHECK(beam.getOneOverE2WaistRadius().value() == Approx(10e-4));
     CHECK(beam.getOneOverE2Radius().value() == Approx(10e-4));
 
-    beam.transform( &Translation );
+    beam.transform( Translation );
 
     CHECK(beam.getCurrentPosition().value() == Approx(0).scale(1));
     CHECK(beam.getWaistPosition().value() == Approx(-11));

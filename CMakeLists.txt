@@ -55,10 +55,10 @@ target_sources(
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Media/BaseMedia.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Media/LinearAbsorber.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Media/MediaInterface.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/OpticalElementInterface.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/BeamTransform_Interface.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/BeamTransform_Base.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/FlatInterface.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/SphericalInterface.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/BaseOpticalElement.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/Interface.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/ThinLens.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/Filter.hpp>

@@ -1,5 +1,4 @@
-#ifndef OpticalElements_FlatInterface_hpp
-#define OpticalElements_FlatInterface_hpp
+#pragma once
 
 /** @file FlatInterface.hpp
  * @brief A flat interface between two media.
@@ -7,7 +6,7 @@
  * @date 07/01/16
  */
 
-#include "Interface.hpp"
+#include "./Interface.hpp"
 
 template<typename T>
 class FlatInterface : public Interface<T>
@@ -25,5 +24,3 @@ Eigen::Matrix<double, 2, 2> FlatInterface<T>::getRTMatrix() const
 
   return mat;
 }
-
-#endif  // include protector

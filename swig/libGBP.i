@@ -2,8 +2,8 @@
 // NOTE: everything between %{ and %} gets copied verbatim into the *_wrap.cxx file
 %{
 #include <libGBP/GaussianBeam.hpp>
-#include <libGBP/OpticalElements/OpticalElementInterface.hpp>
-#include <libGBP/OpticalElements/ThinLens.hpp>
+#include <libGBP/BeamTransformations/BeamTransformation_Interface.hpp>
+#include <libGBP/BeamTransformations/ThinLens.hpp>
 #include <libGBP/GBPCalc.hpp>
 #include <vector>
 #include <utility>

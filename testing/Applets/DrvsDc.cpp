@@ -6,7 +6,7 @@
 
 
 #include <libGBP/GaussianBeam.hpp>
-#include <libGBP/OpticalElements/SphericalInterface.hpp>
+#include <libGBP/BeamTransformations/SphericalInterface.hpp>
 #include <libGBP/Builders/BeamBuilder.hpp>
 
 TEST_CASE( "Retinal diameter vs Corneal diameter", "[Applications]" )

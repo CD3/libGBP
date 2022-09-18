@@ -1,5 +1,4 @@
-#ifndef OpticalElements_Filter_hpp
-#define OpticalElements_Filter_hpp
+#pragma once
 
 /** @file Filter.hpp
  * @brief
@@ -7,9 +6,9 @@
  * @date 07/26/16
  */
 
-#include "BaseOpticalElement.hpp"
+#include "./BeamTransformation_Base.hpp"
 
-class Filter : public BaseOpticalElement<units::t::centimeter>
+class Filter : public BeamTransformation_Base<units::t::centimeter>
 {
  public:
   // the required interface
@@ -51,4 +50,3 @@ inline double Filter::getPowerLoss() const
   return loss;
 }
 
-#endif  // include protector

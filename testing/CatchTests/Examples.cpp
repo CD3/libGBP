@@ -1,8 +1,8 @@
 #include "catch.hpp"
 
 #include <libGBP/GaussianBeam.hpp>
-#include <libGBP/OpticalElements/ThinLens.hpp>
-#include <libGBP/OpticalElements/SphericalInterface.hpp>
+#include <libGBP/BeamTransformations/ThinLens.hpp>
+#include <libGBP/BeamTransformations/SphericalInterface.hpp>
 
 SCENARIO("Gaussian beams can be focused by a lens" )
 {
@@ -25,7 +25,7 @@ SCENARIO("Gaussian beams can be focused by a lens" )
         ThinLens<t::centimeter> lens;
         lens.setFocalLength(focal_length);
 
-        beam.transform(&lens,0*i::cm);
+        beam.transform(lens,0*i::cm);
 
         CHECK( beam.getOneOverE2WaistDiameter<t::um>().value() == Approx(waist_diameter.value()));
 
@@ -130,7 +130,7 @@ TEST_CASE("Retinal image size")
                       + B3*l*l/(l*l - C3));
     cornea.setFinalRefractiveIndex(n);
 
-    beam.transform(&cornea);
+    beam.transform(cornea);
 
     CHECK(beam.getWaistPosition<t::mm>().value() == Approx(24.4).epsilon(0.01));
   }
@@ -144,7 +144,7 @@ TEST_CASE("Retinal image size")
                       + B3*l*l/(l*l - C3));
     cornea.setFinalRefractiveIndex(n);
 
-    beam.transform(&cornea);
+    beam.transform(cornea);
 
     CHECK(beam.getOneOverESquaredDiameter<t::um>(2.44*i::cm).value() == Approx(180).epsilon(0.5));
   }

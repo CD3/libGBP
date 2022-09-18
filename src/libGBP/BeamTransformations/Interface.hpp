@@ -1,5 +1,4 @@
-#ifndef OpticalElements_Interface_hpp
-#define OpticalElements_Interface_hpp
+#pragma once
 
 /** @file Interface.hpp
  * @brief Base class for media interfaces, i.e. a change in refractive index.
@@ -8,10 +7,10 @@
  * @date 07/01/16
  */
 
-#include "BaseOpticalElement.hpp"
+#include "./BeamTransformation_Base.hpp"
 
 template<typename T>
-class Interface : public BaseOpticalElement<T>
+class Interface : public BeamTransformation_Base<T>
 {
  public:
   // reimplement the wavelength scale factor
@@ -45,5 +44,3 @@ class Interface : public BaseOpticalElement<T>
     return this->finalRefractiveIndex;
   }  ///< returns finalRefractiveIndex
 };
-
-#endif  // include protector

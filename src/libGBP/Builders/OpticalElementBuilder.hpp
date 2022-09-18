@@ -13,18 +13,18 @@
  */
 
 #include "./Builder.hpp"
-#include "../OpticalElements/OpticalElementInterface.hpp"
-#include "../OpticalElements/SphericalInterface.hpp"
-#include "../OpticalElements/ThinLens.hpp"
+#include "../BeamTransformations/BeamTransformation_Interface.hpp"
+#include "../BeamTransformations/SphericalInterface.hpp"
+#include "../BeamTransformations/ThinLens.hpp"
 
 template<typename LengthUnitType>
 class OpticalElementBuilder
-    : public Builder<OpticalElementInterface<LengthUnitType>>
+    : public Builder<BeamTransformation_Interface<LengthUnitType>>
 {
  public:
   OpticalElementBuilder();
 
-  void configure(OpticalElementInterface<LengthUnitType>* elem,
+  void configure(BeamTransformation_Interface<LengthUnitType>* elem,
                  const ptree&                             configTree);
 };
 
@@ -37,14 +37,14 @@ OpticalElementBuilder<T>::OpticalElementBuilder()
   this->addNameMapping("^spherical[ _]*interface$", "sphericalinterface");
 
   this->addType("thinlens",
-                createInstance<OpticalElementInterface<T>, ThinLens<T>>);
+                createInstance<BeamTransformation_Interface<T>, ThinLens<T>>);
   this->addType(
       "sphericalinterface",
-      createInstance<OpticalElementInterface<T>, SphericalInterface<T>>);
+      createInstance<BeamTransformation_Interface<T>, SphericalInterface<T>>);
 }
 
 template<typename T>
-void OpticalElementBuilder<T>::configure(OpticalElementInterface<T>* elem,
+void OpticalElementBuilder<T>::configure(BeamTransformation_Interface<T>* elem,
                                          const ptree&                configTree)
 {
   // runtime type checking. dynamic_cast will return a nullptr is the elem

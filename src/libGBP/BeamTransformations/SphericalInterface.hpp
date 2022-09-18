@@ -1,5 +1,4 @@
-#ifndef OpticalElements_SphericalInterface_hpp
-#define OpticalElements_SphericalInterface_hpp
+#pragma once
 
 /** @file SphericalInterface.hpp
  * @brief A spherical interface between two media.
@@ -7,7 +6,7 @@
  * @date 07/01/16
  */
 
-#include "Interface.hpp"
+#include "./Interface.hpp"
 
 template<typename T>
 class SphericalInterface : public Interface<T>
@@ -50,4 +49,3 @@ Eigen::Matrix<double, 2, 2> SphericalInterface<T>::getRTMatrix() const
   return mat;
 }
 
-#endif  // include protector

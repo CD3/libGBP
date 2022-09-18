@@ -1,5 +1,4 @@
-#ifndef OpticalElements_ThinLens_hpp
-#define OpticalElements_ThinLens_hpp
+#pragma once
 
 /** @file
  * @brief Class representing a thin lens.
@@ -7,10 +6,10 @@
  * @date 07/01/16
  */
 
-#include "BaseOpticalElement.hpp"
+#include "./BeamTransformation_Base.hpp"
 
 template<typename T>
-class ThinLens : public BaseOpticalElement<T>
+class ThinLens : public BeamTransformation_Base<T>
 {
  public:
   Eigen::Matrix<double, 2, 2> getRTMatrix() const;
@@ -45,5 +44,3 @@ Eigen::Matrix<double, 2, 2> ThinLens<T>::getRTMatrix() const
 
   return mat;
 }
-
-#endif  // include protector
