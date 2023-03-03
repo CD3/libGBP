@@ -244,10 +244,10 @@ class GaussianLaserBeam : public LaserBeam
   // OTHER METHODS
 
   template<typename T, typename U>
-  void transform(const BeamTransformation_Interface<T>& elem, U z)
+  void transform(const BeamTransformation_Interface<T>& a_elem, U a_z)
   {
-    std::complex<double> qi  = this->getComplexBeamParameter<T>(z).value();
-    auto                 RTM = elem.getRTMatrix();
+    std::complex<double> qi  = this->getComplexBeamParameter<T>(a_z).value();
+    auto                 RTM = a_elem.getRTMatrix();
     double               A   = RTM(0, 0);
     double               B   = RTM(0, 1);
     double               C   = RTM(1, 0);
@@ -273,10 +273,10 @@ class GaussianLaserBeam : public LaserBeam
     // CAREFUL! Make sure to get the units right.
     //
 
-    this->setWavelength(this->getWavelength() * elem.getWavelengthScaleFactor());
-    this->setPower(this->getPower() * (1. - elem.getPowerLoss()));
+    this->setWavelength(this->getWavelength() * a_elem.getWavelengthScaleFactor());
+    this->setPower(this->getPower() * (1. - a_elem.getPowerLoss()));
 
-    this->setWaistPosition(boost::units::quantity<T>(z) - qf.real() * T());
+    this->setWaistPosition(boost::units::quantity<T>(a_z) + a_elem.getPositionShift() - boost::units::quantity<T>::from_value(qf.real()) );
     //                             vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     //                             this calculation will give us the 1/e^2 beam
     //                             radius
@@ -284,21 +284,21 @@ class GaussianLaserBeam : public LaserBeam
         sqrt(qf.imag() * this->getWavelength<T>().value() / M_PI) * T());
   }
   template<typename T>
-  void transform(const BeamTransformation_Interface<T>& elem)
+  void transform(const BeamTransformation_Interface<T>& a_elem)
   {
-    this->transform(elem, this->getCurrentPosition());
+    this->transform(a_elem, this->getCurrentPosition());
   }
 
   template<typename T, typename U>
-  void transform(const BeamTransformation_Interface<T>* elem, U z)
+  void transform(const BeamTransformation_Interface<T>* a_elem, U a_z)
   {
-    this->transform(*elem, z);
+    this->transform(*a_elem, a_z);
   }
 
   template<typename T, typename U>
-  void transform(const BeamTransformation_Interface<T>* elem)
+  void transform(const BeamTransformation_Interface<T>* a_elem)
   {
-    this->transform(*elem);
+    this->transform(*a_elem);
   }
 };
 

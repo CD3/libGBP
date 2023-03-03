@@ -18,7 +18,7 @@ namespace libGBP
  * implement.
  * @author C.D. Clark III
  *
- * An beam transform tranforms a Gaussian beam. Before a beam transform is applied
+ * A beam transform tranforms a Gaussian beam. Before a beam transform is applied
  * the beam has a beam waist size and position. After the transform is applied,
  * it has a new waist size and position. The transformation can be described
  * with a Ray Transfer Matrix (RTM). Ultimately, implementations of this
@@ -84,15 +84,14 @@ namespace libGBP
  * the possibility that the z position of the complex beam parameter may shift
  * when it passes through the element. In other words, the z position of the
  * initial parameter may not coincide with the position of the final parameter.
- * When the coordinate system is always centered on the beam waist, this does
- * not matter. The real part of the complex beam parameter gives the distance to
- * the beam waist. However, for a fixed coordinate system, this possible shift
+ * For a fixed coordinate system, this possible shift
  * needs to be accounted for. The best example of this is a thick lens. The RTM
  * for a thick lens includes the refraction across the front surface,
  * propagation through the lens, and refraction across the back surface. When
  * this matrix is used to transform the complex beam parameter, the initial
  * parameter is evaluated at the front surface of the lens and the new parameter
  * actually corresponds to the position of the back surface of the lens.
+ * 
  *
  * This shift needs to be known in order for the beam waist position to be
  * determined, so an optical element must provide a method to the

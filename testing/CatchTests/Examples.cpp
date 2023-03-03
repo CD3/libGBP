@@ -3,6 +3,7 @@
 #include <libGBP/GaussianBeam.hpp>
 #include <libGBP/BeamTransformations/ThinLens.hpp>
 #include <libGBP/BeamTransformations/SphericalInterface.hpp>
+#include <libGBP/BeamTransformations/Translation.hpp>
 
 using namespace libGBP;
 
@@ -122,6 +123,9 @@ TEST_CASE("Retinal image size")
   cornea.setRadiusOfCurvature(6.1*i::mm);
   cornea.setInitialRefractiveIndex(1);
 
+  Translation<t::centimeter> to_retina;
+  to_retina.setShift(2.4398*i::cm);
+
   SECTION("589 nm reference")
   {
     beam.setWavelength(589*i::nm);
@@ -148,7 +152,42 @@ TEST_CASE("Retinal image size")
 
     beam.transform(cornea);
 
-    CHECK(beam.getOneOverESquaredDiameter<t::um>(2.44*i::cm).value() == Approx(180).epsilon(0.5));
+    CHECK(beam.getOneOverESquaredDiameter<t::um>(2.4398*i::cm).value() == Approx(180).epsilon(0.1));
+  }
+
+  SECTION("1300 nm using Translation")
+  {
+    beam.setWavelength(1300*i::nm);
+
+    l = beam.getWavelength<t::um>().value();
+    double n = sqrt(A + B1*l*l/(l*l - C1)
+                      + B2*l*l/(l*l - C2)
+                      + B3*l*l/(l*l - C3));
+    cornea.setFinalRefractiveIndex(n);
+
+    beam.transform(cornea);
+    beam.transform(to_retina);
+
+    CHECK(beam.getOneOverESquaredDiameter<t::um>().value() == Approx(180).epsilon(0.1));
+  }
+
+
+
+  SECTION( "check reference weavelength (589 nm) focal length")
+  {
+
+    beam.setWavelength(589*i::nm);
+    l = beam.getWavelength<t::um>().value();
+    double n = sqrt(A + B1*l*l/(l*l - C1)
+                      + B2*l*l/(l*l - C2)
+                      + B3*l*l/(l*l - C3));
+    cornea.setFinalRefractiveIndex(n);
+
+    beam.transform(cornea);
+
+    CHECK(beam.getRelativeWaistPosition<t::mm>().value() == Approx(24.398));
+
+
   }
 
 
