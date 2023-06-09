@@ -1,4 +1,11 @@
 %module libGBP
+
+%begin %{
+#ifdef _MSC_VER
+#define SWIG_PYTHON_INTERPRETER_NO_DEBUG
+#endif
+%}
+
 // NOTE: everything between %{ and %} gets copied verbatim into the *_wrap.cxx file
 %{
 #include <libGBP/GaussianBeam.hpp>

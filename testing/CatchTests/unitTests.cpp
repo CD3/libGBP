@@ -574,7 +574,7 @@ SCENARIO("Complex Beam Parameter Calculations", "[GaussianBeam]")
 
       auto w = beam.getOneOverE2Diameter<t::centimeter>(8 * t::meter()) / 2.;
 
-      auto tmp = beam.getWavelength<t::centimeter>() / (M_PI * pow<2>(w));
+      auto tmp = beam.getWavelength<t::centimeter>() / (M_PI * boost::units::pow<2>(w));
 
       CHECK(one_over_q.value().real() == Approx(one_over_R.value()));
       CHECK(one_over_q.value().imag() == Approx(tmp.value()));
