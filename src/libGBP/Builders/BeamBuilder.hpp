@@ -126,8 +126,8 @@ void BeamBuilder::configure(GaussianBeam* beam)
         boost::units::quantity<units::t::centimeter> waistPosition =
             pos -
             beam->getRayleighRange<units::t::centimeter>() *
-                sqrt(pow<2>(this->getOneOverE2Diameter<units::t::centimeter>().value() /
-                            beam->getOneOverE2WaistDiameter<units::t::centimeter>()) -
+                sqrt(boost::units::pow<2>(this->getOneOverE2Diameter<units::t::centimeter>().value() /
+                                          beam->getOneOverE2WaistDiameter<units::t::centimeter>()) -
                      1.);
         beam->setWaistPosition(waistPosition);
       }

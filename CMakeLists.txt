@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.14 )
+cmake_minimum_required( VERSION 3.20 )
 
 option(PYTHON_BINDINGS "Build Python bindings." ON)
 
@@ -55,13 +55,13 @@ target_sources(
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Media/BaseMedia.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Media/LinearAbsorber.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Media/MediaInterface.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/BeamTransform_Interface.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/BeamTransform_Base.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/FlatInterface.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/SphericalInterface.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/Interface.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/ThinLens.hpp>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/OpticalElements/Filter.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/BeamTransformations/BeamTransformation_Interface.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/BeamTransformations/BeamTransformation_Base.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/BeamTransformations/FlatInterface.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/BeamTransformations/SphericalInterface.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/BeamTransformations/Interface.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/BeamTransformations/ThinLens.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/BeamTransformations/Filter.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Builders/Builder.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Builders/MediaBuilder.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/Builders/OpticalSystemBuilder.hpp>

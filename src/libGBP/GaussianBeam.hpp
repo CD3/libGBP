@@ -12,7 +12,8 @@
 #include "./BeamTransformations/BeamTransformation_Interface.hpp"
 #include "./LaserBeam.hpp"
 
-namespace libGBP {
+namespace libGBP
+{
 /** @class
  * @brief A class implementing Gaussian Beam calculations.
  * @author C.D. Clark III
@@ -165,13 +166,13 @@ class GaussianLaserBeam : public LaserBeam
   ADD_DERIVED_GETTER(FullWidthHalfMaxDiameter, units::t::cm, this->getOneOverESquaredDiameter(z) * sqrt_ln2() / sqrt2());
   ADD_DERIVED_GETTER(FullWidthHalfMaxRadius, units::t::cm, this->getOneOverESquaredRadius(z) * sqrt_ln2() / sqrt2());
 
-  ADD_DERIVED_GETTER(OneOverESquaredArea, decltype(units::i::cm * units::i::cm), M_PI* pow<2>(getOneOverESquaredRadius(z)));
-  ADD_DERIVED_GETTER(OneOverE2Area, decltype(units::i::cm * units::i::cm), M_PI* pow<2>(getOneOverE2Radius(z)));
-  ADD_DERIVED_GETTER(OneOverEArea, decltype(units::i::cm * units::i::cm), M_PI* pow<2>(getOneOverERadius(z)));
-  ADD_DERIVED_GETTER(FullWidthHalfMaxArea, decltype(units::i::cm * units::i::cm), M_PI* pow<2>(getFullWidthHalfMaxRadius(z)));
+  ADD_DERIVED_GETTER(OneOverESquaredArea, decltype(units::i::cm * units::i::cm), M_PI* boost::units::pow<2>(getOneOverESquaredRadius(z)));
+  ADD_DERIVED_GETTER(OneOverE2Area, decltype(units::i::cm * units::i::cm), M_PI* boost::units::pow<2>(getOneOverE2Radius(z)));
+  ADD_DERIVED_GETTER(OneOverEArea, decltype(units::i::cm * units::i::cm), M_PI* boost::units::pow<2>(getOneOverERadius(z)));
+  ADD_DERIVED_GETTER(FullWidthHalfMaxArea, decltype(units::i::cm * units::i::cm), M_PI* boost::units::pow<2>(getFullWidthHalfMaxRadius(z)));
 
   ADD_DERIVED_GETTER(RelativeWaistPosition, units::t::cm, this->template getWaistPosition<units::t::cm>() - boost::units::quantity<units::t::cm>(z));
-  ADD_DERIVED_GETTER(RadiusOfCurvature, units::t::cm, -getRelativeWaistPosition(z) * (1 + pow<2>(getRayleighRange() / -getRelativeWaistPosition(z))));
+  ADD_DERIVED_GETTER(RadiusOfCurvature, units::t::cm, -getRelativeWaistPosition(z) * (1 + boost::units::pow<2>(getRayleighRange() / -getRelativeWaistPosition(z))));
   ADD_DERIVED_GETTER(PeakIrradiance, decltype(units::i::W / units::i::cm / units::i::cm), this->getPower() / this->getOneOverEArea(z));
   ADD_DERIVED_GETTER(GouyPhase, units::t::dimensionless, units::t::dimensionless() * atan(boost::units::quantity<units::t::dimensionless>(z / this->getRayleighRange())).value());
 
@@ -276,7 +277,7 @@ class GaussianLaserBeam : public LaserBeam
     this->setWavelength(this->getWavelength() * a_elem.getWavelengthScaleFactor());
     this->setPower(this->getPower() * (1. - a_elem.getPowerLoss()));
 
-    this->setWaistPosition(boost::units::quantity<T>(a_z) + a_elem.getPositionShift() - boost::units::quantity<T>::from_value(qf.real()) );
+    this->setWaistPosition(boost::units::quantity<T>(a_z) + a_elem.getPositionShift() - boost::units::quantity<T>::from_value(qf.real()));
     //                             vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     //                             this calculation will give us the 1/e^2 beam
     //                             radius
@@ -303,5 +304,4 @@ class GaussianLaserBeam : public LaserBeam
 };
 
 using GaussianBeam = GaussianLaserBeam;
-}
-
+}  // namespace libGBP

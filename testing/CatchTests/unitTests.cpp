@@ -86,27 +86,23 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
         }
         THEN("the half-angle 1/e squared divergence is 0.20149 mrad")
         {
-          CHECK(beam.getOneOverESquaredHalfAngleDivergence<t::milliradian>().value()
-                    ==
+          CHECK(beam.getOneOverESquaredHalfAngleDivergence<t::milliradian>().value() ==
                 Approx(0.20149));
         }
         THEN("the full-angle 1/e squared divergence is 2*0.20149 mrad")
         {
-          CHECK(beam.getOneOverE2FullAngleDivergence<t::milliradian>().value()
-                    ==
-                Approx(2*0.20149));
+          CHECK(beam.getOneOverE2FullAngleDivergence<t::milliradian>().value() ==
+                Approx(2 * 0.20149));
         }
         THEN("the full-angle 1/e divergence is 2*0.20149/sqrt(2) mrad")
         {
-          CHECK(beam.getOneOverEFullAngleDivergence<t::milliradian>().value()
-                    ==
-                Approx(2*0.20149/sqrt(2)));
+          CHECK(beam.getOneOverEFullAngleDivergence<t::milliradian>().value() ==
+                Approx(2 * 0.20149 / sqrt(2)));
         }
         THEN("the half-angle 1/e divergence is 0.20149/sqrt(2) mrad")
         {
-          CHECK(beam.getOneOverEHalfAngleDivergence<t::milliradian>().value()
-                    ==
-                Approx(0.20149/sqrt(2)));
+          CHECK(beam.getOneOverEHalfAngleDivergence<t::milliradian>().value() ==
+                Approx(0.20149 / sqrt(2)));
         }
         THEN("the radius of curvature at 10 m is 12.46315831 m")
         {
@@ -119,9 +115,9 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
           THEN("the diameter at 0 m is greater than the beam waist diameter")
           {
             CHECK(beam.getOneOverE2Diameter<t::millimeter>(0. * t::meter())
-                      .value() != Approx( beam.getOneOverE2WaistDiameter().value() ));
+                      .value() != Approx(beam.getOneOverE2WaistDiameter().value()));
             CHECK(beam.getOneOverE2Diameter<t::millimeter>(0. * t::meter())
-                      .value() >  beam.getOneOverE2WaistDiameter().value());
+                      .value() > beam.getOneOverE2WaistDiameter().value());
           }
           THEN("the diameter at 12 m is 4.498820 mm")
           {
@@ -134,13 +130,11 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
             CHECK(beam.getOneOverESquaredRadius<t::millimeter>(12. * t::meter())
                       .value() == Approx(4.498820 / 2));
             CHECK(beam.getOneOverEDiameter<t::millimeter>(12. * t::meter())
-                      .value() == Approx(4.498820/sqrt(2)));
+                      .value() == Approx(4.498820 / sqrt(2)));
             CHECK(beam.getOneOverERadius<t::millimeter>(12. * t::meter())
                       .value() == Approx(4.498820 / 2 / sqrt(2)));
             CHECK(beam.getFourSigmaDiameter<t::millimeter>(12. * t::meter())
                       .value() == Approx(4.498820));
-
-            
           }
           AND_THEN("the radius of curvature at 12 m is 12.46315831 m")
           {
@@ -155,9 +149,9 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
           THEN("the diameter at 0 m is greater than the beam waist diameter")
           {
             CHECK(beam.getOneOverE2Diameter<t::millimeter>(0. * t::meter())
-                      .value() != Approx( beam.getOneOverE2WaistDiameter().value() ));
+                      .value() != Approx(beam.getOneOverE2WaistDiameter().value()));
             CHECK(beam.getOneOverE2Diameter<t::millimeter>(0. * t::meter())
-                      .value() >  beam.getOneOverE2WaistDiameter().value());
+                      .value() > beam.getOneOverE2WaistDiameter().value());
           }
           THEN("the diameter at 8 m is 4.498820 mm")
           {
@@ -170,13 +164,11 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
             CHECK(beam.getOneOverESquaredRadius<t::millimeter>(8. * t::meter())
                       .value() == Approx(4.498820 / 2));
             CHECK(beam.getOneOverEDiameter<t::millimeter>(8. * t::meter())
-                      .value() == Approx(4.498820/sqrt(2)));
+                      .value() == Approx(4.498820 / sqrt(2)));
             CHECK(beam.getOneOverERadius<t::millimeter>(8. * t::meter())
                       .value() == Approx(4.498820 / 2 / sqrt(2)));
             CHECK(beam.getFourSigmaDiameter<t::millimeter>(8. * t::meter())
                       .value() == Approx(4.498820));
-
-            
           }
           AND_THEN("the radius of curvature at 8 m is 12.46315831 m")
           {
@@ -276,7 +268,7 @@ SCENARIO("GaussianBeam configuration", "[GaussianBeam]")
     }
     WHEN("waist four sigma diameter is set to 4 cm")
     {
-      beam.setWaistFourSigmaDiameter(4*i::cm);
+      beam.setWaistFourSigmaDiameter(4 * i::cm);
       THEN("1/e squared waist diameter is 4 cm")
       {
         CHECK(beam.getOneOverESquaredWaistDiameter().value() == Approx(4));
@@ -569,12 +561,12 @@ SCENARIO("Complex Beam Parameter Calculations", "[GaussianBeam]")
       std::cout << "q: " << q << std::endl;
       auto one_over_q = std::complex<double>(1., 0.) / q;
 
-      auto R = beam.getRadiusOfCurvature<t::centimeter>(8 * t::meter());
+      auto R          = beam.getRadiusOfCurvature<t::centimeter>(8 * t::meter());
       auto one_over_R = 1. / R;
 
       auto w = beam.getOneOverE2Diameter<t::centimeter>(8 * t::meter()) / 2.;
 
-      auto tmp = beam.getWavelength<t::centimeter>() / (M_PI * pow<2>(w));
+      auto tmp = beam.getWavelength<t::centimeter>() / (M_PI * boost::units::pow<2>(w));
 
       CHECK(one_over_q.value().real() == Approx(one_over_R.value()));
       CHECK(one_over_q.value().imag() == Approx(tmp.value()));
@@ -828,10 +820,10 @@ SCENARIO(
   }
 }
 
-#include <libGBP/Builders/BeamBuilder.hpp>
-#include <libGBP/GaussianBeam.hpp>
 #include <libGBP/BeamTransformations/SphericalInterface.hpp>
 #include <libGBP/BeamTransformations/ThinLens.hpp>
+#include <libGBP/Builders/BeamBuilder.hpp>
+#include <libGBP/GaussianBeam.hpp>
 TEST_CASE("Gaussian Beam Transformations", "[BeamTransformations,GuassianBeam]")
 {
   GaussianBeam beam;
@@ -1152,15 +1144,15 @@ TEST_CASE("BeamBuilder Tests", "[Builders,GuassianBeam]")
 #include <libGBP/Builders/OpticalElementBuilder.hpp>
 TEST_CASE("OpticalElementBuilder tests", "[Builders,BeamTransformations]")
 {
-  OpticalElementBuilder<t::centimeter> OEBuilder;
-  BeamTransformation_ptr<t::centimeter>    elem;
+  OpticalElementBuilder<t::centimeter>  OEBuilder;
+  BeamTransformation_ptr<t::centimeter> elem;
 
   SECTION("Thin lens tests")
   {
     SECTION("External configuration")
     {
-      for (auto k :
-           std::vector<std::string>({"thinlens", "thin lens", "thin_lens"})) {
+      for(auto k :
+          std::vector<std::string>({"thinlens", "thin lens", "thin_lens"})) {
         elem.reset(OEBuilder.create(k));
         REQUIRE(elem != nullptr);
 
@@ -1232,11 +1224,11 @@ TEST_CASE("OpticalElementBuilder tests", "[Builders,BeamTransformations]")
   }
 }
 
+#include <libGBP/BeamTransformations/SphericalInterface.hpp>
+#include <libGBP/BeamTransformations/ThinLens.hpp>
 #include <libGBP/Builders/BeamBuilder.hpp>
 #include <libGBP/Builders/OpticalSystemBuilder.hpp>
 #include <libGBP/GaussianBeam.hpp>
-#include <libGBP/BeamTransformations/SphericalInterface.hpp>
-#include <libGBP/BeamTransformations/ThinLens.hpp>
 #include <libGBP/OpticalSystem.hpp>
 TEST_CASE("Optical Systems", "[OpticalSystem]")
 {
@@ -1551,8 +1543,8 @@ TEST_CASE("GBPCalc tests")
   CHECK(z_vals[4].value() == Approx(12));
 }
 
-#include <libGBP/GaussianBeam.hpp>
 #include <libGBP/BeamTransformations/ThinLens.hpp>
+#include <libGBP/GaussianBeam.hpp>
 TEST_CASE("Gaussian Beam Examples", "[GuassianBeam,Examples]")
 {
   SECTION("Basic Example")
@@ -1569,24 +1561,21 @@ TEST_CASE("Gaussian Beam Examples", "[GuassianBeam,Examples]")
 
   SECTION("Lens Example")
   {
-    GaussianBeam beam;
+    GaussianBeam            beam;
     ThinLens<t::centimeter> lens;
 
     beam.setWavelength(532 * i::nm);
     beam.setOneOverE2WaistDiameter(5 * i::mm);
-    lens.setFocalLength( 15*i::cm );
+    lens.setFocalLength(15 * i::cm);
 
     beam.transform(lens);
 
-
-    CHECK( beam.getWaistPosition<t::centimeter>().value() == Approx(15).epsilon(0.001) );
-    CHECK( beam.getOneOverE2WaistRadius<t::micrometer>().value() == Approx(1e6 * 532e-9*15e-2/M_PI/(5e-3/2)) ); // lambda f / pi omega
-
+    CHECK(beam.getWaistPosition<t::centimeter>().value() == Approx(15).epsilon(0.001));
+    CHECK(beam.getOneOverE2WaistRadius<t::micrometer>().value() == Approx(1e6 * 532e-9 * 15e-2 / M_PI / (5e-3 / 2)));  // lambda f / pi omega
   }
 
   SECTION("Setting Beam Diameter at Range")
   {
-
     // assume we have the following measurements
     // Wavelength = 532 nm
     // Power = 5 mW
@@ -1598,26 +1587,22 @@ TEST_CASE("Gaussian Beam Examples", "[GuassianBeam,Examples]")
     // - peak irradiance at the beam waist?
     // - peak irradiance at the measurement position?
     //
-    GaussianBeam beam;
-    quantity<t::mm> D = 5*i::mm;
-    
-    beam.setWavelength( 532 * i::nm );
-    beam.setPower( 5 * i::mW );
-    beam.setOneOverEFullAngleDivergence( 5 * i::mrad );
+    GaussianBeam    beam;
+    quantity<t::mm> D = 5 * i::mm;
+
+    beam.setWavelength(532 * i::nm);
+    beam.setPower(5 * i::mW);
+    beam.setOneOverEFullAngleDivergence(5 * i::mrad);
 
     // now to compute the beam waist diameter...
     // this should be implemented in the library.
-    beam.setOneOverEWaistDiameter( boost::units::root<2>( boost::units::pow<2>(D) - boost::units::pow<2>( quantity<t::mm>(10*i::cm) * beam.getOneOverEFullAngleDivergence<t::rad>().value() ) ) );
+    beam.setOneOverEWaistDiameter(boost::units::root<2>(boost::units::pow<2>(D) - boost::units::pow<2>(quantity<t::mm>(10 * i::cm) * beam.getOneOverEFullAngleDivergence<t::rad>().value())));
 
-    CHECK( beam.getOneOverEDiameter<t::mm>( 10 * i::cm ).value() == Approx(5) );
-    CHECK( beam.getOneOverEFullAngleDivergence<t::mrad>( ).value() == Approx(5) );
+    CHECK(beam.getOneOverEDiameter<t::mm>(10 * i::cm).value() == Approx(5));
+    CHECK(beam.getOneOverEFullAngleDivergence<t::mrad>().value() == Approx(5));
 
-    std::cout << "Waist Diameter: " << beam.getOneOverEWaistDiameter<t::um>()  << std::endl;
-    std::cout << "Peak Irradiance at Waist: " << beam.getPeakIrradiance<t::watt_per_centimeter_squared>(0*i::cm ).value() << "W/cm^2" << std::endl;
-    std::cout << "Peak Irradiance at Measurement Distance: " << beam.getPeakIrradiance<t::watt_per_centimeter_squared>(10*i::cm).value() << "W/cm^2" << std::endl;
-    
-
-
+    std::cout << "Waist Diameter: " << beam.getOneOverEWaistDiameter<t::um>() << std::endl;
+    std::cout << "Peak Irradiance at Waist: " << beam.getPeakIrradiance<t::watt_per_centimeter_squared>(0 * i::cm).value() << "W/cm^2" << std::endl;
+    std::cout << "Peak Irradiance at Measurement Distance: " << beam.getPeakIrradiance<t::watt_per_centimeter_squared>(10 * i::cm).value() << "W/cm^2" << std::endl;
   }
-
 }
