@@ -154,5 +154,15 @@ and
     \phi &= \frac{2\lambda}{\pi D_0}
 \end{align}
 
+\subsection{Other Conventions}
+
+Other conventions for beam width. For example Full Width Half Max (FWHM), which is defined as the point at which the irradiance drops to half of the maximum.
+For a Gaussian beam, we can define a radius for any fraction $\alpha$ (between zero and one) of the peak irradiance,
+\begin{align}
+    E(r) &= E_pe^{-2r^2/\omega^2} \\
+    E(R_\alpha) &= \alpha E_p = E_p e^{-2R_\alpha^2/\omega^2} \\
+    R_\alpha &= \omega\sqrt{-\ln \alpha }/\sqrt{2} = \omega\sqrt{\ln 1/\alpha } /\sqrt{2}
+\end{align}
+and the corresponding diameter will be $D_\alpha = 2R_\alpha$. For FWHM, $\alpha = 0.5$, so $R_{0.5} = \omega \frac{\sqrt{\ln 2}}{\sqrt{2}}$ and $D_{0.5} = D_\text{FWHM} = \omega \sqrt{2} \sqrt{\ln 2}$
 
 \end{document}
