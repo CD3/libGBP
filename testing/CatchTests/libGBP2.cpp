@@ -96,37 +96,66 @@ TEST_CASE("Convention Conversions")
 {
   using namespace libGBP2;
 
-  auto d = Conventions::OneOverEDiameter{200 * i::um};
+  SECTION("Misc")
+  {
+    auto d = Conventions::OneOverEDiameter{200 * i::um};
 
-  CHECK(d.value() == Approx(0.02));
+    CHECK(d.value() == Approx(0.02));
 
-  // make sure these all compile
-  Conventions::FromOneOverESquaredRadiusCF<Conventions::SecondMomentWidth>();
-  Conventions::FromOneOverESquaredRadiusCF<Conventions::D4SigmaWidth>();
-  Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverERadius>();
-  Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverEDiameter>();
-  Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverESquaredRadius>();
-  Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverESquaredDiameter>();
-  Conventions::FromOneOverESquaredRadiusCF<Conventions::FWHMRadius>();
-  Conventions::FromOneOverESquaredRadiusCF<Conventions::FWHMDiameter>();
-  // compiler error, no function specialization for this type
-  /* Conventions::FromOneOverESquaredRadiusCF<Conventions::StrongQuantity<t::cm>>(); */
+    // make sure these all compile
+    Conventions::FromOneOverESquaredRadiusCF<Conventions::SecondMomentWidth>();
+    Conventions::FromOneOverESquaredRadiusCF<Conventions::D4SigmaWidth>();
+    Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverERadius>();
+    Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverEDiameter>();
+    Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverESquaredRadius>();
+    Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverESquaredDiameter>();
+    Conventions::FromOneOverESquaredRadiusCF<Conventions::FWHMRadius>();
+    Conventions::FromOneOverESquaredRadiusCF<Conventions::FWHMDiameter>();
+    // compiler error, no function specialization for this type
+    /* Conventions::FromOneOverESquaredRadiusCF<Conventions::StrongQuantity<t::cm>>(); */
+  }
 
-  CHECK((Conventions::ConversionFactor<Conventions::D4SigmaWidth, Conventions::D4SigmaWidth>() == Approx(1)));
-  CHECK((Conventions::ConversionFactor<Conventions::D4SigmaWidth, Conventions::OneOverESquaredRadius>() == Approx(0.5)));
-  CHECK((Conventions::ConversionFactor<Conventions::FWHMDiameter, Conventions::OneOverESquaredRadius>() == Approx(0.8493281)));
-  CHECK((Conventions::ConversionFactor<Conventions::OneOverESquaredRadius, Conventions::FWHMDiameter>() == Approx(1 / 0.8493281)));
-  CHECK((Conventions::ConversionFactor<Conventions::OneOverEDiameter, Conventions::FWHMDiameter>() == Approx(0.8325546111576977)));
+  SECTION("Conversion Factors")
+  {
+    CHECK((Conventions::BeamWidthConversionFactor<Conventions::D4SigmaWidth, Conventions::D4SigmaWidth>() == Approx(1)));
+    CHECK((Conventions::BeamWidthConversionFactor<Conventions::D4SigmaWidth, Conventions::OneOverESquaredRadius>() == Approx(0.5)));
+    CHECK((Conventions::BeamWidthConversionFactor<Conventions::FWHMDiameter, Conventions::OneOverESquaredRadius>() == Approx(0.8493281)));
+    CHECK((Conventions::BeamWidthConversionFactor<Conventions::OneOverESquaredRadius, Conventions::FWHMDiameter>() == Approx(1 / 0.8493281)));
+    CHECK((Conventions::BeamWidthConversionFactor<Conventions::OneOverEDiameter, Conventions::FWHMDiameter>() == Approx(0.8325546111576977)));
 
-  GaussianBeamWidth width(Conventions::OneOverEDiameter{2 * i::cm});
+    CHECK((Conventions::BeamDivergenceConversionFactor<Conventions::D4SigmaDivergence, Conventions::D4SigmaDivergence>() == Approx(1)));
+    CHECK((Conventions::BeamDivergenceConversionFactor<Conventions::D4SigmaDivergence, Conventions::OneOverESquaredHalfAngleDivergence>() == Approx(0.5)));
+    CHECK((Conventions::BeamDivergenceConversionFactor<Conventions::FWHMFullAngleDivergence, Conventions::OneOverESquaredHalfAngleDivergence>() == Approx(0.8493281)));
+    CHECK((Conventions::BeamDivergenceConversionFactor<Conventions::OneOverESquaredHalfAngleDivergence, Conventions::FWHMFullAngleDivergence>() == Approx(1 / 0.8493281)));
+    CHECK((Conventions::BeamDivergenceConversionFactor<Conventions::OneOverEFullAngleDivergence, Conventions::FWHMFullAngleDivergence>() == Approx(0.8325546111576977)));
+  }
 
-  CHECK(width.to<Conventions::OneOverERadius>().quant().value() == Approx(1));
+  SECTION("GaussianBeamWidth")
+  {
+    GaussianBeamWidth width(Conventions::OneOverEDiameter{2 * i::cm});
 
-  width = Conventions::OneOverEDiameter{4 * i::cm};
-  CHECK(width.to<Conventions::OneOverERadius>().quant().value() == Approx(2));
+    CHECK(width.to<Conventions::OneOverERadius>().quant().value() == Approx(1));
 
-  Conventions::FWHMDiameter D_fwhm = width.to<Conventions::FWHMDiameter>();
-  CHECK(D_fwhm.quant<t::mm>().value() == Approx(sqrt(log(2)) * 40));
+    width = Conventions::OneOverEDiameter{4 * i::cm};
+    CHECK(width.to<Conventions::OneOverERadius>().quant().value() == Approx(2));
+
+    Conventions::FWHMDiameter D_fwhm = width.to<Conventions::FWHMDiameter>();
+    CHECK(D_fwhm.quant<t::mm>().value() == Approx(sqrt(log(2)) * 40));
+  }
+
+  SECTION("GaussianBeamDivergence")
+  {
+    GaussianBeamDivergence div(Conventions::OneOverEFullAngleDivergence{2 * i::mrad});
+
+    CHECK(div.to<Conventions::OneOverEHalfAngleDivergence>().quant().value() == Approx(1));
+
+    div = Conventions::OneOverEFullAngleDivergence{4 * i::mrad};
+    CHECK(div.to<Conventions::OneOverEHalfAngleDivergence>().quant().value() == Approx(2));
+    CHECK(div.to<Conventions::OneOverEHalfAngleDivergence>().quant<t::rad>().value() == Approx(2e-3));
+
+    Conventions::FWHMFullAngleDivergence theta_fwhm = div.to<Conventions::FWHMFullAngleDivergence>();
+    CHECK(theta_fwhm.quant<t::mrad>().value() == Approx(sqrt(log(2)) * 4));
+  }
 }
 
 // not sure if we want to allow this or not. if so, we will have to redesign a little
