@@ -1,0 +1,158 @@
+% arara: pdflatex
+
+% start with vim --server latex %
+\documentclass[]{article}
+
+\usepackage{siunitx}
+\usepackage{physics}
+\usepackage{graphicx}
+\usepackage{fullpage}
+
+\author{C.D. Clark III}
+\title{Laser beam propagation and the various conventions}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+The equations used to determine beam diameter at range are based on Gaussian Beam Propagation Theory (GBP).
+In physics textbooks, the GBP equations are formulated in terms of the beam \emph{radius} $\omega$, which
+is the $1/\text{e}$ radius for the \textbf{field amplitude}, and the $1/\text{e}^2$ radius for the \textbf{field intensity}, which is proportional
+to irradiance. The ANSI laser safety community uses the $1/e$ \emph{diameter} for the \textbf{irradiance}.
+Siegman suggested using the ``second moment width'', defined to be two times the variance ($W = 2\sigma$),
+because it obeys a universal propagation law. The variance is from the irradiance profile of the beam:
+\begin{equation}
+    \sigma = \frac{\int_{-\infty}^{\infty} (x-x_0)^2 I(x,y) \dd x \dd y}{ \int_{-\infty}^{\infty} I(x,y) \dd x \dd y} .
+\end{equation}
+Note that for non-circular beams, a width in the $x$ and $y$ directions can be defined.
+Then the second moment width will popagate according to the usual range equation:
+\begin{equation}
+    W(z) = \sqrt{W_0^2 + M^2 \left(\frac{\lambda}{\pi W_0}\right)^2 (z - z_0)^2}.
+\end{equation}
+Apparently this equation holds for arbitrary non-twisted beams (i.e. non-Gaussian). For Gaussian beams, the second moment width
+is the same as the $1/\text{e}^2$ radius.
+
+The ISO standard defines ``beam diameter'' to be the $D4\sigma$ width, which is twice Siegman's width and will be the same as
+the $1/\text{e}^2$ \emph{diameter} for a Gaussian beam.
+
+Additionally, physics textbooks usually define the divergence to be the angle between the line defined by the beam
+radius as a function of range and the center of the beam, i.e. the \emph{half-angle} defined by the $1/\text{e}^2$ points, and use
+the symbol $\theta$. The ANSI laser safety community defines the divergence to be the \emph{full-angle} defined by the $1/\text{e}$ points, and uses the symbol, $\phi$.
+
+Adding confusion is the fact that some sources may use $\Theta$ to
+denote the full-angle divergence defined by the $1/\textbf{e}^2$ points, but this is not
+universal. Newport's website for example has a page on Gaussian Optics (https://www.newport.com/n/gaussian-beam-optics) that uses $\theta$ as the full-width
+divergence, defined by the $1/\text{e}^2$ points. In this document.
+
+In terms of divergence, the range equation can be written as
+\begin{equation}
+    W(z) = \sqrt{W_0^2 + \Theta^(z - z_0)^2}.
+\end{equation}
+For the second moment width, the divergence is $M^2 \frac{\lambda}{\pi W_0}$, where $\frac{\lambda}{\pi W_0}$ is the diffraction-limited divergence and $M^2$ is beam quality factor.
+However, for the other beam conventions, it is different.
+
+
+The library implements the various beam propagation equations and supports multiple conventions.
+It is easy to make errors when converting between the different beam diameter and divergence conventions, so this write-up serves as a reference.
+
+\section{Conventions}
+
+Consider three common conventions: GBP, ANSI laser safety, and ISO standard. We define the following symbols:
+
+
+GBP Convention:
+
+\begin{tabular}{rp{5in}}
+    $\omega$ & $1/\text{e}^2$ beam radius. \\
+    $\omega_0$& $1/e^2$ beam waist radius. \\
+    $\theta$ & $1/e^2$ half-angle divergence. \\
+    $z$ & some position along the beam axis measured with respect to a reference point. \\
+    $z_0$ & position of the beam waist. $z$ is often assumed to be measured w.r.t. the beam waist position in physics textbooks so that $z_0 = 0$.
+\end{tabular}
+
+ANSI Laser Safety Convention (Based on ANSI Z136.4-2010):
+
+\begin{tabular}{rp{5in}}
+$D_L$ & $1/e$ beam diameter. \\
+$D_W$ & $1/e$ beam waist diameter. \\
+$\phi$ & $1/e$ full-angle divergence. \\
+$r$ & range, i.e. some position along the beam axis measured with respect to a reference point, usually taken to be the aperture of the laser. \\
+$r_0$ & position of the beam waist.
+\end{tabular}
+
+ISO $D4\sigma$ Convention:
+
+\begin{tabular}{rp{5in}}
+    $D4\sigma$ & four times beam variance, which is $1/\text{e}^2$ diameter for Gaussian beams. \\
+    $D4\sigma_0$ & $1/e$ beam waist diameter. \\
+    $\Theta$ & $D4\sigma$ full-angle divergence, which is $1/\text{e}^2$ divergence for Gaussian beams. \\
+    $z$ & range, i.e. some position along the beam axis measured with respect to a reference point, usually taken to be the aperture of the laser. \\
+    $z_0$ & position of the beam waist.
+\end{tabular}
+
+
+\section{Conversions}
+
+
+The $1/\textbf{e}^2$ radius/diameter is $\sqrt{2}$ times larger than the $1/\text{e}$ radius/diameter. Therefore:
+\begin{align}
+\omega &= \frac{D4\sigma}{2} = \frac{D_L}{\sqrt{2}} \\
+D_L &= \sqrt{2}\omega = \frac{D4\sigma}{\sqrt{2}} \\
+D4\sigma &= \sqrt{2} D_L = 2\omega \\
+\end{align}
+
+We can derive the divergence for each convention in two different ways.
+At positions far from the beam waist, the divergence can be computed using geometry/trigonometry. The small angle approximation
+is typically assumed:
+
+\begin{align}
+    \tan\theta &\approx \theta = \frac{\omega}{z-z_0} \\
+    \tan\phi &\approx \phi = \frac{D_L}{r-r_0} \\
+    \tan\Theta &\approx \Theta = \frac{D4\sigma}{z-z_0}.
+\end{align}
+Since $r-r_0 = z-z_0$, this means that the different divergences are related to each other in the same that the differnt widths are related. For example
+\begin{align}
+    \Theta = \frac{D4\sigma}{z-z_0} = \frac{2\omega}{z-z_0} = 2\theta
+\end{align}
+So,
+\begin{align}
+\theta &= \frac{\Theta}{2} = \frac{\phi}{\sqrt{2}} \\
+\phi &= \sqrt{2}\theta = \frac{\Theta}{\sqrt{2}} \\
+\Theta &= \sqrt{2} \phi = 2\theta
+\end{align}
+Do derive each divergence in terms of its width, we start with the second moment divergence, which is the $1/\text{e}^2$ half-angle divergence for a Gaussian beam,
+\begin{align}
+    \theta &= M^2 \frac{\lambda}{\pi \omega_0} \\
+    \frac{\Theta}{2}&= M^2 \frac{\lambda}{\pi  D4\sigma/2} = M^2 \frac{2\lambda}{\pi D4\sigma} \\
+    \Theta&= M^2 \frac{4\lambda}{\pi D4\sigma} \\
+\end{align}
+and
+\begin{align}
+    \theta &= M^2 \frac{\lambda}{\pi \omega_0} \\
+    \frac{\phi}{\sqrt{2}} &= M^2 \frac{\lambda}{\pi  D_L/\sqrt{2}} = M^2 \frac{\sqrt{2}\lambda}{\pi D_L} \\
+    \phi &= M^2 \frac{2\lambda}{\pi D4\sigma} \\
+\end{align}
+
+We can also derive the relations from the range equations.
+
+\begin{align}
+    \omega^2 &= \omega_0^2 + M^4 \left(\frac{\lambda}{\pi \omega_0}\right)^2 (z-z_0)^2 \\
+    4\omega^2 &= (2 \omega)^2 = D4\sigma^2 = 4\omega_0^2 + 4M^4 \left(\frac{\lambda}{\pi \omega_0}\right)^2 (z-z_0)^2 \\
+              &= D4\sigma_0^2 + M^4 \left(\frac{2\lambda}{\pi D4\sigma_0 /2}\right)^2 (z-z_0)^2 \\
+              &= D4\sigma_0^2 + M^4 \left(\frac{4\lambda}{\pi D4\sigma_0}\right)^2 (z-z_0)^2 \\
+              &=  D4\sigma_0^2 + \Theta^2(z-z_0)^2 \\
+    \Theta &= \frac{4\lambda}{\pi D4\sigma_0}
+\end{align}
+and
+\begin{align}
+    \omega^2 &= \omega_0^2 + M^4 \left(\frac{\lambda}{\pi \omega_0}\right) (z-z_0)^2 \\
+    2\omega^2 &= (\sqrt{2}{ \omega})^2  = D_L^2 = 2\omega_0^2 + 2M^4 \left(\frac{\lambda}{\pi \omega_0}^2\right) (z-z_0)^2 \\
+              &= (\sqrt{2}{ \omega})^2  = D_L^2 = D_0^2 + M^4 \left(\frac{\sqrt{2}\lambda}{\pi D_0/\sqrt{2}}^2\right) (z-z_0)^2 \\
+              &= (\sqrt{2}{ \omega})^2  = D_L^2 = D_0^2 + M^4 \left(\frac{2\lambda}{\pi D_0}^2\right) (z-z_0)^2 \\
+              &=  D_0^2 + \phi^2(z-z_0)^2 \\
+    \phi &= \frac{2\lambda}{\pi D_0}
+\end{align}
+
+
+\end{document}
