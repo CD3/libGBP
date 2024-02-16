@@ -98,7 +98,7 @@ TEST_CASE("Convention Conversions")
 
   auto d = Conventions::OneOverEDiameter{200 * i::um};
 
-  CHECK(d.value().value() == Approx(0.02));
+  CHECK(d.value() == Approx(0.02));
 
   // make sure these all compile
   Conventions::FromOneOverESquaredRadiusCF<Conventions::SecondMomentWidth>();
@@ -118,7 +118,18 @@ TEST_CASE("Convention Conversions")
   CHECK((Conventions::ConversionFactor<Conventions::OneOverESquaredRadius, Conventions::FWHMDiameter>() == Approx(1 / 0.8493281)));
   CHECK((Conventions::ConversionFactor<Conventions::OneOverEDiameter, Conventions::FWHMDiameter>() == Approx(0.8325546111576977)));
 
-  GaussianBeamWidth width;
-  /* width                 = OneOverEDiameter{2 * i::cm}; */
-  /* quantity<t::cm> omega = width.to<OneOverESquaredRadius>(); */
+  GaussianBeamWidth width(Conventions::OneOverEDiameter{2 * i::cm});
+
+  CHECK(width.to<Conventions::OneOverERadius>().quant().value() == Approx(1));
+
+  width = Conventions::OneOverEDiameter{4 * i::cm};
+  CHECK(width.to<Conventions::OneOverERadius>().quant().value() == Approx(2));
+
+  Conventions::FWHMDiameter D_fwhm = width.to<Conventions::FWHMDiameter>();
+  CHECK(D_fwhm.quant<t::mm>().value() == Approx(sqrt(log(2)) * 40));
 }
+
+// not sure if we want to allow this or not. if so, we will have to redesign a little
+// bit.
+/* Conventions::OneOverEDiameter D_1e = D_fwhm; */
+/* CHECK(D_fwhm.quant<t::um>().value() == Approx(40000)); */

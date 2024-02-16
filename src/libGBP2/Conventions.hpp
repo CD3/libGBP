@@ -20,15 +20,20 @@ namespace Conventions
 template<typename U>
 struct StrongQuantity {
  private:
-  quantity<U> m_value;
+  quantity<U> m_quantity;
 
  public:
   template<typename UU>
   StrongQuantity(quantity<UU> a_val)
   {
-    m_value = quantity<U>(a_val);
+    m_quantity = quantity<U>(a_val);
   }
-  quantity<U> value() const { return m_value; }
+  template<typename V = U>
+  quantity<V> quant() const
+  {
+    return quantity<V>(m_quantity);
+  }
+  auto value() const -> decltype(m_quantity.value()) { return m_quantity.value(); }
 };
 
 // define a set of types for the various beam with conventions we support.
@@ -147,11 +152,59 @@ double ConversionFactor()
 
 }  // namespace Conventions
 
+/**
+ * A class that allows a beam "width" to be return from a function
+ * without specifying the specific convention to use. Later, the caller
+ * can ask for the width in the convention they want.
+ *
+ * GaussianBeamWidth width = my_laser.getBeamWidth();
+ *
+ * quantity<t::cm> D = width.to<Conventions::OneOverEDiameter>(); // get the 1/e diameter
+ *
+ * This keeps us from having to provide separate function calls for every width.
+ * i.e.
+ * quantity<t::cm> D = my_laser.getOneOverEDiameter();
+ * quantity<t::cm> omega = my_laser.getOneOverESquaredRadius();
+ * ...etc...
+ */
 class GaussianBeamWidth
 {
  private:
   quantity<t::cm> m_one_over_e_squared_radius;
+
  public:
+  /**
+   * Beam width must be given with a convention. Be _explicit_...
+   */
+  template<typename Convention>
+  GaussianBeamWidth(Convention a_width) : m_one_over_e_squared_radius(quantity<t::cm>(a_width.quant() * Conventions::ConversionFactor<Convention, Conventions::OneOverESquaredRadius>()))
+  {
+  }
+  template<typename Convention>
+  Convention to() const
+  {
+    return Convention{m_one_over_e_squared_radius * Conventions::ConversionFactor<Conventions::OneOverESquaredRadius, Convention>()};
+  }
+
+  GaussianBeamWidth(const GaussianBeamWidth& a_other)            = default;
+  GaussianBeamWidth& operator=(const GaussianBeamWidth& a_other) = default;
+
+  /**
+   * Allow width to be assigned from a convention.
+   *
+   * GaussianBeamWidth width;
+   *
+   * Conventions::OneOverEDiameter D{ 10 *i::cm };
+   * width = D;
+   *
+   */
+  template<typename Convention>
+  GaussianBeamWidth& operator=(const Convention& a_width)
+  {
+    // convert quantity in Convention to 1/e squared radius
+    m_one_over_e_squared_radius = quantity<t::cm>(a_width.quant() * Conventions::ConversionFactor<Convention, Conventions::OneOverESquaredRadius>());
+    return *this;
+  }
 };
 
 }  // namespace libGBP2
