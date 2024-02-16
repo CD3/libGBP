@@ -3,6 +3,7 @@
 #include <BoostUnitDefinitions/Units.hpp>
 
 #include <libGBP2/CircularLaserBeam.hpp>
+#include <libGBP2/Conventions.hpp>
 #include <libGBP2/MonochromaticSource.hpp>
 
 TEST_CASE("Monchromatic Source")
@@ -89,4 +90,35 @@ TEST_CASE("CircularLaserBeam")
   CHECK(beam.getBeamQualityFactor().value() == Approx(2));
   CHECK(beam.getSecondMomentBeamWaistWidth<libGBP2::t::mm>().value() == Approx(2 * 0.2));
   CHECK(beam.getD4SigmaBeamWaistWidth<libGBP2::t::mm>().value() == Approx(4 * 0.2));
+}
+
+TEST_CASE("Convention Conversions")
+{
+  using namespace libGBP2;
+
+  auto d = Conventions::OneOverEDiameter{200 * i::um};
+
+  CHECK(d.value().value() == Approx(0.02));
+
+  // make sure these all compile
+  Conventions::FromOneOverESquaredRadiusCF<Conventions::SecondMomentWidth>();
+  Conventions::FromOneOverESquaredRadiusCF<Conventions::D4SigmaWidth>();
+  Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverERadius>();
+  Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverEDiameter>();
+  Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverESquaredRadius>();
+  Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverESquaredDiameter>();
+  Conventions::FromOneOverESquaredRadiusCF<Conventions::FWHMRadius>();
+  Conventions::FromOneOverESquaredRadiusCF<Conventions::FWHMDiameter>();
+  // compiler error, no function specialization for this type
+  /* Conventions::FromOneOverESquaredRadiusCF<Conventions::StrongQuantity<t::cm>>(); */
+
+  CHECK((Conventions::ConversionFactor<Conventions::D4SigmaWidth, Conventions::D4SigmaWidth>() == Approx(1)));
+  CHECK((Conventions::ConversionFactor<Conventions::D4SigmaWidth, Conventions::OneOverESquaredRadius>() == Approx(0.5)));
+  CHECK((Conventions::ConversionFactor<Conventions::FWHMDiameter, Conventions::OneOverESquaredRadius>() == Approx(0.8493281)));
+  CHECK((Conventions::ConversionFactor<Conventions::OneOverESquaredRadius, Conventions::FWHMDiameter>() == Approx(1 / 0.8493281)));
+  CHECK((Conventions::ConversionFactor<Conventions::OneOverEDiameter, Conventions::FWHMDiameter>() == Approx(0.8325546111576977)));
+
+  GaussianBeamWidth width;
+  /* width                 = OneOverEDiameter{2 * i::cm}; */
+  /* quantity<t::cm> omega = width.to<OneOverESquaredRadius>(); */
 }
