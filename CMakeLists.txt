@@ -2,15 +2,11 @@ cmake_minimum_required( VERSION 3.20 )
 
 option(PYTHON_BINDINGS "Build Python bindings." ON)
 
-if( TARGET libGBP )
-  return()
-endif( TARGET libGBP )
-
-if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR} )
-  set(STANDALONE ON)
-endif( )
-
+option( BUILD_TESTS "Build unit tests" ON )
+if( ${BUILD_TESTS} )
 enable_testing()
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -72,7 +68,7 @@ target_sources(
 
 target_link_libraries(${LIB_NAME} INTERFACE Boost::boost Eigen3::Eigen BoostUnitDefinitions::BoostUnitDefinitions)
 
-if( STANDALONE )
+if( BUILD_TESTS)
 add_subdirectory( testing )
 configure_file( GBP.doxygen.in ${CMAKE_CURRENT_BINARY_DIR}/GBP.doxygen )
 endif()
