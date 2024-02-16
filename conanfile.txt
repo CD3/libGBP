@@ -6,3 +6,6 @@ cd3-boost-unit-definitions/0.2.2
 [generators]
 CMakeDeps
 CMakeToolchain
+
+[layout]
+cmake_layout
