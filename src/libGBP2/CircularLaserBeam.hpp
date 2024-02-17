@@ -1,5 +1,4 @@
 #pragma once
-#include <boost/units/quantity.hpp>
 
 #include "./MonochromaticSource.hpp"
 
@@ -202,6 +201,25 @@ class CircularLaserBeam : public MonochromaticSource
   setDiffractionLimitedD4SigmaDivergence(quantity<U> a_val)
   {
     this->setDiffractionLimitedSecondMomentDivergence(a_val / 2);
+  }
+
+  template<typename UR = t::cm, typename UA = t::cm>
+  quantity<UR> getSecondMomentBeamWidth(quantity<UA> a_z) const
+  {
+    return quantity<UR>(
+
+        boost::units::root<2>(
+            boost::units::pow<2>(this->getSecondMomentBeamWaistWidth<UA>()) +
+            boost::units::pow<2>(this->getSecondMomentDivergence<t::rad>().value()) *
+                boost::units::pow<2>(a_z - this->getBeamWaistPosition<UA>())
+
+                ));
+  }
+
+  template<typename UR = t::cm>
+  quantity<UR> getSecondMomentBeamWidth() const
+  {
+    return this->getSecondMomentBeamWidth<UR>(0 * i::cm);
   }
 };
 }  // namespace libGBP2

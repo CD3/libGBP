@@ -2,6 +2,7 @@
 
 #include <BoostUnitDefinitions/Units.hpp>
 
+#include <libGBP2/CircularGaussianLaserBeam.hpp>
 #include <libGBP2/CircularLaserBeam.hpp>
 #include <libGBP2/Conventions.hpp>
 #include <libGBP2/MonochromaticSource.hpp>
@@ -43,53 +44,67 @@ TEST_CASE("Monchromatic Source")
 TEST_CASE("CircularLaserBeam")
 {
   libGBP2::CircularLaserBeam beam;
-
   beam.setWavelength(633 * libGBP2::i::nm);
-  beam.setSecondMomentBeamWaistWidth(100 * libGBP2::i::um);
 
-  CHECK(beam.getSecondMomentBeamWaistWidth<libGBP2::t::cm>().value() == Approx(0.01));
-  CHECK(beam.getD4SigmaBeamWaistWidth<libGBP2::t::cm>().value() == Approx(0.02));
-  CHECK(beam.getBeamQualityFactor() == Approx(1));
-  CHECK(beam.getBeamWaistPosition<libGBP2::t::m>().value() == Approx(0).scale(1));
+  SECTION("Configuration")
+  {
+    beam.setSecondMomentBeamWaistWidth(100 * libGBP2::i::um);
 
-  beam.setBeamWaistPosition(200 * libGBP2::i::cm);
+    CHECK(beam.getSecondMomentBeamWaistWidth<libGBP2::t::cm>().value() == Approx(0.01));
+    CHECK(beam.getD4SigmaBeamWaistWidth<libGBP2::t::cm>().value() == Approx(0.02));
+    CHECK(beam.getBeamQualityFactor() == Approx(1));
+    CHECK(beam.getBeamWaistPosition<libGBP2::t::m>().value() == Approx(0).scale(1));
 
-  CHECK(beam.getBeamWaistPosition<libGBP2::t::m>().value() == Approx(2));
-  CHECK(beam.getSecondMomentDivergence().value() == Approx(2.0149));
-  CHECK(beam.getD4SigmaDivergence().value() == Approx(2 * 2.0149));
+    beam.setBeamWaistPosition(200 * libGBP2::i::cm);
 
-  beam.setBeamQualityFactor(2 * libGBP2::i::dimensionless);
-  CHECK(beam.getSecondMomentDivergence().value() == Approx(2 * 2.0149));
-  CHECK(beam.getD4SigmaDivergence().value() == Approx(2 * 2 * 2.0149));
+    CHECK(beam.getBeamWaistPosition<libGBP2::t::m>().value() == Approx(2));
+    CHECK(beam.getSecondMomentDivergence().value() == Approx(2.0149));
+    CHECK(beam.getD4SigmaDivergence().value() == Approx(2 * 2.0149));
 
-  beam.setBeamQualityFactor(1 * libGBP2::i::dimensionless);
-  CHECK(beam.getSecondMomentDivergence().value() == Approx(2.0149));
-  CHECK(beam.getD4SigmaDivergence().value() == Approx(2 * 2.0149));
+    beam.setBeamQualityFactor(2 * libGBP2::i::dimensionless);
+    CHECK(beam.getSecondMomentDivergence().value() == Approx(2 * 2.0149));
+    CHECK(beam.getD4SigmaDivergence().value() == Approx(2 * 2 * 2.0149));
 
-  beam.adjustSecondMomentDivergence(2 * 2.0149 * libGBP2::i::mrad);
-  CHECK(beam.getSecondMomentDivergence().value() == Approx(2 * 2.0149));
-  CHECK(beam.getD4SigmaDivergence().value() == Approx(2 * 2 * 2.0149));
-  CHECK(beam.getDiffractionLimitedSecondMomentDivergence().value() == Approx(2.0149));
-  CHECK(beam.getDiffractionLimitedD4SigmaDivergence().value() == Approx(2 * 2.0149));
-  CHECK(beam.getBeamQualityFactor().value() == Approx(2));
+    beam.setBeamQualityFactor(1 * libGBP2::i::dimensionless);
+    CHECK(beam.getSecondMomentDivergence().value() == Approx(2.0149));
+    CHECK(beam.getD4SigmaDivergence().value() == Approx(2 * 2.0149));
 
-  beam.setDiffractionLimitedSecondMomentDivergence(1.00745 * libGBP2::i::mrad);
-  CHECK(beam.getSecondMomentDivergence().value() == Approx(2 * 1.00745));
-  CHECK(beam.getD4SigmaDivergence().value() == Approx(2 * 2 * 1.00745));
-  CHECK(beam.getDiffractionLimitedSecondMomentDivergence().value() == Approx(1.00745));
-  CHECK(beam.getDiffractionLimitedD4SigmaDivergence().value() == Approx(2 * 1.00745));
-  CHECK(beam.getBeamQualityFactor().value() == Approx(2));
-  CHECK(beam.getSecondMomentBeamWaistWidth<libGBP2::t::mm>().value() == Approx(0.2));
-  CHECK(beam.getD4SigmaBeamWaistWidth<libGBP2::t::mm>().value() == Approx(0.4));
+    beam.adjustSecondMomentDivergence(2 * 2.0149 * libGBP2::i::mrad);
+    CHECK(beam.getSecondMomentDivergence().value() == Approx(2 * 2.0149));
+    CHECK(beam.getD4SigmaDivergence().value() == Approx(2 * 2 * 2.0149));
+    CHECK(beam.getDiffractionLimitedSecondMomentDivergence().value() == Approx(2.0149));
+    CHECK(beam.getDiffractionLimitedD4SigmaDivergence().value() == Approx(2 * 2.0149));
+    CHECK(beam.getBeamQualityFactor().value() == Approx(2));
 
-  beam.setDiffractionLimitedD4SigmaDivergence(1.00745 * libGBP2::i::mrad);
-  CHECK(beam.getSecondMomentDivergence().value() == Approx(2 * 1.00745 / 2));
-  CHECK(beam.getD4SigmaDivergence().value() == Approx(2 * 1.00745));
-  CHECK(beam.getDiffractionLimitedSecondMomentDivergence().value() == Approx(1.00745 / 2));
-  CHECK(beam.getDiffractionLimitedD4SigmaDivergence().value() == Approx(1.00745));
-  CHECK(beam.getBeamQualityFactor().value() == Approx(2));
-  CHECK(beam.getSecondMomentBeamWaistWidth<libGBP2::t::mm>().value() == Approx(2 * 0.2));
-  CHECK(beam.getD4SigmaBeamWaistWidth<libGBP2::t::mm>().value() == Approx(4 * 0.2));
+    beam.setDiffractionLimitedSecondMomentDivergence(1.00745 * libGBP2::i::mrad);
+    CHECK(beam.getSecondMomentDivergence().value() == Approx(2 * 1.00745));
+    CHECK(beam.getD4SigmaDivergence().value() == Approx(2 * 2 * 1.00745));
+    CHECK(beam.getDiffractionLimitedSecondMomentDivergence().value() == Approx(1.00745));
+    CHECK(beam.getDiffractionLimitedD4SigmaDivergence().value() == Approx(2 * 1.00745));
+    CHECK(beam.getBeamQualityFactor().value() == Approx(2));
+    CHECK(beam.getSecondMomentBeamWaistWidth<libGBP2::t::mm>().value() == Approx(0.2));
+    CHECK(beam.getD4SigmaBeamWaistWidth<libGBP2::t::mm>().value() == Approx(0.4));
+
+    beam.setDiffractionLimitedD4SigmaDivergence(1.00745 * libGBP2::i::mrad);
+    CHECK(beam.getSecondMomentDivergence().value() == Approx(2 * 1.00745 / 2));
+    CHECK(beam.getD4SigmaDivergence().value() == Approx(2 * 1.00745));
+    CHECK(beam.getDiffractionLimitedSecondMomentDivergence().value() == Approx(1.00745 / 2));
+    CHECK(beam.getDiffractionLimitedD4SigmaDivergence().value() == Approx(1.00745));
+    CHECK(beam.getBeamQualityFactor().value() == Approx(2));
+    CHECK(beam.getSecondMomentBeamWaistWidth<libGBP2::t::mm>().value() == Approx(2 * 0.2));
+    CHECK(beam.getD4SigmaBeamWaistWidth<libGBP2::t::mm>().value() == Approx(4 * 0.2));
+  }
+
+  SECTION("Range Equations")
+  {
+    beam.setSecondMomentBeamWaistWidth(0.002 * libGBP2::i::mm);
+    beam.setBeamWaistPosition(100 * libGBP2::i::mm);
+
+    CHECK(beam.getBeamQualityFactor().value() == Approx(1));
+    CHECK(beam.getSecondMomentDivergence().value() == Approx(100.74508));
+    CHECK(beam.getSecondMomentBeamWidth<libGBP2::t::mm>(100 * libGBP2::i::mm).value() == Approx(0.002));
+    CHECK(beam.getSecondMomentBeamWidth<libGBP2::t::mm>().value() == Approx(10.07451));
+  }
 }
 
 TEST_CASE("Convention Conversions")
@@ -156,6 +171,23 @@ TEST_CASE("Convention Conversions")
     Conventions::FWHMFullAngleDivergence theta_fwhm = div.to<Conventions::FWHMFullAngleDivergence>();
     CHECK(theta_fwhm.quant<t::mrad>().value() == Approx(sqrt(log(2)) * 4));
   }
+}
+
+TEST_CASE("CircularGaussianLaserBeam")
+{
+  using namespace libGBP2;
+  CircularGaussianLaserBeam beam;
+
+  beam.setWavelength(633 * i::nm);
+  beam.setBeamWaistWidth(Conventions::OneOverESquaredRadius{2 * i::um});
+  beam.setBeamWaistPosition(100 * i::mm);
+
+  CHECK(beam.getDiffractionLimitedBeamDivergence().to<Conventions::OneOverESquaredHalfAngleDivergence>().quant<t::mrad>().value() == Approx(100.74508));
+  CHECK(beam.getBeamDivergence().to<Conventions::OneOverESquaredHalfAngleDivergence>().quant<t::mrad>().value() == Approx(100.74508));
+  CHECK(beam.getBeamQualityFactor().value() == Approx(1));
+  CHECK(beam.getBeamWidth().to<Conventions::OneOverESquaredRadius>().quant<t::mm>().value() == Approx(10.07451));
+  CHECK(beam.getBeamWidth(100 * i::mm).to<Conventions::OneOverESquaredRadius>().quant<t::mm>().value() == Approx(0.002));
+  CHECK(beam.getBeamWidth(100 * i::mm).to<Conventions::OneOverEDiameter>().quant<t::mm>().value() == Approx(0.002 * sqrt(2)));
 }
 
 // not sure if we want to allow this or not. if so, we will have to redesign a little
