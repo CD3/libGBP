@@ -5,7 +5,7 @@ install-deps-for-lib:
   conan install . --build missing -s build_type=Debug
 
 cmake-configure-lib: install-deps-for-lib
-  cmake . -B build -DCMAKE_TOOLCHAIN_FILE=./build/generators/conan_toolchain.cmake
+  cmake . -B build -DCMAKE_TOOLCHAIN_FILE=./build/Debug/generators/conan_toolchain.cmake
 
 build-lib: cmake-configure-lib
   cmake --build build --config Debug

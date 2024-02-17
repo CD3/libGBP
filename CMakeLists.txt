@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.20 )
 
-option(PYTHON_BINDINGS "Build Python bindings." ON)
+option(PYTHON_BINDINGS "Build Python bindings." OFF)
 
 option( BUILD_TESTS "Build unit tests" ON )
 if( ${BUILD_TESTS} )

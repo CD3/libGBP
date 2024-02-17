@@ -271,17 +271,18 @@ double BeamDivergenceConversionFactor()
  * quantity<t::cm> omega = my_laser.getOneOverESquaredRadius();
  * ...etc...
  */
+template<typename U>
 class GaussianBeamWidth
 {
  private:
-  quantity<t::cm> m_one_over_e_squared_radius;
+  quantity<U> m_one_over_e_squared_radius;
 
  public:
   /**
    * Beam width must be given with a convention. Be _explicit_...
    */
   template<typename Convention>
-  GaussianBeamWidth(Convention a_width) : m_one_over_e_squared_radius(quantity<t::cm>(a_width.quant() * Conventions::BeamWidthConversionFactor<Convention, Conventions::OneOverESquaredRadius>()))
+  GaussianBeamWidth(Convention a_width) : m_one_over_e_squared_radius(quantity<U>(a_width.quant() * Conventions::BeamWidthConversionFactor<Convention, Conventions::OneOverESquaredRadius>()))
   {
   }
   template<typename Convention>
@@ -306,10 +307,15 @@ class GaussianBeamWidth
   GaussianBeamWidth& operator=(const Convention& a_width)
   {
     // convert quantity in Convention to 1/e squared radius
-    m_one_over_e_squared_radius = quantity<t::cm>(a_width.quant() * Conventions::BeamWidthConversionFactor<Convention, Conventions::OneOverESquaredRadius>());
+    m_one_over_e_squared_radius = quantity<U>(a_width.quant() * Conventions::BeamWidthConversionFactor<Convention, Conventions::OneOverESquaredRadius>());
     return *this;
   }
 };
+template<typename Convention, typename U>
+GaussianBeamWidth<U> make_width(quantity<U> a_width)
+{
+  return GaussianBeamWidth<U>(Convention{a_width});
+}
 
 /**
  * A class that allows a beam "divergence" to be returned from a function
@@ -318,25 +324,26 @@ class GaussianBeamWidth
  *
  * GaussianBeamDivergence div = my_laser.getBeamDivergence();
  *
- * quantity<t::cm> D = div.to<Conventions::OneOverEFullAngleDivergence>(); // get the 1/e full angle div
+ * quantity<t::mrad> D = div.to<Conventions::OneOverEFullAngleDivergence>(); // get the 1/e full angle div
  *
  * This keeps us from having to provide separate function calls for every divergence.
  * i.e.
- * quantity<t::cm> D = my_laser.getOneOverEFullAngleDivergence();
- * quantity<t::cm> omega = my_laser.getOneOverESquaredHalfAngleDivergence();
+ * quantity<t::mrad> D = my_laser.getOneOverEFullAngleDivergence();
+ * quantity<t::mrad> omega = my_laser.getOneOverESquaredHalfAngleDivergence();
  * ...etc...
  */
+template<typename U>
 class GaussianBeamDivergence
 {
  private:
-  quantity<t::mrad> m_one_over_e_squared_half_angle_divergence;
+  quantity<U> m_one_over_e_squared_half_angle_divergence;
 
  public:
   /**
    * Beam divergence must be given with a convention. Be _explicit_...
    */
   template<typename Convention>
-  GaussianBeamDivergence(Convention a_divergence) : m_one_over_e_squared_half_angle_divergence(quantity<t::mrad>(a_divergence.quant() * Conventions::BeamDivergenceConversionFactor<Convention, Conventions::OneOverESquaredHalfAngleDivergence>()))
+  GaussianBeamDivergence(Convention a_divergence) : m_one_over_e_squared_half_angle_divergence(quantity<U>(a_divergence.quant() * Conventions::BeamDivergenceConversionFactor<Convention, Conventions::OneOverESquaredHalfAngleDivergence>()))
   {
   }
   template<typename Convention>
@@ -361,9 +368,14 @@ class GaussianBeamDivergence
   GaussianBeamDivergence& operator=(const Convention& a_divergence)
   {
     // convert quantity in Convention to 1/e squared half_angle_divergence
-    m_one_over_e_squared_half_angle_divergence = quantity<t::mrad>(a_divergence.quant() * Conventions::BeamDivergenceConversionFactor<Convention, Conventions::OneOverESquaredHalfAngleDivergence>());
+    m_one_over_e_squared_half_angle_divergence = quantity<U>(a_divergence.quant() * Conventions::BeamDivergenceConversionFactor<Convention, Conventions::OneOverESquaredHalfAngleDivergence>());
     return *this;
   }
 };
+template<typename Convention, typename U>
+GaussianBeamDivergence<U> make_divergence(quantity<U> a_div)
+{
+  return GaussianBeamDivergence<U>(Convention{a_div});
+}
 
 }  // namespace libGBP2
