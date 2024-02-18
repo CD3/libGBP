@@ -19,23 +19,16 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
 {
  private:
  public:
-  template<typename U>
-  void setBeamWaistWidth(GaussianBeamWidth<U> a_width)
+  template<typename U, typename C>
+  void setBeamWaistWidth(GaussianBeamWidth<C, U> a_width)
   {
     this->setSecondMomentBeamWaistWidth(
-        a_width.template to<Conventions::SecondMomentWidth>().quant());
+        a_width.template get<OneOverESquaredRadius>());
   }
-  /* template<typename C> */
-  /* auto setBeamWaistWidth(C a_width) -> decltype(a_width.quant<t::cm>(), void()) */
-  /* { */
-  /*   this->setSecondMomentBeamWaistWidth( */
-  /*       a_width.template to<Conventions::SecondMomentWidth>().quant()); */
-  /* } */
-  template<typename U = t::cm>
-  GaussianBeamWidth<U> getBeamWaistWidth() const
+  template<typename U = t::cm, typename C = OneOverESquaredRadius>
+  GaussianBeamWidth<C, U> getBeamWaistWidth() const
   {
-    return GaussianBeamWidth<U>(
-        Conventions::SecondMomentWidth{this->getSecondMomentBeamWaistWidth()});
+    return GaussianBeamWidth<OneOverESquaredRadius, U>(this->getSecondMomentBeamWaistWidth());
   }
   template<typename U = t::mrad>
   void setBeamDivergence(GaussianBeamDivergence<U> a_div)
@@ -44,36 +37,36 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
   template<typename U = t::mrad>
   GaussianBeamDivergence<U> getBeamDivergence() const
   {
-    return GaussianBeamDivergence<U>(
-        Conventions::OneOverESquaredHalfAngleDivergence{
-            this->getSecondMomentDivergence<t::mrad>()});
+    /* return GaussianBeamDivergence<U>( */
+    /*     Conventions::OneOverESquaredHalfAngleDivergence{ */
+    /*         this->getSecondMomentDivergence<t::mrad>()}); */
   }
   template<typename U = t::mrad>
   GaussianBeamDivergence<U> getDiffractionLimitedBeamDivergence() const
   {
-    return GaussianBeamDivergence<t::mrad>(
-        Conventions::OneOverESquaredHalfAngleDivergence{
-            this->getDiffractionLimitedSecondMomentDivergence<t::mrad>()});
+    /* return GaussianBeamDivergence<t::mrad>( */
+    /*     Conventions::OneOverESquaredHalfAngleDivergence{ */
+    /*         this->getDiffractionLimitedSecondMomentDivergence<t::mrad>()}); */
   }
 
   /**
    * Return the beam width at a given position a_z.
    */
-  template<typename UR = t::cm, typename UA = t::cm>
-  GaussianBeamWidth<UR> getBeamWidth(quantity<UA> a_z) const
+  template<typename UR = t::cm, typename C = OneOverESquaredRadius, typename UA = t::cm>
+  GaussianBeamWidth<C, UR> getBeamWidth(quantity<UA> a_z) const
   {
-    return GaussianBeamWidth<UR>(Conventions::OneOverESquaredRadius{
-        this->getSecondMomentBeamWidth(a_z)});
+    /* return GaussianBeamWidth<UR>(Conventions::OneOverESquaredRadius{ */
+    /*     this->getSecondMomentBeamWidth(a_z)}); */
   }
 
   /**
    * Return the beam width at z = 0.
    */
-  template<typename U = t::cm>
-  GaussianBeamWidth<U> getBeamWidth() const
+  template<typename U = t::cm, typename C = OneOverESquaredRadius>
+  GaussianBeamWidth<C, U> getBeamWidth() const
   {
-    return GaussianBeamWidth<U>(
-        Conventions::OneOverESquaredRadius{this->getSecondMomentBeamWidth()});
+    /* return GaussianBeamWidth<U>( */
+    /*     Conventions::OneOverESquaredRadius{this->getSecondMomentBeamWidth()}); */
   }
 
   template<typename U = t::cm>
@@ -111,8 +104,7 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
    * Set the complex beam parameter at a given z position a_z.
    */
   template<typename U1, typename U2>
-  void
-  setComplexBeamParameter(quantity<U1, std::complex<double>> a_q, quantity<U2> a_z)
+  void setComplexBeamParameter(quantity<U1, std::complex<double>> a_q, quantity<U2> a_z)
   {
     // real part of q is z - z0, so z0 = z - Re{q}
     this->setBeamWaistPosition(quantity<U1>(a_z) - quantity<U1>::from_value(a_q.value().real()));

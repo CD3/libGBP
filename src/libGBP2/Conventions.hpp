@@ -6,10 +6,38 @@
 
 #include "./Units.hpp"
 
+/**
+ * This file contains some classes and functions to work with
+ * conventions. We want to support getting and setting a laser
+ * beam width and divergence using different conventions. i.e.
+ * setting the 1/e squared radius and getting the 1/e diameter.
+ *
+ * Rather than provide a separte method for each one of these conventions
+ * (as we did in v1 of the library), we create a type that can
+ * hold the width and knows how to convert to/from the different conventions.
+ *
+ * To accomplish this we:
+ *
+ * 1. Define an empty strict for each convention. These will be used as template arguments.
+ * 2. Define functions to compute the conversion factor for each convention _from_ 1/e squared radius.
+ *     - In other words, for an convention C = \alpha \omega, define \alpha.
+ * 3. Define a function to compute the conversion factor between any two conventions.
+ *     - This function can just use the conversion factors we defined above.
+ * 4. Create a class template that stores a beam width, keeping track of the convention and units.
+ *     - This class stores the width internally using some convention and unit, but can "get" the width in
+ *       any other convention and unit.
+ *
+ * The Gaussian laser beam classes can then return the beam width class instead of quantities, so the
+ * user can convert to any convention they want.
+ *
+ */
 namespace libGBP2
 {
 
-namespace Conventions
+/**
+ * A namespace for defining constants that will be used. i.e. sqrt(2), log(2), etc.
+ */
+namespace Constants
 {
 
 // define some numerical constant that we will use
@@ -27,6 +55,7 @@ template<class T>
 constexpr T root_ln_2 = T(0.8325546111576977L);
 template<class T>
 constexpr T one_over_root_ln_2 = T(1.2011224087864498L);
+}  // namespace Constants
 
 /**
  * A template to store a quantity
@@ -52,27 +81,33 @@ struct StrongQuantity {
   auto value() const -> decltype(m_quantity.value()) { return m_quantity.value(); }
 };
 
-// define a set of types for the various beam with conventions we support.
-struct SecondMomentWidth : public StrongQuantity<t::cm> {
+////////////////////////////////////////////////////////////////////////////////
+// define a set of types for the various beam width conventions we support.   //
+////////////////////////////////////////////////////////////////////////////////
+struct SecondMomentWidth {
 };
-struct D4SigmaWidth : public StrongQuantity<t::cm> {
+struct D4SigmaWidth {
 };
-struct OneOverERadius : public StrongQuantity<t::cm> {
+struct OneOverERadius {
 };
-struct OneOverESquaredRadius : public StrongQuantity<t::cm> {
+struct OneOverESquaredRadius {
 };
-struct FWHMRadius : public StrongQuantity<t::cm> {
+struct FWHMRadius {
 };
-struct OneOverEDiameter : public StrongQuantity<t::cm> {
+struct OneOverEDiameter {
 };
-struct OneOverESquaredDiameter : public StrongQuantity<t::cm> {
+struct OneOverESquaredDiameter {
 };
-struct FWHMDiameter : public StrongQuantity<t::cm> {
+struct FWHMDiameter {
 };
 
 /**
- * A function to compute width of some convention `Convention`
- * from the 1 over e squared radius. i.e.
+ * A function to compute conversion factor for some convention `Convention`
+ * from the 1 over e squared radius. i.e., for any convention C, we have
+ *
+ * C = \alpha \omega
+ *
+ * where \omega is the usual 1/e squared radius. This function returns \alpha.
  *
  * All we need to do is define how to compute each convention
  * from the 1/e squared radius (we could have chose any other convention)
@@ -80,10 +115,10 @@ struct FWHMDiameter : public StrongQuantity<t::cm> {
  *
  * This function must be specialized for every convention we support.
  */
-template<typename Convention>
+template<typename C>
 double FromOneOverESquaredRadiusCF()
 {
-  static_assert(!std::is_same<Convention, Convention>::value, "No conversion factor defined for conversion.");
+  static_assert(!std::is_same<C, C>::value, "No conversion factor defined for conversion.");
   return 0;
 }
 
@@ -113,26 +148,26 @@ inline double FromOneOverESquaredRadiusCF<OneOverESquaredDiameter>()
 template<>
 inline double FromOneOverESquaredRadiusCF<OneOverERadius>()
 {
-  return one_over_root_2<double>;
+  return Constants::one_over_root_2<double>;
 }
 
 template<>
 inline double FromOneOverESquaredRadiusCF<OneOverEDiameter>()
 {
-  return root_2<double>;
+  return Constants::root_2<double>;
 }
 
 template<>
 inline double FromOneOverESquaredRadiusCF<FWHMRadius>()
 {
-  static double cf = root_ln_2<double> / root_2<double>;
+  static double cf = Constants::root_ln_2<double> / Constants::root_2<double>;
   return cf;
 }
 
 template<>
 inline double FromOneOverESquaredRadiusCF<FWHMDiameter>()
 {
-  static double cf = root_ln_2<double> * root_2<double>;
+  static double cf = Constants::root_ln_2<double> * Constants::root_2<double>;
   return cf;
 }
 
@@ -153,7 +188,7 @@ double BeamWidthConversionFactor()
   return FromOneOverESquaredRadiusCF<C2>() / FromOneOverESquaredRadiusCF<C1>();
 }
 
-// define a set of types for the various beam with conventions we support.
+// define a set of types for the various beam divergence conventions we support.
 struct SecondMomentDivergence : public StrongQuantity<t::mrad> {
 };
 struct D4SigmaDivergence : public StrongQuantity<t::mrad> {
@@ -214,26 +249,26 @@ inline double FromOneOverESquaredHalfAngleDivergenceCF<OneOverESquaredFullAngleD
 template<>
 inline double FromOneOverESquaredHalfAngleDivergenceCF<OneOverEHalfAngleDivergence>()
 {
-  return one_over_root_2<double>;
+  return Constants::one_over_root_2<double>;
 }
 
 template<>
 inline double FromOneOverESquaredHalfAngleDivergenceCF<OneOverEFullAngleDivergence>()
 {
-  return root_2<double>;
+  return Constants::root_2<double>;
 }
 
 template<>
 inline double FromOneOverESquaredHalfAngleDivergenceCF<FWHMHalfAngleDivergence>()
 {
-  static double cf = root_ln_2<double> / root_2<double>;
+  static double cf = Constants::root_ln_2<double> / Constants::root_2<double>;
   return cf;
 }
 
 template<>
 inline double FromOneOverESquaredHalfAngleDivergenceCF<FWHMFullAngleDivergence>()
 {
-  static double cf = root_ln_2<double> * root_2<double>;
+  static double cf = Constants::root_ln_2<double> * Constants::root_2<double>;
   return cf;
 }
 
@@ -254,8 +289,6 @@ double BeamDivergenceConversionFactor()
   return FromOneOverESquaredHalfAngleDivergenceCF<C2>() / FromOneOverESquaredHalfAngleDivergenceCF<C1>();
 }
 
-}  // namespace Conventions
-
 /**
  * A class that allows a beam "width" to be returned from a function
  * without specifying the specific convention to use. Later, the caller
@@ -263,58 +296,61 @@ double BeamDivergenceConversionFactor()
  *
  * GaussianBeamWidth width = my_laser.getBeamWidth();
  *
- * quantity<t::cm> D = width.to<Conventions::OneOverEDiameter>(); // get the 1/e diameter
+ * quantity<t::cm> D = width.get<OneOverEDiameter>(); // get the 1/e diameter
  *
  * This keeps us from having to provide separate function calls for every width.
  * i.e.
  * quantity<t::cm> D = my_laser.getOneOverEDiameter();
  * quantity<t::cm> omega = my_laser.getOneOverESquaredRadius();
  * ...etc...
+ * and allows us to add new conventiones without modifying the class.
  */
-template<typename U>
+template<typename C, typename U>
 class GaussianBeamWidth
 {
  private:
-  quantity<U> m_one_over_e_squared_radius;
+  using CONVENTION = C;
+  quantity<U> m_width;
 
  public:
-  /**
-   * Beam width must be given with a convention. Be _explicit_...
-   */
-  template<typename Convention>
-  GaussianBeamWidth(Convention a_width) : m_one_over_e_squared_radius(quantity<U>(a_width.quant() * Conventions::BeamWidthConversionFactor<Convention, Conventions::OneOverESquaredRadius>()))
-  {
-  }
-  template<typename Convention>
-  Convention to() const
-  {
-    return Convention{m_one_over_e_squared_radius * Conventions::BeamWidthConversionFactor<Conventions::OneOverESquaredRadius, Convention>()};
-  }
-
+  GaussianBeamWidth()                                            = default;
   GaussianBeamWidth(const GaussianBeamWidth& a_other)            = default;
   GaussianBeamWidth& operator=(const GaussianBeamWidth& a_other) = default;
 
-  /**
-   * Allow width to be assigned from a convention.
-   *
-   * GaussianBeamWidth width;
-   *
-   * Conventions::OneOverEDiameter D{ 10 *i::cm };
-   * width = D;
-   *
-   */
-  template<typename Convention>
-  GaussianBeamWidth& operator=(const Convention& a_width)
+  template<typename UU>
+  GaussianBeamWidth(quantity<UU> a_width)
+      : m_width(quantity<U>(a_width))
   {
-    // convert quantity in Convention to 1/e squared radius
-    m_one_over_e_squared_radius = quantity<U>(a_width.quant() * Conventions::BeamWidthConversionFactor<Convention, Conventions::OneOverESquaredRadius>());
+  }
+
+  template<typename CC, typename UU = U>
+  quantity<UU> get() const
+  {
+    return quantity<UU>(
+               m_width) *
+           BeamWidthConversionFactor<C, CC>();
+  }
+
+  template<typename UU>
+  GaussianBeamWidth& operator=(quantity<UU> a_width)
+  {
+    m_width = quantity<U>(a_width);
     return *this;
   }
+  template<typename CC, typename UU>
+  GaussianBeamWidth& operator=(GaussianBeamWidth<CC, UU> a_width)
+  {
+    m_width = a_width.template get<C, U>();
+    return *this;
+  }
+
+  // allow constructing from a strong quantity
 };
-template<typename Convention, typename U>
-GaussianBeamWidth<U> make_width(quantity<U> a_width)
+
+template<typename C, typename U>
+GaussianBeamWidth<C, U> make_width(quantity<U> a_width)
 {
-  return GaussianBeamWidth<U>(Convention{a_width});
+  return GaussianBeamWidth<C, U>(a_width);
 }
 
 /**
@@ -324,7 +360,7 @@ GaussianBeamWidth<U> make_width(quantity<U> a_width)
  *
  * GaussianBeamDivergence div = my_laser.getBeamDivergence();
  *
- * quantity<t::mrad> D = div.to<Conventions::OneOverEFullAngleDivergence>(); // get the 1/e full angle div
+ * quantity<t::mrad> D = div.to<OneOverEFullAngleDivergence>(); // get the 1/e full angle div
  *
  * This keeps us from having to provide separate function calls for every divergence.
  * i.e.
@@ -335,47 +371,47 @@ GaussianBeamWidth<U> make_width(quantity<U> a_width)
 template<typename U>
 class GaussianBeamDivergence
 {
- private:
-  quantity<U> m_one_over_e_squared_half_angle_divergence;
-
- public:
-  /**
-   * Beam divergence must be given with a convention. Be _explicit_...
-   */
-  template<typename Convention>
-  GaussianBeamDivergence(Convention a_divergence) : m_one_over_e_squared_half_angle_divergence(quantity<U>(a_divergence.quant() * Conventions::BeamDivergenceConversionFactor<Convention, Conventions::OneOverESquaredHalfAngleDivergence>()))
-  {
-  }
-  template<typename Convention>
-  Convention to() const
-  {
-    return Convention{m_one_over_e_squared_half_angle_divergence * Conventions::BeamDivergenceConversionFactor<Conventions::OneOverESquaredHalfAngleDivergence, Convention>()};
-  }
-
-  GaussianBeamDivergence(const GaussianBeamDivergence& a_other)            = default;
-  GaussianBeamDivergence& operator=(const GaussianBeamDivergence& a_other) = default;
-
-  /**
-   * Allow divergence to be assigned from a convention.
-   *
-   * GaussianBeamDivergence divergence;
-   *
-   * Conventions::OneOverEFullAngleDivergence{ 10 *i::mrad };
-   * divergence = D;
-   *
-   */
-  template<typename Convention>
-  GaussianBeamDivergence& operator=(const Convention& a_divergence)
-  {
-    // convert quantity in Convention to 1/e squared half_angle_divergence
-    m_one_over_e_squared_half_angle_divergence = quantity<U>(a_divergence.quant() * Conventions::BeamDivergenceConversionFactor<Convention, Conventions::OneOverESquaredHalfAngleDivergence>());
-    return *this;
-  }
+  //  private:
+  //   quantity<U> m_one_over_e_squared_half_angle_divergence;
+  //
+  //  public:
+  //   /**
+  //    * Beam divergence must be given with a convention. Be _explicit_...
+  //    */
+  //   template<typename Convention>
+  //   GaussianBeamDivergence(Convention a_divergence) : m_one_over_e_squared_half_angle_divergence(quantity<U>(a_divergence.quant() * Conventions::BeamDivergenceConversionFactor<Convention, Conventions::OneOverESquaredHalfAngleDivergence>()))
+  //   {
+  //   }
+  //   template<typename Convention>
+  //   Convention to() const
+  //   {
+  //     return Convention{m_one_over_e_squared_half_angle_divergence * Conventions::BeamDivergenceConversionFactor<Conventions::OneOverESquaredHalfAngleDivergence, Convention>()};
+  //   }
+  //
+  //   GaussianBeamDivergence(const GaussianBeamDivergence& a_other)            = default;
+  //   GaussianBeamDivergence& operator=(const GaussianBeamDivergence& a_other) = default;
+  //
+  //   /**
+  //    * Allow divergence to be assigned from a convention.
+  //    *
+  //    * GaussianBeamDivergence divergence;
+  //    *
+  //    * Conventions::OneOverEFullAngleDivergence{ 10 *i::mrad };
+  //    * divergence = D;
+  //    *
+  //    */
+  //   template<typename Convention>
+  //   GaussianBeamDivergence& operator=(const Convention& a_divergence)
+  //   {
+  //     // convert quantity in Convention to 1/e squared half_angle_divergence
+  //     m_one_over_e_squared_half_angle_divergence = quantity<U>(a_divergence.quant() * Conventions::BeamDivergenceConversionFactor<Convention, Conventions::OneOverESquaredHalfAngleDivergence>());
+  //     return *this;
+  //   }
 };
 template<typename Convention, typename U>
 GaussianBeamDivergence<U> make_divergence(quantity<U> a_div)
 {
-  return GaussianBeamDivergence<U>(Convention{a_div});
+  //   return GaussianBeamDivergence<U>(Convention{a_div});
 }
 
 }  // namespace libGBP2

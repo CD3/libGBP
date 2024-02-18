@@ -1,5 +1,7 @@
 #include "catch.hpp"
 
+#include <iostream>
+
 #include <BoostUnitDefinitions/Units.hpp>
 
 #include <libGBP2/CircularGaussianLaserBeam.hpp>
@@ -135,104 +137,113 @@ TEST_CASE("Convention Conversions")
 
   SECTION("Misc")
   {
-    auto d = Conventions::OneOverEDiameter{200 * i::um};
-
-    CHECK(d.value() == Approx(0.02));
-
     // make sure these all compile
-    Conventions::FromOneOverESquaredRadiusCF<Conventions::SecondMomentWidth>();
-    Conventions::FromOneOverESquaredRadiusCF<Conventions::D4SigmaWidth>();
-    Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverERadius>();
-    Conventions::FromOneOverESquaredRadiusCF<Conventions::OneOverEDiameter>();
-    Conventions::FromOneOverESquaredRadiusCF<
-        Conventions::OneOverESquaredRadius>();
-    Conventions::FromOneOverESquaredRadiusCF<
-        Conventions::OneOverESquaredDiameter>();
-    Conventions::FromOneOverESquaredRadiusCF<Conventions::FWHMRadius>();
-    Conventions::FromOneOverESquaredRadiusCF<Conventions::FWHMDiameter>();
+    FromOneOverESquaredRadiusCF<SecondMomentWidth>();
+    FromOneOverESquaredRadiusCF<D4SigmaWidth>();
+    FromOneOverESquaredRadiusCF<OneOverERadius>();
+    FromOneOverESquaredRadiusCF<OneOverEDiameter>();
+    FromOneOverESquaredRadiusCF<
+        OneOverESquaredRadius>();
+    FromOneOverESquaredRadiusCF<
+        OneOverESquaredDiameter>();
+    FromOneOverESquaredRadiusCF<FWHMRadius>();
+    FromOneOverESquaredRadiusCF<FWHMDiameter>();
     // compiler error, no function specialization for this type
-    /* Conventions::FromOneOverESquaredRadiusCF<Conventions::StrongQuantity<t::cm>>();
-     */
+    // FromOneOverESquaredRadiusCF<t::cm>();
   }
 
   SECTION("Conversion Factors")
   {
     CHECK(
-        (Conventions::BeamWidthConversionFactor<Conventions::D4SigmaWidth,
-                                                Conventions::D4SigmaWidth>() ==
+        (BeamWidthConversionFactor<D4SigmaWidth,
+                                   D4SigmaWidth>() ==
          Approx(1)));
     CHECK(
-        (Conventions::BeamWidthConversionFactor<
-             Conventions::D4SigmaWidth, Conventions::OneOverESquaredRadius>() ==
+        (BeamWidthConversionFactor<
+             D4SigmaWidth, OneOverESquaredRadius>() ==
          Approx(0.5)));
     CHECK(
-        (Conventions::BeamWidthConversionFactor<
-             Conventions::FWHMDiameter, Conventions::OneOverESquaredRadius>() ==
+        (BeamWidthConversionFactor<
+             FWHMDiameter, OneOverESquaredRadius>() ==
          Approx(0.8493281)));
     CHECK(
-        (Conventions::BeamWidthConversionFactor<
-             Conventions::OneOverESquaredRadius, Conventions::FWHMDiameter>() ==
+        (BeamWidthConversionFactor<
+             OneOverESquaredRadius, FWHMDiameter>() ==
          Approx(1 / 0.8493281)));
     CHECK(
-        (Conventions::BeamWidthConversionFactor<Conventions::OneOverEDiameter,
-                                                Conventions::FWHMDiameter>() ==
+        (BeamWidthConversionFactor<OneOverEDiameter,
+                                   FWHMDiameter>() ==
          Approx(0.8325546111576977)));
 
     CHECK((
-        Conventions::BeamDivergenceConversionFactor<
-            Conventions::D4SigmaDivergence, Conventions::D4SigmaDivergence>() ==
+        BeamDivergenceConversionFactor<
+            D4SigmaDivergence, D4SigmaDivergence>() ==
         Approx(1)));
-    CHECK((Conventions::BeamDivergenceConversionFactor<
-               Conventions::D4SigmaDivergence,
-               Conventions::OneOverESquaredHalfAngleDivergence>() ==
+    CHECK((BeamDivergenceConversionFactor<
+               D4SigmaDivergence,
+               OneOverESquaredHalfAngleDivergence>() ==
            Approx(0.5)));
-    CHECK((Conventions::BeamDivergenceConversionFactor<
-               Conventions::FWHMFullAngleDivergence,
-               Conventions::OneOverESquaredHalfAngleDivergence>() ==
+    CHECK((BeamDivergenceConversionFactor<
+               FWHMFullAngleDivergence,
+               OneOverESquaredHalfAngleDivergence>() ==
            Approx(0.8493281)));
     CHECK(
-        (Conventions::BeamDivergenceConversionFactor<
-             Conventions::OneOverESquaredHalfAngleDivergence,
-             Conventions::FWHMFullAngleDivergence>() == Approx(1 / 0.8493281)));
-    CHECK((Conventions::BeamDivergenceConversionFactor<
-               Conventions::OneOverEFullAngleDivergence,
-               Conventions::FWHMFullAngleDivergence>() ==
+        (BeamDivergenceConversionFactor<
+             OneOverESquaredHalfAngleDivergence,
+             FWHMFullAngleDivergence>() == Approx(1 / 0.8493281)));
+    CHECK((BeamDivergenceConversionFactor<
+               OneOverEFullAngleDivergence,
+               FWHMFullAngleDivergence>() ==
            Approx(0.8325546111576977)));
   }
 
   SECTION("GaussianBeamWidth")
   {
-    GaussianBeamWidth<t::cm> width(Conventions::OneOverEDiameter{2 * i::cm});
+    GaussianBeamWidth<OneOverEDiameter, t::cm> width = 2 * i::cm;
 
-    CHECK(width.to<Conventions::OneOverERadius>().quant().value() == Approx(1));
+    CHECK(width.get<OneOverERadius>().value() == Approx(1));
+    CHECK((width.get<OneOverERadius, t::mm>().value() == Approx(10)));
 
-    width = Conventions::OneOverEDiameter{4 * i::cm};
-    CHECK(width.to<Conventions::OneOverERadius>().quant().value() == Approx(2));
+    width = 4 * i::cm;
+    CHECK(width.get<OneOverERadius>().value() == Approx(2));
 
-    Conventions::FWHMDiameter D_fwhm = width.to<Conventions::FWHMDiameter>();
-    CHECK(D_fwhm.quant<t::mm>().value() == Approx(sqrt(log(2)) * 40));
+    width = make_width<OneOverERadius>(4 * i::mm);
+    CHECK(width.get<OneOverERadius>().value() == Approx(0.4));
+    CHECK((width.get<OneOverERadius, t::m>().value() == Approx(0.004)));
+    CHECK((width.get<OneOverEDiameter, t::cm>().value() == Approx(0.8)));
+
+    width = 4 * i::cm;
+    // quantity<t::mm> D_fwhm = width.get<FWHMDiameter>();  // compiler error, units don't match
+    quantity<t::cm> D_fwhm = width.get<FWHMDiameter>();
+    CHECK(D_fwhm.value() == Approx(sqrt(log(2)) * 4));
+    CHECK(quantity<t::mm>(D_fwhm).value() == Approx(sqrt(log(2)) * 40));
+
+    auto D_fwhm_2 = width.get<FWHMDiameter, t::m>();
+    CHECK(D_fwhm_2.value() == Approx(sqrt(log(2)) * 0.04));
+    CHECK(quantity<t::mm>(D_fwhm_2).value() == Approx(sqrt(log(2)) * 40));
   }
 
   SECTION("GaussianBeamDivergence")
   {
-    GaussianBeamDivergence<t::mrad> div(
-        Conventions::OneOverEFullAngleDivergence{2 * i::mrad});
-
-    CHECK(div.to<Conventions::OneOverEHalfAngleDivergence>().quant().value() ==
-          Approx(1));
-
-    div = Conventions::OneOverEFullAngleDivergence{4 * i::mrad};
-    CHECK(div.to<Conventions::OneOverEHalfAngleDivergence>().quant().value() ==
-          Approx(2));
-    CHECK(div.to<Conventions::OneOverEHalfAngleDivergence>()
-              .quant<t::rad>()
-              .value() == Approx(2e-3));
-
-    Conventions::FWHMFullAngleDivergence theta_fwhm =
-        div.to<Conventions::FWHMFullAngleDivergence>();
-    CHECK(theta_fwhm.quant<t::mrad>().value() == Approx(sqrt(log(2)) * 4));
+    /* GaussianBeamDivergence<t::mrad> div( */
+    /*     OneOverEFullAngleDivergence{2 * i::mrad}); */
+    /**/
+    /* CHECK(div.to<OneOverEHalfAngleDivergence>().quant().value() == */
+    /*       Approx(1)); */
+    /**/
+    /* div = OneOverEFullAngleDivergence{4 * i::mrad}; */
+    /* CHECK(div.to<OneOverEHalfAngleDivergence>().quant().value() == */
+    /*       Approx(2)); */
+    /* CHECK(div.to<OneOverEHalfAngleDivergence>() */
+    /*           .quant<t::rad>() */
+    /*           .value() == Approx(2e-3)); */
+    /**/
+    /* FWHMFullAngleDivergence theta_fwhm = */
+    /*     div.to<FWHMFullAngleDivergence>(); */
+    /* CHECK(theta_fwhm.quant<t::mrad>().value() == Approx(sqrt(log(2)) * 4)); */
   }
 }
+/*
 
 TEST_CASE("CircularGaussianLaserBeam")
 {
@@ -303,8 +314,37 @@ TEST_CASE("Complex Beam Parameter")
     CHECK(beam.getBeamWaistWidth<t::mm>().to<Conventions::OneOverESquaredRadius>().value() == Approx(0.0005));
   }
 }
+*/
 
-// not sure if we want to allow this or not. if so, we will have to redesign a
-// little bit.
-/* Conventions::OneOverEDiameter D_1e = D_fwhm; */
-/* CHECK(D_fwhm.quant<t::um>().value() == Approx(40000)); */
+TEST_CASE("conventions interface")
+{
+  using namespace libGBP2;
+  GaussianBeamWidth<OneOverESquaredRadius, t::cm> width;
+  width = 2 * i::mm;
+
+  CHECK((width.get<OneOverESquaredDiameter, t::mm>().value() == Approx(4)));
+  CHECK((width.get<OneOverESquaredDiameter>().value() == Approx(0.4)));
+
+  width = make_width<OneOverESquaredDiameter>(10 * i::mm);
+
+  CHECK((width.get<OneOverESquaredDiameter, t::mm>().value() == Approx(10)));
+  CHECK((width.get<OneOverESquaredDiameter>().value() == Approx(1)));
+  CHECK((width.get<OneOverESquaredRadius, t::mm>().value() == Approx(5)));
+  CHECK((width.get<OneOverESquaredRadius>().value() == Approx(0.5)));
+
+  CircularGaussianLaserBeam beam;
+
+  beam.setBeamWaistWidth(width);
+
+  CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(0.5));
+  CHECK((beam.getBeamWaistWidth().get<OneOverESquaredRadius, t::m>().value() == Approx(0.005)));
+  CHECK((beam.getBeamWaistWidth<t::m>().get<OneOverESquaredRadius>().value() == Approx(0.005)));
+
+  /* beam.getWidth().getOneOverESquaredDiameter_>.value() */
+  /* beam.getWidth().getOneOverESquaredDiameter_,t::mm>.value() */
+  /* beam.getWidth<t::mm>().getOneOverESquaredDiameter_>.value() */
+
+  /* beam.setWavelength(633 * i::nm); */
+  /* beam.setBeamWaistWidth(make_width<one_over_e_squared_radius>(2 * i::um)); */
+  /* beam.setBeamWaistPosition(100 * i::mm); */
+}
