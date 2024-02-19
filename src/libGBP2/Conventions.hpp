@@ -360,7 +360,7 @@ GaussianBeamWidth<C, U> make_width(quantity<U> a_width)
  *
  * GaussianBeamDivergence div = my_laser.getBeamDivergence();
  *
- * quantity<t::mrad> D = div.to<OneOverEFullAngleDivergence>(); // get the 1/e full angle div
+ * quantity<t::mrad> D = div.get<OneOverEFullAngleDivergence>(); // get the 1/e full angle div
  *
  * This keeps us from having to provide separate function calls for every divergence.
  * i.e.
@@ -368,50 +368,49 @@ GaussianBeamWidth<C, U> make_width(quantity<U> a_width)
  * quantity<t::mrad> omega = my_laser.getOneOverESquaredHalfAngleDivergence();
  * ...etc...
  */
-template<typename U>
+template<typename C, typename U>
 class GaussianBeamDivergence
 {
-  //  private:
-  //   quantity<U> m_one_over_e_squared_half_angle_divergence;
+ private:
+  using CONVENTION = C;
+  quantity<U> m_divergence;
   //
-  //  public:
-  //   /**
-  //    * Beam divergence must be given with a convention. Be _explicit_...
-  //    */
-  //   template<typename Convention>
-  //   GaussianBeamDivergence(Convention a_divergence) : m_one_over_e_squared_half_angle_divergence(quantity<U>(a_divergence.quant() * Conventions::BeamDivergenceConversionFactor<Convention, Conventions::OneOverESquaredHalfAngleDivergence>()))
-  //   {
-  //   }
-  //   template<typename Convention>
-  //   Convention to() const
-  //   {
-  //     return Convention{m_one_over_e_squared_half_angle_divergence * Conventions::BeamDivergenceConversionFactor<Conventions::OneOverESquaredHalfAngleDivergence, Convention>()};
-  //   }
-  //
-  //   GaussianBeamDivergence(const GaussianBeamDivergence& a_other)            = default;
-  //   GaussianBeamDivergence& operator=(const GaussianBeamDivergence& a_other) = default;
-  //
-  //   /**
-  //    * Allow divergence to be assigned from a convention.
-  //    *
-  //    * GaussianBeamDivergence divergence;
-  //    *
-  //    * Conventions::OneOverEFullAngleDivergence{ 10 *i::mrad };
-  //    * divergence = D;
-  //    *
-  //    */
-  //   template<typename Convention>
-  //   GaussianBeamDivergence& operator=(const Convention& a_divergence)
-  //   {
-  //     // convert quantity in Convention to 1/e squared half_angle_divergence
-  //     m_one_over_e_squared_half_angle_divergence = quantity<U>(a_divergence.quant() * Conventions::BeamDivergenceConversionFactor<Convention, Conventions::OneOverESquaredHalfAngleDivergence>());
-  //     return *this;
-  //   }
+ public:
+  GaussianBeamDivergence()                                                 = default;
+  GaussianBeamDivergence(const GaussianBeamDivergence& a_other)            = default;
+  GaussianBeamDivergence& operator=(const GaussianBeamDivergence& a_other) = default;
+
+  template<typename UU>
+  GaussianBeamDivergence(quantity<UU> a_divergence)
+      : m_divergence(quantity<U>(a_divergence))
+  {
+  }
+
+  template<typename CC, typename UU = U>
+  quantity<UU> get() const
+  {
+    return quantity<UU>(
+               m_divergence) *
+           BeamDivergenceConversionFactor<C, CC>();
+  }
+
+  template<typename UU>
+  GaussianBeamDivergence& operator=(quantity<UU> a_divergence)
+  {
+    m_divergence = quantity<U>(a_divergence);
+    return *this;
+  }
+  template<typename CC, typename UU>
+  GaussianBeamDivergence& operator=(GaussianBeamDivergence<CC, UU> a_divergence)
+  {
+    m_divergence = a_divergence.template get<C, U>();
+    return *this;
+  }
 };
-template<typename Convention, typename U>
-GaussianBeamDivergence<U> make_divergence(quantity<U> a_div)
+template<typename C, typename U>
+GaussianBeamDivergence<C, U> make_divergence(quantity<U> a_divergence)
 {
-  //   return GaussianBeamDivergence<U>(Convention{a_div});
+  return GaussianBeamDivergence<C, U>(a_divergence);
 }
 
 }  // namespace libGBP2
