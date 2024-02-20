@@ -256,6 +256,15 @@ TEST_CASE("CircularGaussianLaserBeam")
   CHECK(beam.getBeamWidth<t::mm>(100 * i::mm).get<OneOverESquaredRadius>().value() == Approx(0.002));
   CHECK(beam.getBeamWidth<t::mm>(100 * i::mm).get<OneOverEDiameter>().value() == Approx(0.002 * sqrt(2)));
   CHECK(beam.getRayleighRange<t::mm>().value() == Approx(0.01985));
+  CHECK(beam.getRadiusOfCurvature<t::mm>().value() == Approx(-100));
+  CHECK(beam.getRadiusOfCurvature<t::mm>(200 * i::mm).value() == Approx(100));
+  CHECK(beam.getRadiusOfCurvature<t::mm>(100.1 * i::mm).value() == Approx(0.10394));
+  CHECK(beam.getRadiusOfCurvature<t::mm>(99.9 * i::mm).value() == Approx(-0.10394));
+  CHECK(beam.getGouyPhase<t::rad>(100 * i::mm).value() == Approx(0).scale(1));
+  CHECK(beam.getGouyPhase<t::rad>().value() == Approx(atan(-100 / 0.01985)));
+
+  CHECK(beam.getBeamWidth<t::mm>(beam.getBeamWaistPosition() + beam.getRayleighRange()).get<OneOverESquaredRadius>().value() == Approx(0.00283));
+  CHECK(beam.getBeamWidth<t::mm>(beam.getBeamWaistPosition() - beam.getRayleighRange()).get<OneOverESquaredRadius>().value() == Approx(0.00283));
 
   beam.adjustBeamDivergence(make_divergence<OneOverESquaredHalfAngleDivergence>(2 * 100.74508 * i::mrad));
 
