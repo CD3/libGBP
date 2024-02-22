@@ -4,8 +4,10 @@
 #include <libGBP2/CircularLaserBeam.hpp>
 #include <libGBP2/Conventions.hpp>
 #include <libGBP2/MonochromaticSource.hpp>
+#include <libGBP2/OpticalElements/FlatRefractiveSurface.hpp>
 #include <libGBP2/OpticalElements/FreeSpace.hpp>
 #include <libGBP2/OpticalElements/OpticalElement.hpp>
+#include <libGBP2/OpticalElements/SphericalRefractiveSurface.hpp>
 #include <libGBP2/OpticalElements/ThinLens.hpp>
 
 TEST_CASE("OpticalElement")
@@ -167,6 +169,58 @@ TEST_CASE("Optical Element Transformations")
       CHECK(beam.getBeamWidth().get<OneOverESquaredRadius>().value() == Approx(20e-4));
       CHECK(beam.getBeamWidth(1.5 * i::m).get<OneOverESquaredRadius>().value() == Approx(1.27005));
       CHECK(beam.getBeamWidth(-1.5 * i::m).get<OneOverESquaredRadius>().value() == Approx(1.27005));
+    }
+
+    SECTION("Flat refractive surface")
+    {
+      FlatRefractiveSurface surface(1.5 * i::dimensionless);
+
+      CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(20e-4));
+      auto div = beam.getBeamDivergence().get<OneOverESquaredHalfAngleDivergence>().value();
+
+      SECTION("No free space")
+      {
+        auto q = beam.getComplexBeamParameter();
+        q      = surface * q;
+        beam.setRefractiveIndex(1.5 * i::dimensionless);
+        beam.setComplexBeamParameter(q);
+
+        CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(20e-4));
+        CHECK(beam.getBeamDivergence().get<OneOverESquaredHalfAngleDivergence>().value() == Approx(div / 1.5));
+        CHECK(beam.getBeamWaistPosition<t::m>().value() == Approx(1.5 * 1.5));
+      }
+      SECTION("with free space")
+      {
+        FreeSpace free_space(1.5 * 1.5 * i::m);
+
+        SECTION("With shifted reference frame")
+        {
+          auto q = beam.getComplexBeamParameter();
+          q      = free_space * surface * q;
+          beam.setRefractiveIndex(beam.getRefractiveIndex() * surface.getRefractiveIndexScale());
+          beam.setComplexBeamParameter(q);
+
+          CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(20e-4));
+          CHECK(beam.getBeamWidth().get<OneOverESquaredRadius>().value() == Approx(20e-4));
+          CHECK(beam.getBeamDivergence().get<OneOverESquaredHalfAngleDivergence>().value() == Approx(div / 1.5));
+          CHECK(beam.getBeamWaistPosition().value() == Approx(0).scale(1));
+        }
+        SECTION("Without shifted reference frame")
+        {
+          auto q = beam.getComplexBeamParameter();
+          q      = free_space * surface * q;
+          beam.setRefractiveIndex(beam.getRefractiveIndex() * surface.getRefractiveIndexScale());  // this needs to be set BEFORE setting q
+          beam.setComplexBeamParameter(q);
+          beam.setBeamWaistPosition(beam.getBeamWaistPosition<t::m>() + free_space.getDisplacement<t::m>());  // this needs to be set AFTER settign Q
+                                                                                                              // it will move the reference position *back* to where it was
+                                                                                                              // it is kind of pointless here, but we might want to do it for a thick lens,
+                                                                                                              // or multiple surfaces separated by some distance.
+
+          CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(20e-4));
+          CHECK(beam.getBeamDivergence().get<OneOverESquaredHalfAngleDivergence>().value() == Approx(div / 1.5));
+          CHECK(beam.getBeamWaistPosition<t::m>().value() == Approx(1.5 * 1.5));
+        }
+      }
     }
   }
 
