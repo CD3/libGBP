@@ -1,5 +1,6 @@
 #include "catch.hpp"
 
+#include <complex>
 #include <iostream>
 
 #include <BoostUnitDefinitions/Units.hpp>
@@ -281,14 +282,13 @@ TEST_CASE("CircularGaussianLaserBeam")
   CHECK(beam.getRayleighRange<t::mm>().value() == Approx(0.01985 / 2));
 }
 
-/*
 TEST_CASE("Complex Beam Parameter")
 {
   using namespace libGBP2;
   CircularGaussianLaserBeam beam;
 
   beam.setWavelength(633 * i::nm);
-  beam.setBeamWaistWidth(make_width<Conventions::OneOverESquaredRadius>(2 * i::um));
+  beam.setBeamWaistWidth(make_width<OneOverESquaredRadius>(2 * i::um));
   beam.setBeamWaistPosition(100 * i::mm);
 
   SECTION("in default units (cm)")
@@ -314,11 +314,28 @@ TEST_CASE("Complex Beam Parameter")
     beam.setComplexBeamParameter(std::complex<double>{50, 0.00124} * i::mm, 1 * i::cm);
 
     CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(-40));
-    CHECK(beam.getBeamWaistWidth().to<Conventions::OneOverESquaredRadius>().quant<t::mm>().value() == Approx(0.0005));
-    CHECK(beam.getBeamWaistWidth<t::mm>().to<Conventions::OneOverESquaredRadius>().value() == Approx(0.0005));
+    CHECK(beam.getBeamWaistWidth<t::mm>().get<OneOverESquaredRadius>().value() == Approx(0.0005));
   }
 }
-*/
+
+TEST_CASE("Embedded Beam")
+{
+  using namespace libGBP2;
+
+  CircularGaussianLaserBeam beam;
+  beam.setWavelength(633 * i::nm);
+  beam.setBeamWaistPosition(100 * i::mm);
+  beam.setBeamWaistWidth(make_width<OneOverESquaredRadius>(2 * i::um));
+  beam.adjustBeamDivergence(make_divergence<OneOverESquaredHalfAngleDivergence>(4 * 100.74508 * i::mrad));
+
+  double M2 = beam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngleDivergence>().value() / beam.getDiffractionLimitedBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngleDivergence>().value();
+
+  auto ebeam = beam.getEmbeddedBeam();
+
+  CHECK(M2 == Approx(4));
+  CHECK(ebeam.getBeamWaistWidth<t::um>().get<OneOverESquaredRadius>().value() == Approx(2 / 2));
+  CHECK(ebeam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngleDivergence>().value() == Approx(2 * 100.74508));
+}
 
 TEST_CASE("conventions interface")
 {
@@ -343,12 +360,21 @@ TEST_CASE("conventions interface")
   CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(0.5));
   CHECK((beam.getBeamWaistWidth().get<OneOverESquaredRadius, t::m>().value() == Approx(0.005)));
   CHECK((beam.getBeamWaistWidth<t::m>().get<OneOverESquaredRadius>().value() == Approx(0.005)));
+}
 
-  /* beam.getWidth().getOneOverESquaredDiameter_>.value() */
-  /* beam.getWidth().getOneOverESquaredDiameter_,t::mm>.value() */
-  /* beam.getWidth<t::mm>().getOneOverESquaredDiameter_>.value() */
+TEST_CASE("Complex Numbers")
+{
+  std::complex<double> a(1, 1);
 
-  /* beam.setWavelength(633 * i::nm); */
-  /* beam.setBeamWaistWidth(make_width<one_over_e_squared_radius>(2 * i::um)); */
-  /* beam.setBeamWaistPosition(100 * i::mm); */
+  auto b = conj(a) / norm(a);
+  CHECK(b.real() == Approx(0.5));
+  CHECK(b.imag() == Approx(-0.5));
+
+  auto i = std::complex<double>(0, 1);
+
+  a = 2. + 6. * i;
+
+  b = conj(a) / norm(a);
+  CHECK(b.real() == Approx(1. / 20));
+  CHECK(b.imag() == Approx(-3. / 20));
 }

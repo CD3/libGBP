@@ -126,15 +126,50 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
   }
   /**
    * Set the complex beam parameter at a given z position a_z.
+   *
+   * The complex beam parameter at a single position does not uniquely determine
+   * a laser beam. There are multiple beams that all have the same q-parameter at a given position.
+   *
+   * So this function assumes that:
+   *
+   * 1. the beam width at the given position a_z should be the same before and after the q-parameter is set.
+   * 2. the beam quality factor of the laser is fixed.
+   *
+   * We'll see if this is actually useful...
+   *
    */
   template<typename U1, typename U2>
   void setComplexBeamParameter(quantity<U1, std::complex<double>> a_q, quantity<U2> a_z)
   {
     // real part of q is z - z0, so z0 = z - Re{q}
     this->setBeamWaistPosition(quantity<U1>(a_z) - quantity<U1>::from_value(a_q.value().real()));
-    // imag part of q is z_R, which is \pi \omega_0^2 / \lambda, so \omega_0 = sqrt(\lambda Im{q} / \pi)
+    // imag part of q is z_R, which is \pi \omega_0^2 / M^2 \lambda, so \omega_0 = sqrt(M^2\lambda Im{q} / \pi)
     // NOTE: for Gaussian beam, \omega == second moment width
-    this->setSecondMomentBeamWaistWidth(boost::units::root<2>(this->getWavelength() * quantity<U1>::from_value(a_q.value().imag()) / M_PI));
+    this->setSecondMomentBeamWaistWidth(boost::units::root<2>(this->getBeamQualityFactor<t::dimensionless>().value() * this->getWavelength() * quantity<U1>::from_value(a_q.value().imag()) / M_PI));
+  }
+  template<typename U>
+  void setComplexBeamParameter(quantity<U, std::complex<double>> a_q)
+  {
+    this->setComplexBeamParameter(a_q, 0 * i::cm);
+  }
+
+  /**
+   * Return the "embedded" Gaussian beam for this beam.
+   *
+   * The embedded beam is an ideal Gaussian beam that propagates similar to the
+   * real beam, and can be used with ABCD transfer matrices to propagate the real
+   * beam through an optical system.
+   *
+   * For real laser beams, the embedded beam has a beam waist and divergence that are M times smaller
+   * than the real beam.
+   */
+  inline CircularGaussianLaserBeam
+  getEmbeddedBeam() const
+  {
+    CircularGaussianLaserBeam embedded(*this);
+    embedded.setSecondMomentBeamWaistWidth(this->getSecondMomentBeamWaistWidth() / boost::units::root<2>(this->getBeamQualityFactor()));
+    embedded.setBeamQualityFactor(quantity<t::dimensionless>::from_value(1));
+    return embedded;
   }
 };
 
