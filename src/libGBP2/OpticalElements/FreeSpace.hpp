@@ -19,13 +19,14 @@ class FreeSpace : public OpticalElement<LengthUnit>
   template<typename U>
   void setLength(quantity<U> a_length)
   {
+    this->setDisplacement(a_length);
     this->setB(a_length);
   }
   template<typename U = L>
   quantity<U>
   getLength() const
   {
-    return this->template getB<U>();
+    return this->template getDisplacement<U>();
   }
 };
 }  // namespace libGBP2
