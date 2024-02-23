@@ -9,13 +9,13 @@ template<typename LengthUnit = t::cm>
 class FlatRefractiveSurface : public OpticalElement<LengthUnit>
 {
  public:
+  using L                 = LengthUnit;
   FlatRefractiveSurface() = default;
   template<typename U>
   FlatRefractiveSurface(quantity<U> a_scale)
   {
     this->setRefractiveIndexScaleFactor(a_scale);
   }
-  using L = LengthUnit;
   template<typename U>
   void setRefractiveIndexScaleFactor(quantity<U> a_scale)
   {
