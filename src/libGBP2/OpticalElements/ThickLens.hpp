@@ -26,9 +26,10 @@ class ThickLens : public OpticalElement<LengthUnit>
     SphericalRefractiveSurface<L> front(a_refractive_index_scale, a_front_radius_of_curvature);
     FreeSpace                     middle(a_thickness);
     SphericalRefractiveSurface<L> back(1 / a_refractive_index_scale, a_back_radius_of_curvature);
-    this->setDisplacement(a_thickness);
 
-    static_cast<OpticalElement<L>>(*this) = back * middle * front;
+    // use the base class assignment operator to copy data
+    // note that we have to cast *this to a reference
+    static_cast<OpticalElement<L> &>(*this) = static_cast<OpticalElement<L>>(back * middle * front);
   }
 };
 }  // namespace libGBP2
