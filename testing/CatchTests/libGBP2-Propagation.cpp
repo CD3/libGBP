@@ -1,5 +1,7 @@
 #include "catch.hpp"
 
+#include <BoostUnitDefinitions/Units.hpp>
+
 #include <libGBP2/CircularGaussianLaserBeam.hpp>
 #include <libGBP2/CircularLaserBeam.hpp>
 #include <libGBP2/Conventions.hpp>
@@ -8,6 +10,7 @@
 #include <libGBP2/OpticalElements/FreeSpace.hpp>
 #include <libGBP2/OpticalElements/OpticalElement.hpp>
 #include <libGBP2/OpticalElements/SphericalRefractiveSurface.hpp>
+#include <libGBP2/OpticalElements/ThickLens.hpp>
 #include <libGBP2/OpticalElements/ThinLens.hpp>
 
 TEST_CASE("OpticalElement")
@@ -260,6 +263,51 @@ TEST_CASE("Optical Element Transformations")
       CHECK(beam.getBeamWaistWidth<t::um>().get<OneOverESquaredDiameter>().value() == Approx(16.93).epsilon(0.01));
       CHECK(beam.getBeamWidth<t::um>().get<OneOverESquaredDiameter>().value() == Approx(16.93).epsilon(0.01));
       CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(0).scale(1).epsilon(0.005));
+    }
+
+    SECTION("Spherical refractive surface")
+    {
+      SphericalRefractiveSurface front_surface(1.5 * i::dimensionless, 10 * i::inch);
+      SphericalRefractiveSurface back_surface(1 / 1.5 * i::dimensionless, -10 * i::inch);
+
+      auto element = back_surface * front_surface;
+      auto mat     = element.getRayTransferMatrix<t::inch>();
+
+      CHECK(mat(0, 0) == Approx(1));
+      CHECK(mat(0, 1) == Approx(0).scale(1));
+      CHECK(mat(1, 0) == Approx(-0.1));
+      CHECK(mat(1, 1) == Approx(1));
+
+      front_surface.setRefractiveIndexScaleFactorAndRadiusOfCurvature(1.5 * i::dimensionless, 10 * i::cm);  // f = 30 cm
+      auto q = beam.getComplexBeamParameter(1.5 * i::m);
+      q      = front_surface * q;
+      beam.setRefractiveIndex(beam.getRefractiveIndex() * front_surface.getRefractiveIndexScale());  // this needs to be set BEFORE setting q
+      beam.setComplexBeamParameter(q, 1.5 * i::m);
+
+      CHECK(beam.getBeamWaistPosition<t::cm>().value() == Approx(150 + 30).epsilon(0.001));
+    }
+
+    SECTION("Thick lens")
+    {
+      ThickLens thick_lens(1.5 * i::dimensionless, 10 * i::cm, 0 * i::mm, 100 * i::mm);
+      ThinLens  thin_lens(10 * i::cm);
+
+      auto mat_thick = thick_lens.getRayTransferMatrix();
+      auto mat_thin  = thin_lens.getRayTransferMatrix();
+
+      CHECK(mat_thick(0, 0) == Approx(mat_thick(0, 0)));
+      CHECK(mat_thick(0, 1) == Approx(mat_thick(0, 1)).scale(1));
+      CHECK(mat_thick(1, 0) == Approx(mat_thick(1, 0)));
+      CHECK(mat_thick(1, 1) == Approx(mat_thick(1, 1)));
+
+      CHECK(thin_lens.getRefractiveIndexScale().value() == Approx(1));
+      CHECK(thick_lens.getRefractiveIndexScale().value() == Approx(1));
+
+      CHECK(thin_lens.getDisplacement().value() == Approx(0).scale(1));
+      CHECK(thick_lens.getDisplacement().value() == Approx(0).scale(1));
+
+      thick_lens.setLensParameters(1.5 * i::dimensionless, 10 * i::cm, 1 * i::in, 100 * i::mm);
+      CHECK(thick_lens.getDisplacement().value() == Approx(2.54));
     }
   }
 }
