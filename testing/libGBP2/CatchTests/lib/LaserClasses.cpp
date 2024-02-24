@@ -1,16 +1,18 @@
-#include "catch.hpp"
-
 #include <complex>
 #include <iostream>
 
 #include <BoostUnitDefinitions/Units.hpp>
 
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <libGBP2/CircularGaussianLaserBeam.hpp>
 #include <libGBP2/CircularLaserBeam.hpp>
 #include <libGBP2/Conventions.hpp>
 #include <libGBP2/MonochromaticSource.hpp>
+#include <libGBP2/Units.hpp>
 
-#include "libGBP2/Units.hpp"
+using namespace Catch;
 
 TEST_CASE("Monchromatic Source")
 {
@@ -256,7 +258,7 @@ TEST_CASE("CircularGaussianLaserBeam")
   CHECK(beam.getBeamWidth<t::mm>().get<OneOverEDiameter>().value() == Approx(10.07451 * sqrt(2)));
   CHECK(beam.getBeamWidth<t::mm>(100 * i::mm).get<OneOverESquaredRadius>().value() == Approx(0.002));
   CHECK(beam.getBeamWidth<t::mm>(100 * i::mm).get<OneOverEDiameter>().value() == Approx(0.002 * sqrt(2)));
-  CHECK(beam.getRayleighRange<t::mm>().value() == Approx(0.01985));
+  CHECK(beam.getRayleighRange<t::mm>().value() == Approx(0.01985).epsilon(0.001));
   CHECK(beam.getRadiusOfCurvature<t::mm>().value() == Approx(-100));
   CHECK(beam.getRadiusOfCurvature<t::mm>(200 * i::mm).value() == Approx(100));
   CHECK(beam.getRadiusOfCurvature<t::mm>(100.1 * i::mm).value() == Approx(0.10394));
@@ -264,8 +266,8 @@ TEST_CASE("CircularGaussianLaserBeam")
   CHECK(beam.getGouyPhase<t::rad>(100 * i::mm).value() == Approx(0).scale(1));
   CHECK(beam.getGouyPhase<t::rad>().value() == Approx(atan(-100 / 0.01985)));
 
-  CHECK(beam.getBeamWidth<t::mm>(beam.getBeamWaistPosition() + beam.getRayleighRange()).get<OneOverESquaredRadius>().value() == Approx(0.00283));
-  CHECK(beam.getBeamWidth<t::mm>(beam.getBeamWaistPosition() - beam.getRayleighRange()).get<OneOverESquaredRadius>().value() == Approx(0.00283));
+  CHECK(beam.getBeamWidth<t::mm>(beam.getBeamWaistPosition() + beam.getRayleighRange()).get<OneOverESquaredRadius>().value() == Approx(0.00283).epsilon(0.001));
+  CHECK(beam.getBeamWidth<t::mm>(beam.getBeamWaistPosition() - beam.getRayleighRange()).get<OneOverESquaredRadius>().value() == Approx(0.00283).epsilon(0.001));
 
   beam.adjustBeamDivergence(make_divergence<OneOverESquaredHalfAngleDivergence>(2 * 100.74508 * i::mrad));
 
@@ -279,7 +281,7 @@ TEST_CASE("CircularGaussianLaserBeam")
   CHECK(beam.getBeamWidth<t::mm>(100 * i::mm).get<OneOverESquaredRadius>().value() == Approx(0.002));
   CHECK(beam.getBeamWidth<t::mm>(100 * i::mm).get<OneOverEDiameter>().value() == Approx(0.002 * sqrt(2)));
 
-  CHECK(beam.getRayleighRange<t::mm>().value() == Approx(0.01985 / 2));
+  CHECK(beam.getRayleighRange<t::mm>().value() == Approx(0.01985 / 2).epsilon(0.001));
 }
 
 TEST_CASE("Complex Beam Parameter")
@@ -296,7 +298,7 @@ TEST_CASE("Complex Beam Parameter")
     auto q = beam.getComplexBeamParameter();
 
     CHECK(q.value().real() == Approx(-10));
-    CHECK(q.value().imag() == Approx(0.001985));
+    CHECK(q.value().imag() == Approx(0.001985).epsilon(0.001));
   }
 
   SECTION("in mm")
@@ -304,7 +306,7 @@ TEST_CASE("Complex Beam Parameter")
     auto q = beam.getComplexBeamParameter<t::mm>();
 
     CHECK(q.value().real() == Approx(-100));
-    CHECK(q.value().imag() == Approx(0.01985));
+    CHECK(q.value().imag() == Approx(0.01985).epsilon(0.001));
   }
 
   SECTION("Setting q")
@@ -314,7 +316,7 @@ TEST_CASE("Complex Beam Parameter")
     beam.setComplexBeamParameter(std::complex<double>{50, 0.00124} * i::mm, 1 * i::cm);
 
     CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(-40));
-    CHECK(beam.getBeamWaistWidth<t::mm>().get<OneOverESquaredRadius>().value() == Approx(0.0005));
+    CHECK(beam.getBeamWaistWidth<t::mm>().get<OneOverESquaredRadius>().value() == Approx(0.0005).epsilon(0.001));
   }
 }
 

@@ -12,4 +12,5 @@ build-lib: cmake-configure-lib
 
 run-lib-tests: build-lib
   cd build && ./testBin/Debug/libGBP_CatchTests
+  cd build && ./testing/Debug/libGBP2_lib_UnitTests
 

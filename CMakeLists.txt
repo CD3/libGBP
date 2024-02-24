@@ -146,3 +146,6 @@ if(PYTHON_BINDINGS)
     "${CMAKE_CURRENT_SOURCE_DIR}/swig/libGBP.i")
   swig_link_libraries(py${LIB_NAME} PRIVATE ${LIB_NAME} Python3::Module)
 endif()
+
+
+add_subdirectory(src)

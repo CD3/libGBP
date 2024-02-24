@@ -50,4 +50,22 @@ foreach(testSrc ${applet_SOURCES})
 
 endforeach()
 
+
+
+# libGBP2
+
+find_package(Catch2 REQUIRED)
+file( GLOB_RECURSE SOURCES
+      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+      "./libGBP2/CatchTests/lib/*.cpp" )
+message(STATUS "Detected libGBP2 library Catch-based Unit Test Sources:")
+foreach(testSrc ${unitTest_SOURCES})
+  message(STATUS "  ${testSrc}" )
+endforeach()
+
+add_executable(libGBP2_lib_UnitTests ${SOURCES})
+target_compile_definitions( libGBP2_lib_UnitTests PRIVATE -DTESTING )
+target_link_libraries(libGBP2_lib_UnitTests  libGBP2::libGBP2 Catch2::Catch2WithMain)
+
+
 endif()

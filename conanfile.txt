@@ -1,4 +1,5 @@
 [requires]
+catch2/3.5.2
 boost/1.80.0
 eigen/3.3.7
 cd3-boost-unit-definitions/0.2.2

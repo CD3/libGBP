@@ -1,7 +1,7 @@
-#include "catch.hpp"
 
-#include <BoostUnitDefinitions/Units.hpp>
-
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <libGBP2/CircularGaussianLaserBeam.hpp>
 #include <libGBP2/CircularLaserBeam.hpp>
 #include <libGBP2/Conventions.hpp>
@@ -14,6 +14,7 @@
 #include <libGBP2/OpticalElements/ThinLens.hpp>
 #include <libGBP2/OpticalSystem.hpp>
 
+using namespace Catch;
 TEST_CASE("OpticalElement")
 {
   using namespace libGBP2;
