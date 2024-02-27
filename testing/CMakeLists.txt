@@ -25,7 +25,7 @@ target_include_directories( ${testName} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/inc
 set_target_properties(${testName} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${binDir})
 set_target_properties(${testName} PROPERTIES CXX_STANDARD 17)
 
-add_test(NAME ${testName} 
+add_test(NAME ${testName}
          WORKING_DIRECTORY ${buildDir}
          COMMAND ${binDir}/${testName} )
 
@@ -44,7 +44,7 @@ foreach(testSrc ${applet_SOURCES})
   set_target_properties(${testName} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${binDir})
   set_target_properties(${testName} PROPERTIES CXX_STANDARD 11)
 
-  add_test(NAME ${testName} 
+  add_test(NAME ${testName}
            WORKING_DIRECTORY ${buildDir}
            COMMAND ${binDir}/${testName} )
 
@@ -66,6 +66,19 @@ endforeach()
 add_executable(libGBP2_lib_UnitTests ${SOURCES})
 target_compile_definitions( libGBP2_lib_UnitTests PRIVATE -DTESTING )
 target_link_libraries(libGBP2_lib_UnitTests  libGBP2::libGBP2 Catch2::Catch2WithMain)
+
+
+file( GLOB_RECURSE SOURCES
+      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+      "./libGBP2/CatchTests/message-api/*.cpp" )
+message(STATUS "Detected libGBP2 message-api Catch-based Unit Test Sources:")
+foreach(testSrc ${unitTest_SOURCES})
+  message(STATUS "  ${testSrc}" )
+endforeach()
+
+add_executable(libGBP2_message_api_UnitTests ${SOURCES})
+target_compile_definitions( libGBP2_message_api_UnitTests PRIVATE -DTESTING )
+target_link_libraries(libGBP2_message_api_UnitTests  libGBP2::libGBP2-message-api Catch2::Catch2WithMain)
 
 
 endif()

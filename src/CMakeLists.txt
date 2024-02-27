@@ -25,3 +25,6 @@ target_sources(
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libGBP2/OpticalElements/ThinLens.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libGBP2/OpticalElements/FreeSpace.hpp>
   )
+
+
+add_subdirectory(libGBP2/MessageAPI)

@@ -1,0 +1,98 @@
+syntax = "proto3";
+package libgbp2_message_api;
+
+/**
+@brief A physical quantity with a numerical value and unit.
+*/
+message Quantity {
+  double value = 1;  // numerical value
+  string unit = 2;   // unit string
+}
+
+message ReturnStatus {
+  optional string error_message = 1;
+  optional string info_message = 2;
+}
+
+enum BeamWidthType {
+  BEAM_WIDTH_TYPE_UNSPECIFIED = 0;
+  BEAM_WIDTH_TYPE_ONE_OVER_E_DIAMETER = 1;
+  BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_DIAMETER = 2;
+  BEAM_WIDTH_TYPE_FWHM_DIAMETER = 3;
+  BEAM_WIDTH_TYPE_ONE_OVER_E_RADIUS = 4;
+  BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_RADIUS = 5;
+  BEAM_WIDTH_TYPE_FWHM_RADIUS = 6;
+}
+
+enum BeamDivergenceType {
+  BEAM_DIVERGENCE_TYPE_UNSPECIFIED = 0;
+  BEAM_DIVERGENCE_TYPE_ONE_OVER_E_FULL_ANGLE = 1;
+  BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_FULL_ANGLE = 2;
+  BEAM_DIVERGENCE_TYPE_FWHM_FULL_ANGLE = 3;
+  BEAM_DIVERGENCE_TYPE_ONE_OVER_E_HALF_ANGLE = 4;
+  BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_HALF_ANGLE = 5;
+  BEAM_DIVERGENCE_TYPE_FWHM_HALF_ANGLE = 6;
+}
+
+message CircularGaussianBeam {
+  Quantity wavelength = 1;
+  Quantity beam_waist_width = 2;
+  BeamWidthType beam_waist_width_type = 3;
+  Quantity beam_waist_position = 4;
+  optional Quantity beam_quality_factor = 5;
+  optional Quantity beam_divergence = 6;
+}
+
+message ThinLens {
+  Quantity focal_length = 1;
+}
+message FlatRefractiveSurface {
+  Quantity refractive_index = 1;  // index of new material
+}
+
+message SphericalRefractiveSurface {
+  Quantity refractive_index = 1;  // index of new material
+  Quantity radius_of_curvature = 2;
+}
+
+message CustomRayTransferMatrix {
+  optional Quantity A = 1;
+  optional Quantity B = 2;
+  optional Quantity C = 3;
+  optional Quantity D = 4;
+  optional Quantity refractive_index_scale = 5;
+  optional Quantity displacement = 6;
+}
+
+message OpticalElement {
+  oneof element {
+    ThinLens lens = 1;
+    FlatRefractiveSurface flat_refractive_surface = 2;
+    SphericalRefractiveSurface spherical_refractive_surface = 3;
+  }
+}
+
+/**
+ * An element in a system has a position with an element
+ */
+message OpticalElementInSystem {
+  Quantity position = 1;
+  OpticalElement elmenet = 2;
+}
+
+/**
+ * An optical system contains multiple optical elements.
+ */
+message OpticalSystem {
+  repeated OpticalElementInSystem elements = 1;
+}
+
+message Propagator_run_Input {
+  CircularGaussianBeam beam = 1;
+  OpticalSystem system = 2;
+  repeated Quantity position = 3;
+}
+
+message Propagator_run_Output {
+  ReturnStatus return_status = 1;
+}

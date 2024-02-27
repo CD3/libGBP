@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../CircularGaussianLaserBeam.hpp"
-#include "../OpticalSystem.hpp"
-#include<string>
+#include <string>
+
+// #include "libgbp2-message-api_export.h"
 
 namespace libGBP2
 {
@@ -14,15 +14,16 @@ namespace libGBP2
 class Propagator
 {
  private:
-  OpticalSystem<t::cm>      m_optical_system;
-  CircularGaussianLaserBeam m_beam;
- public:
+  // using the PImple Pattern
+  struct imp;
+  imp* pImpl;
 
+ public:
   /**
    * Run an propagation analysis based on a configuration
    * given by a serialized protobuf message.
    */
-  std::string run(std::string);
+  std::string run(const std::string&);
 };
 
 }  // namespace libGBP2
