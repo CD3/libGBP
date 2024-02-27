@@ -14,3 +14,5 @@ run-lib-tests: build-lib
   cd build && ./testBin/Debug/libGBP_CatchTests
   cd build && ./testing/Debug/libGBP2_lib_UnitTests
 
+run-api-tests: build-lib
+  cd build && ./testing/Debug/libGBP2_message_api_UnitTests
