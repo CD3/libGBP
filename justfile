@@ -2,6 +2,7 @@ list:
   just --list
 
 install-deps-for-lib:
+  conan export conan/recipes/unitconvert/conanfile.py
   conan install . --build missing -s build_type=Debug
 
 cmake-configure-lib: install-deps-for-lib
