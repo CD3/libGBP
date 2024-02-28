@@ -181,7 +181,7 @@ TEST_CASE("Optical Element Transformations")
       FlatRefractiveSurface surface(1.5 * i::dimensionless);
 
       CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(20e-4));
-      auto div = beam.getBeamDivergence().get<OneOverESquaredHalfAngleDivergence>().value();
+      auto div = beam.getBeamDivergence().get<OneOverESquaredHalfAngle>().value();
 
       SECTION("No free space")
       {
@@ -191,7 +191,7 @@ TEST_CASE("Optical Element Transformations")
         beam.setComplexBeamParameter(q);
 
         CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(20e-4));
-        CHECK(beam.getBeamDivergence().get<OneOverESquaredHalfAngleDivergence>().value() == Approx(div / 1.5));
+        CHECK(beam.getBeamDivergence().get<OneOverESquaredHalfAngle>().value() == Approx(div / 1.5));
         CHECK(beam.getBeamWaistPosition<t::m>().value() == Approx(1.5 * 1.5));
       }
       SECTION("with free space")
@@ -207,7 +207,7 @@ TEST_CASE("Optical Element Transformations")
 
           CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(20e-4));
           CHECK(beam.getBeamWidth().get<OneOverESquaredRadius>().value() == Approx(20e-4));
-          CHECK(beam.getBeamDivergence().get<OneOverESquaredHalfAngleDivergence>().value() == Approx(div / 1.5));
+          CHECK(beam.getBeamDivergence().get<OneOverESquaredHalfAngle>().value() == Approx(div / 1.5));
           CHECK(beam.getBeamWaistPosition().value() == Approx(0).scale(1));
         }
         SECTION("Without shifted reference frame")
@@ -222,7 +222,7 @@ TEST_CASE("Optical Element Transformations")
                                                                                                               // or multiple surfaces separated by some distance.
 
           CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(20e-4));
-          CHECK(beam.getBeamDivergence().get<OneOverESquaredHalfAngleDivergence>().value() == Approx(div / 1.5));
+          CHECK(beam.getBeamDivergence().get<OneOverESquaredHalfAngle>().value() == Approx(div / 1.5));
           CHECK(beam.getBeamWaistPosition<t::m>().value() == Approx(1.5 * 1.5));
         }
       }

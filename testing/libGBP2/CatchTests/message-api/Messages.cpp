@@ -120,49 +120,49 @@ TEST_CASE("Quantity utility methods")
     SECTION("make_beam_divergence - 1/e2 half divergence")
     {
       msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_HALF_ANGLE;
-      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngleDivergence, t::mrad>(val, type);
-      CHECK(w.get<OneOverESquaredHalfAngleDivergence>().value() == Approx(2.3));
+      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
+      CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3));
     }
 
     SECTION("make_beam_divergence - 1/e2 full divergence")
     {
       msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_FULL_ANGLE;
-      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngleDivergence, t::mrad>(val, type);
-      CHECK(w.get<OneOverESquaredHalfAngleDivergence>().value() == Approx(2.3 / 2));
+      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
+      CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 / 2));
     }
 
     SECTION("make_beam_divergence - 1/e half divergence")
     {
       msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_HALF_ANGLE;
-      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngleDivergence, t::mrad>(val, type);
-      CHECK(w.get<OneOverESquaredHalfAngleDivergence>().value() == Approx(2.3 * sqrt(2)));
+      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
+      CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 * sqrt(2)));
     }
 
     SECTION("make_beam_divergence - 1/e full divergence")
     {
       msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_FULL_ANGLE;
-      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngleDivergence, t::mrad>(val, type);
-      CHECK(w.get<OneOverESquaredHalfAngleDivergence>().value() == Approx(2.3 * sqrt(2) / 2));
+      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
+      CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 * sqrt(2) / 2));
     }
 
     SECTION("make_beam_divergence - fwhm half divergence")
     {
       msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_FWHM_HALF_ANGLE;
-      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngleDivergence, t::mrad>(val, type);
-      CHECK(w.get<OneOverESquaredHalfAngleDivergence>().value() == Approx(2.3 * 0.8493218 * 2));
+      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
+      CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 * 0.8493218 * 2));
     }
 
     SECTION("make_beam_divergence - fwhm full divergence")
     {
       msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_FWHM_FULL_ANGLE;
-      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngleDivergence, t::mrad>(val, type);
-      CHECK(w.get<OneOverESquaredHalfAngleDivergence>().value() == Approx(2.3 * 0.8493218));
+      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
+      CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 * 0.8493218));
     }
 
     SECTION("make_beam_divergence - unspecified")
     {
       msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_UNSPECIFIED;
-      CHECK_THROWS(msg::make_beam_divergence<OneOverESquaredHalfAngleDivergence, t::mrad>(val, type));
+      CHECK_THROWS(msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type));
     }
   }
 }

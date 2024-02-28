@@ -34,18 +34,18 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
   template<typename U, typename C>
   void adjustBeamDivergence(GaussianBeamDivergence<C, U> a_div)
   {
-    this->adjustSecondMomentDivergence(a_div.template get<OneOverESquaredHalfAngleDivergence>());
+    this->adjustSecondMomentDivergence(a_div.template get<OneOverESquaredHalfAngle>());
   }
-  template<typename U = t::mrad, typename C = OneOverESquaredHalfAngleDivergence>
+  template<typename U = t::mrad, typename C = OneOverESquaredHalfAngle>
   GaussianBeamDivergence<C, U> getBeamDivergence() const
   {
     // the GaussianBeamDivergence assignemnt constructor will convert to the return type convention
-    return GaussianBeamDivergence<OneOverESquaredHalfAngleDivergence, U>(this->getSecondMomentDivergence());
+    return GaussianBeamDivergence<OneOverESquaredHalfAngle, U>(this->getSecondMomentDivergence());
   }
-  template<typename U = t::mrad, typename C = OneOverESquaredHalfAngleDivergence>
+  template<typename U = t::mrad, typename C = OneOverESquaredHalfAngle>
   GaussianBeamDivergence<C, U> getDiffractionLimitedBeamDivergence() const
   {
-    return GaussianBeamDivergence<OneOverESquaredHalfAngleDivergence, U>(this->getDiffractionLimitedSecondMomentDivergence());
+    return GaussianBeamDivergence<OneOverESquaredHalfAngle, U>(this->getDiffractionLimitedSecondMomentDivergence());
   }
 
   /**

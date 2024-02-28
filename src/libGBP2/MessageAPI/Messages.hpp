@@ -107,22 +107,22 @@ GaussianBeamDivergence<C, U> make_beam_divergence(const msg::Quantity& a_diverge
   GaussianBeamDivergence<C, U> divergence;
   switch(a_type) {
     case msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_HALF_ANGLE:
-      divergence = make_divergence<OneOverESquaredHalfAngleDivergence>(msg::make_quantity<t::mrad>(a_divergence));
+      divergence = make_divergence<OneOverESquaredHalfAngle>(msg::make_quantity<t::mrad>(a_divergence));
       break;
     case msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_FULL_ANGLE:
-      divergence = make_divergence<OneOverESquaredFullAngleDivergence>(msg::make_quantity<t::mrad>(a_divergence));
+      divergence = make_divergence<OneOverESquaredFullAngle>(msg::make_quantity<t::mrad>(a_divergence));
       break;
     case msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_HALF_ANGLE:
-      divergence = make_divergence<OneOverEHalfAngleDivergence>(msg::make_quantity<t::mrad>(a_divergence));
+      divergence = make_divergence<OneOverEHalfAngle>(msg::make_quantity<t::mrad>(a_divergence));
       break;
     case msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_FULL_ANGLE:
-      divergence = make_divergence<OneOverEFullAngleDivergence>(msg::make_quantity<t::mrad>(a_divergence));
+      divergence = make_divergence<OneOverEFullAngle>(msg::make_quantity<t::mrad>(a_divergence));
       break;
     case msg::BEAM_DIVERGENCE_TYPE_FWHM_HALF_ANGLE:
-      divergence = make_divergence<FWHMHalfAngleDivergence>(msg::make_quantity<t::mrad>(a_divergence));
+      divergence = make_divergence<FWHMHalfAngle>(msg::make_quantity<t::mrad>(a_divergence));
       break;
     case msg::BEAM_DIVERGENCE_TYPE_FWHM_FULL_ANGLE:
-      divergence = make_divergence<FWHMFullAngleDivergence>(msg::make_quantity<t::mrad>(a_divergence));
+      divergence = make_divergence<FWHMFullAngle>(msg::make_quantity<t::mrad>(a_divergence));
       break;
     case msg::BEAM_DIVERGENCE_TYPE_UNSPECIFIED:
       throw std::runtime_error("Beam divergence type was not set");

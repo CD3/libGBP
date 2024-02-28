@@ -193,17 +193,17 @@ struct SecondMomentDivergence : public StrongQuantity<t::mrad> {
 };
 struct D4SigmaDivergence : public StrongQuantity<t::mrad> {
 };
-struct OneOverEHalfAngleDivergence : public StrongQuantity<t::mrad> {
+struct OneOverEHalfAngle : public StrongQuantity<t::mrad> {
 };
-struct OneOverESquaredHalfAngleDivergence : public StrongQuantity<t::mrad> {
+struct OneOverESquaredHalfAngle : public StrongQuantity<t::mrad> {
 };
-struct FWHMHalfAngleDivergence : public StrongQuantity<t::mrad> {
+struct FWHMHalfAngle : public StrongQuantity<t::mrad> {
 };
-struct OneOverEFullAngleDivergence : public StrongQuantity<t::mrad> {
+struct OneOverEFullAngle : public StrongQuantity<t::mrad> {
 };
-struct OneOverESquaredFullAngleDivergence : public StrongQuantity<t::mrad> {
+struct OneOverESquaredFullAngle : public StrongQuantity<t::mrad> {
 };
-struct FWHMFullAngleDivergence : public StrongQuantity<t::mrad> {
+struct FWHMFullAngle : public StrongQuantity<t::mrad> {
 };
 
 /**
@@ -217,56 +217,56 @@ struct FWHMFullAngleDivergence : public StrongQuantity<t::mrad> {
  * This function must be specialized for every convention we support.
  */
 template<typename Convention>
-double FromOneOverESquaredHalfAngleDivergenceCF()
+double FromOneOverESquaredHalfAngleCF()
 {
   static_assert(!std::is_same<Convention, Convention>::value, "No conversion factor defined for conversion.");
   return 0;
 }
 
 template<>
-inline double FromOneOverESquaredHalfAngleDivergenceCF<SecondMomentDivergence>()
+inline double FromOneOverESquaredHalfAngleCF<SecondMomentDivergence>()
 {
   return 1;
 }
 template<>
-inline double FromOneOverESquaredHalfAngleDivergenceCF<D4SigmaDivergence>()
+inline double FromOneOverESquaredHalfAngleCF<D4SigmaDivergence>()
 {
   return 2;
 }
 
 template<>
-inline double FromOneOverESquaredHalfAngleDivergenceCF<OneOverESquaredHalfAngleDivergence>()
+inline double FromOneOverESquaredHalfAngleCF<OneOverESquaredHalfAngle>()
 {
   return 1;
 }
 
 template<>
-inline double FromOneOverESquaredHalfAngleDivergenceCF<OneOverESquaredFullAngleDivergence>()
+inline double FromOneOverESquaredHalfAngleCF<OneOverESquaredFullAngle>()
 {
   return 2;
 }
 
 template<>
-inline double FromOneOverESquaredHalfAngleDivergenceCF<OneOverEHalfAngleDivergence>()
+inline double FromOneOverESquaredHalfAngleCF<OneOverEHalfAngle>()
 {
   return Constants::one_over_root_2<double>;
 }
 
 template<>
-inline double FromOneOverESquaredHalfAngleDivergenceCF<OneOverEFullAngleDivergence>()
+inline double FromOneOverESquaredHalfAngleCF<OneOverEFullAngle>()
 {
   return Constants::root_2<double>;
 }
 
 template<>
-inline double FromOneOverESquaredHalfAngleDivergenceCF<FWHMHalfAngleDivergence>()
+inline double FromOneOverESquaredHalfAngleCF<FWHMHalfAngle>()
 {
   static double cf = Constants::root_ln_2<double> / Constants::root_2<double>;
   return cf;
 }
 
 template<>
-inline double FromOneOverESquaredHalfAngleDivergenceCF<FWHMFullAngleDivergence>()
+inline double FromOneOverESquaredHalfAngleCF<FWHMFullAngle>()
 {
   static double cf = Constants::root_ln_2<double> * Constants::root_2<double>;
   return cf;
@@ -286,7 +286,7 @@ double BeamDivergenceConversionFactor()
   // C2 = factor_2 \omega
   //
   // C2 = factor_2 (C1 / factor_1) = (factor_2/factor_1) C1
-  return FromOneOverESquaredHalfAngleDivergenceCF<C2>() / FromOneOverESquaredHalfAngleDivergenceCF<C1>();
+  return FromOneOverESquaredHalfAngleCF<C2>() / FromOneOverESquaredHalfAngleCF<C1>();
 }
 
 /**
@@ -360,12 +360,12 @@ GaussianBeamWidth<C, U> make_width(quantity<U> a_width)
  *
  * GaussianBeamDivergence div = my_laser.getBeamDivergence();
  *
- * quantity<t::mrad> D = div.get<OneOverEFullAngleDivergence>(); // get the 1/e full angle div
+ * quantity<t::mrad> D = div.get<OneOverEFullAngle>(); // get the 1/e full angle div
  *
  * This keeps us from having to provide separate function calls for every divergence.
  * i.e.
- * quantity<t::mrad> D = my_laser.getOneOverEFullAngleDivergence();
- * quantity<t::mrad> omega = my_laser.getOneOverESquaredHalfAngleDivergence();
+ * quantity<t::mrad> D = my_laser.getOneOverEFullAngle();
+ * quantity<t::mrad> omega = my_laser.getOneOverESquaredHalfAngle();
  * ...etc...
  */
 template<typename C, typename U>

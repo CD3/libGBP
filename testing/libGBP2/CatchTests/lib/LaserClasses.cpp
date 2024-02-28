@@ -184,19 +184,19 @@ TEST_CASE("Convention Conversions")
         Approx(1)));
     CHECK((BeamDivergenceConversionFactor<
                D4SigmaDivergence,
-               OneOverESquaredHalfAngleDivergence>() ==
+               OneOverESquaredHalfAngle>() ==
            Approx(0.5)));
     CHECK((BeamDivergenceConversionFactor<
-               FWHMFullAngleDivergence,
-               OneOverESquaredHalfAngleDivergence>() ==
+               FWHMFullAngle,
+               OneOverESquaredHalfAngle>() ==
            Approx(0.8493281)));
     CHECK(
         (BeamDivergenceConversionFactor<
-             OneOverESquaredHalfAngleDivergence,
-             FWHMFullAngleDivergence>() == Approx(1 / 0.8493281)));
+             OneOverESquaredHalfAngle,
+             FWHMFullAngle>() == Approx(1 / 0.8493281)));
     CHECK((BeamDivergenceConversionFactor<
-               OneOverEFullAngleDivergence,
-               FWHMFullAngleDivergence>() ==
+               OneOverEFullAngle,
+               FWHMFullAngle>() ==
            Approx(0.8325546111576977)));
   }
 
@@ -228,16 +228,16 @@ TEST_CASE("Convention Conversions")
 
   SECTION("GaussianBeamDivergence")
   {
-    GaussianBeamDivergence<OneOverEFullAngleDivergence, t::mrad> div = 2 * i::mrad;
+    GaussianBeamDivergence<OneOverEFullAngle, t::mrad> div = 2 * i::mrad;
 
-    CHECK(div.get<OneOverEHalfAngleDivergence>().value() ==
+    CHECK(div.get<OneOverEHalfAngle>().value() ==
           Approx(1));
 
-    div = make_divergence<OneOverEFullAngleDivergence>(4 * i::mrad);
-    CHECK(div.get<OneOverEHalfAngleDivergence>().value() == Approx(2));
-    CHECK((div.get<OneOverEHalfAngleDivergence, t::rad>().value() == Approx(2e-3)));
+    div = make_divergence<OneOverEFullAngle>(4 * i::mrad);
+    CHECK(div.get<OneOverEHalfAngle>().value() == Approx(2));
+    CHECK((div.get<OneOverEHalfAngle, t::rad>().value() == Approx(2e-3)));
 
-    auto theta_fwhm = div.get<FWHMFullAngleDivergence>();
+    auto theta_fwhm = div.get<FWHMFullAngle>();
     CHECK(theta_fwhm.value() == Approx(sqrt(log(2)) * 4));
   }
 }
@@ -251,8 +251,8 @@ TEST_CASE("CircularGaussianLaserBeam")
   beam.setBeamWaistWidth(make_width<OneOverESquaredRadius>(2 * i::um));
   beam.setBeamWaistPosition(100 * i::mm);
 
-  CHECK(beam.getDiffractionLimitedBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngleDivergence>().value() == Approx(100.74508));
-  CHECK(beam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngleDivergence>().value() == Approx(100.74508));
+  CHECK(beam.getDiffractionLimitedBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(100.74508));
+  CHECK(beam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(100.74508));
   CHECK(beam.getBeamQualityFactor().value() == Approx(1));
   CHECK(beam.getBeamWidth<t::mm>().get<OneOverESquaredRadius>().value() == Approx(10.07451));
   CHECK(beam.getBeamWidth<t::mm>().get<OneOverEDiameter>().value() == Approx(10.07451 * sqrt(2)));
@@ -269,10 +269,10 @@ TEST_CASE("CircularGaussianLaserBeam")
   CHECK(beam.getBeamWidth<t::mm>(beam.getBeamWaistPosition() + beam.getRayleighRange()).get<OneOverESquaredRadius>().value() == Approx(0.00283).epsilon(0.001));
   CHECK(beam.getBeamWidth<t::mm>(beam.getBeamWaistPosition() - beam.getRayleighRange()).get<OneOverESquaredRadius>().value() == Approx(0.00283).epsilon(0.001));
 
-  beam.adjustBeamDivergence(make_divergence<OneOverESquaredHalfAngleDivergence>(2 * 100.74508 * i::mrad));
+  beam.adjustBeamDivergence(make_divergence<OneOverESquaredHalfAngle>(2 * 100.74508 * i::mrad));
 
-  CHECK(beam.getDiffractionLimitedBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngleDivergence>().value() == Approx(100.74508));
-  CHECK(beam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngleDivergence>().value() == Approx(2 * 100.74508));
+  CHECK(beam.getDiffractionLimitedBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(100.74508));
+  CHECK(beam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(2 * 100.74508));
   CHECK(beam.getBeamQualityFactor().value() == Approx(2));
   CHECK(beam.getBeamWaistWidth<t::mm>().get<OneOverESquaredRadius>().value() == Approx(0.002));
 
@@ -328,15 +328,15 @@ TEST_CASE("Embedded Beam")
   beam.setWavelength(633 * i::nm);
   beam.setBeamWaistPosition(100 * i::mm);
   beam.setBeamWaistWidth(make_width<OneOverESquaredRadius>(2 * i::um));
-  beam.adjustBeamDivergence(make_divergence<OneOverESquaredHalfAngleDivergence>(4 * 100.74508 * i::mrad));
+  beam.adjustBeamDivergence(make_divergence<OneOverESquaredHalfAngle>(4 * 100.74508 * i::mrad));
 
-  double M2 = beam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngleDivergence>().value() / beam.getDiffractionLimitedBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngleDivergence>().value();
+  double M2 = beam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() / beam.getDiffractionLimitedBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value();
 
   auto ebeam = beam.getEmbeddedBeam();
 
   CHECK(M2 == Approx(4));
   CHECK(ebeam.getBeamWaistWidth<t::um>().get<OneOverESquaredRadius>().value() == Approx(2 / 2));
-  CHECK(ebeam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngleDivergence>().value() == Approx(2 * 100.74508));
+  CHECK(ebeam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(2 * 100.74508));
 }
 
 TEST_CASE("conventions interface")
