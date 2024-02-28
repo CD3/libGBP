@@ -48,6 +48,9 @@ serialization_format deserialize_message(const std::string& a_serialized_msg, ME
   return serialization_format::UNKNOWN;
 }
 
+/**
+ * Create a boost::unit::quantity from a msg::Quantity (protobuf message)
+ */
 template<typename U>
 quantity<U> make_quantity(const msg::Quantity& a_Quantity)
 {

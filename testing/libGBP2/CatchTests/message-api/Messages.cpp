@@ -99,6 +99,12 @@ TEST_CASE("Quantity utility methods")
       auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
       CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3 * 0.8493218));
     }
+
+    SECTION("make_beam_width - unspecified")
+    {
+      msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_UNSPECIFIED;
+      CHECK_THROWS(msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type));
+    }
   }
 
   SECTION("divergences")
@@ -151,6 +157,12 @@ TEST_CASE("Quantity utility methods")
       msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_FWHM_FULL_ANGLE;
       auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngleDivergence, t::mrad>(val, type);
       CHECK(w.get<OneOverESquaredHalfAngleDivergence>().value() == Approx(2.3 * 0.8493218));
+    }
+
+    SECTION("make_beam_divergence - unspecified")
+    {
+      msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_UNSPECIFIED;
+      CHECK_THROWS(msg::make_beam_divergence<OneOverESquaredHalfAngleDivergence, t::mrad>(val, type));
     }
   }
 }
