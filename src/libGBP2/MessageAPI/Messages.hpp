@@ -1,7 +1,8 @@
-#include "libGBP2/Conventions.hpp"
 #define UNITCONVERT_NO_BACKWARD_COMPATIBLE_NAMESPACE
 #include <exception>
 #include <string>
+
+#include <boost/lexical_cast.hpp>
 
 #include <UnitConvert.hpp>
 #include <UnitConvert/GlobalUnitRegistry.hpp>
@@ -10,6 +11,7 @@
 #include "../CircularGaussianLaserBeam.hpp"
 #include "../Units.hpp"
 #include "Messages.pb.h"
+#include "libGBP2/Conventions.hpp"
 namespace libGBP2
 {
 namespace msg
@@ -134,6 +136,86 @@ GaussianBeamDivergence<C, U> make_beam_divergence(const msg::Quantity& a_diverge
   return divergence;
 }
 
+template<typename C, typename U>
+msg::Quantity get_beam_width(const GaussianBeamWidth<C, U>& a_width, msg::BeamWidthType a_type)
+{
+  quantity<U>   width;
+  msg::Quantity width_msg;
+
+  switch(a_type) {
+    case msg::BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_RADIUS:
+      width = a_width.template get<OneOverESquaredRadius>();
+      break;
+    case msg::BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_DIAMETER:
+      width = a_width.template get<OneOverESquaredDiameter>();
+      break;
+    case msg::BEAM_WIDTH_TYPE_ONE_OVER_E_RADIUS:
+      width = a_width.template get<OneOverERadius>();
+      break;
+    case msg::BEAM_WIDTH_TYPE_ONE_OVER_E_DIAMETER:
+      width = a_width.template get<OneOverEDiameter>();
+      break;
+    case msg::BEAM_WIDTH_TYPE_FWHM_RADIUS:
+      width = a_width.template get<FWHMRadius>();
+      break;
+    case msg::BEAM_WIDTH_TYPE_FWHM_DIAMETER:
+      width = a_width.template get<FWHMDiameter>();
+      break;
+    case msg::BEAM_WIDTH_TYPE_UNSPECIFIED:
+      throw std::runtime_error("Beam width type was not set");
+      break;
+    default:
+      throw std::runtime_error("Unknown beam width type. Did you add an additional convention to the message without adding it to the library?");
+      break;
+  }
+
+  width_msg << boost::lexical_cast<std::string>(width);
+
+  return width_msg;
+}
+
+template<typename C, typename U>
+msg::Quantity get_beam_divergence(const GaussianBeamDivergence<C, U>& a_divergence, msg::BeamDivergenceType a_type)
+{
+  quantity<U>   divergence;
+  msg::Quantity divergence_msg;
+
+  switch(a_type) {
+    case msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_HALF_ANGLE:
+      divergence = a_divergence.template get<OneOverESquaredHalfAngle>();
+      break;
+    case msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_FULL_ANGLE:
+      divergence = a_divergence.template get<OneOverESquaredFullAngle>();
+      break;
+    case msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_HALF_ANGLE:
+      divergence = a_divergence.template get<OneOverEHalfAngle>();
+      break;
+    case msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_FULL_ANGLE:
+      divergence = a_divergence.template get<OneOverEFullAngle>();
+      break;
+    case msg::BEAM_DIVERGENCE_TYPE_FWHM_HALF_ANGLE:
+      divergence = a_divergence.template get<FWHMHalfAngle>();
+      break;
+    case msg::BEAM_DIVERGENCE_TYPE_FWHM_FULL_ANGLE:
+      divergence = a_divergence.template get<FWHMFullAngle>();
+      break;
+    case msg::BEAM_DIVERGENCE_TYPE_UNSPECIFIED:
+      throw std::runtime_error("Beam divergence type was not set");
+      break;
+    default:
+      throw std::runtime_error("Unknown beam divergence type. Did you add an additional convention to the message without adding it to the library?");
+      break;
+  }
+
+  divergence_msg << boost::lexical_cast<std::string>(divergence);
+
+  return divergence_msg;
+}
+
+void convert(msg::Quantity& a_quantity, std::string a_unit);
+
 }  // namespace msg
 }  // namespace libGBP2
 libgbp2_message_api::Quantity& operator<<(libgbp2_message_api::Quantity& a_quantity, std::string a_qstring);
+libgbp2_message_api::Quantity& operator<<(libgbp2_message_api::Quantity& a_quantity, const libgbp2_message_api::Quantity& a_quantity2);
+std::ostream&                  operator<<(std::ostream& a_os, const libgbp2_message_api::Quantity& a_quantity);

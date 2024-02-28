@@ -1,4 +1,8 @@
 
+#include <sstream>
+
+#include <boost/lexical_cast.hpp>
+
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
@@ -6,6 +10,7 @@
 #include <libGBP2/MessageAPI/Propagator.hpp>
 
 #include "Messages.pb.h"
+#include "libGBP2/Conventions.hpp"
 
 using namespace Catch;
 
@@ -50,119 +55,228 @@ TEST_CASE("Quantity utility methods")
 
   SECTION("widths")
   {
-    val << "23 mm";
-
-    SECTION("make_quantity")
+    SECTION("getting static library beam width type from dynamic protobuf message types")
     {
-      auto w = msg::make_quantity<t::cm>(val);
-      CHECK(w.value() == Approx(2.3));
+      // these test check that we can extract a GaussianBeamWidth<C,U> object from a
+      // msg::BeamWidthType
+      val << "23 mm";
+
+      SECTION("make_quantity")
+      {
+        auto w = msg::make_quantity<t::cm>(val);
+        CHECK(w.value() == Approx(2.3));
+      }
+
+      SECTION("make_beam_width - 1/e2 radius")
+      {
+        msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_RADIUS;
+        auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
+        CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3));
+      }
+
+      SECTION("make_beam_width - 1/e2 diameter")
+      {
+        msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_DIAMETER;
+        auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
+        CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3 / 2));
+      }
+
+      SECTION("make_beam_width - 1/e radius")
+      {
+        msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_ONE_OVER_E_RADIUS;
+        auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
+        CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3 * sqrt(2)));
+      }
+
+      SECTION("make_beam_width - 1/e diameter")
+      {
+        msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_ONE_OVER_E_DIAMETER;
+        auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
+        CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3 * sqrt(2) / 2));
+      }
+
+      SECTION("make_beam_width - fwhm radius")
+      {
+        msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_FWHM_RADIUS;
+        auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
+        CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3 * 0.8493218 * 2));
+      }
+
+      SECTION("make_beam_width - fwhm diameter")
+      {
+        msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_FWHM_DIAMETER;
+        auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
+        CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3 * 0.8493218));
+      }
+
+      SECTION("make_beam_width - unspecified")
+      {
+        msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_UNSPECIFIED;
+        CHECK_THROWS(msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type));
+      }
     }
-
-    SECTION("make_beam_width - 1/e2 radius")
+    SECTION("getting dynamic protobuf message object from static library beam width object")
     {
-      msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_RADIUS;
-      auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
-      CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3));
-    }
+      GaussianBeamWidth<OneOverESquaredRadius, t::cm> width = 25 * i::mm;
 
-    SECTION("make_beam_width - 1/e2 diameter")
-    {
-      msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_DIAMETER;
-      auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
-      CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3 / 2));
-    }
+      msg::Quantity width_msg = msg::get_beam_width(width, msg::BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_RADIUS);
 
-    SECTION("make_beam_width - 1/e radius")
-    {
-      msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_ONE_OVER_E_RADIUS;
-      auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
-      CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3 * sqrt(2)));
-    }
+      CHECK(width_msg.value() == Approx(2.5));
+      CHECK(width_msg.unit() == "cm");
 
-    SECTION("make_beam_width - 1/e diameter")
-    {
-      msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_ONE_OVER_E_DIAMETER;
-      auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
-      CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3 * sqrt(2) / 2));
-    }
+      width_msg = msg::get_beam_width(width, msg::BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_DIAMETER);
 
-    SECTION("make_beam_width - fwhm radius")
-    {
-      msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_FWHM_RADIUS;
-      auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
-      CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3 * 0.8493218 * 2));
-    }
+      CHECK(width_msg.value() == Approx(5));
+      CHECK(width_msg.unit() == "cm");
 
-    SECTION("make_beam_width - fwhm diameter")
-    {
-      msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_FWHM_DIAMETER;
-      auto               w    = msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type);
-      CHECK(w.get<OneOverESquaredRadius>().value() == Approx(2.3 * 0.8493218));
-    }
+      width_msg = msg::get_beam_width(width, msg::BEAM_WIDTH_TYPE_ONE_OVER_E_RADIUS);
 
-    SECTION("make_beam_width - unspecified")
-    {
-      msg::BeamWidthType type = msg::BEAM_WIDTH_TYPE_UNSPECIFIED;
-      CHECK_THROWS(msg::make_beam_width<OneOverESquaredRadius, t::cm>(val, type));
+      CHECK(width_msg.value() == Approx(2.5 / sqrt(2)));
+      CHECK(width_msg.unit() == "cm");
+
+      width_msg = msg::get_beam_width(width, msg::BEAM_WIDTH_TYPE_ONE_OVER_E_DIAMETER);
+
+      CHECK(width_msg.value() == Approx(5 / sqrt(2)));
+      CHECK(width_msg.unit() == "cm");
+
+      width_msg = msg::get_beam_width(width, msg::BEAM_WIDTH_TYPE_FWHM_RADIUS);
+
+      CHECK(width_msg.value() == Approx(1.25 / 0.8493218));
+      CHECK(width_msg.unit() == "cm");
+
+      width_msg = msg::get_beam_width(width, msg::BEAM_WIDTH_TYPE_FWHM_DIAMETER);
+
+      CHECK(width_msg.value() == Approx(2.5 / 0.8493218));
+      CHECK(width_msg.unit() == "cm");
     }
   }
 
   SECTION("divergences")
   {
-    val << "0.0023 rad";
-
-    SECTION("make_quantity")
+    SECTION("getting static library beam divergence type from dynamic protobuf message types")
     {
-      auto w = msg::make_quantity<t::rad>(val);
-      CHECK(w.value() == Approx(0.0023));
-    }
+      // these test check that we can extract a GaussianBeamDivergence<C,U> object from a
+      // msg::BeamDivergenceType
+      val << "0.0023 rad";
 
-    SECTION("make_beam_divergence - 1/e2 half divergence")
-    {
-      msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_HALF_ANGLE;
-      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
-      CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3));
-    }
+      SECTION("make_quantity")
+      {
+        auto w = msg::make_quantity<t::rad>(val);
+        CHECK(w.value() == Approx(0.0023));
+      }
 
-    SECTION("make_beam_divergence - 1/e2 full divergence")
-    {
-      msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_FULL_ANGLE;
-      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
-      CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 / 2));
-    }
+      SECTION("make_beam_divergence - 1/e2 half divergence")
+      {
+        msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_HALF_ANGLE;
+        auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
+        CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3));
+      }
 
-    SECTION("make_beam_divergence - 1/e half divergence")
-    {
-      msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_HALF_ANGLE;
-      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
-      CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 * sqrt(2)));
-    }
+      SECTION("make_beam_divergence - 1/e2 full divergence")
+      {
+        msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_FULL_ANGLE;
+        auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
+        CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 / 2));
+      }
 
-    SECTION("make_beam_divergence - 1/e full divergence")
-    {
-      msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_FULL_ANGLE;
-      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
-      CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 * sqrt(2) / 2));
-    }
+      SECTION("make_beam_divergence - 1/e half divergence")
+      {
+        msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_HALF_ANGLE;
+        auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
+        CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 * sqrt(2)));
+      }
 
-    SECTION("make_beam_divergence - fwhm half divergence")
-    {
-      msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_FWHM_HALF_ANGLE;
-      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
-      CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 * 0.8493218 * 2));
-    }
+      SECTION("make_beam_divergence - 1/e full divergence")
+      {
+        msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_FULL_ANGLE;
+        auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
+        CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 * sqrt(2) / 2));
+      }
 
-    SECTION("make_beam_divergence - fwhm full divergence")
-    {
-      msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_FWHM_FULL_ANGLE;
-      auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
-      CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 * 0.8493218));
-    }
+      SECTION("make_beam_divergence - fwhm half divergence")
+      {
+        msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_FWHM_HALF_ANGLE;
+        auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
+        CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 * 0.8493218 * 2));
+      }
 
-    SECTION("make_beam_divergence - unspecified")
-    {
-      msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_UNSPECIFIED;
-      CHECK_THROWS(msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type));
+      SECTION("make_beam_divergence - fwhm full divergence")
+      {
+        msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_FWHM_FULL_ANGLE;
+        auto                    w    = msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type);
+        CHECK(w.get<OneOverESquaredHalfAngle>().value() == Approx(2.3 * 0.8493218));
+      }
+
+      SECTION("make_beam_divergence - unspecified")
+      {
+        msg::BeamDivergenceType type = msg::BEAM_DIVERGENCE_TYPE_UNSPECIFIED;
+        CHECK_THROWS(msg::make_beam_divergence<OneOverESquaredHalfAngle, t::mrad>(val, type));
+      }
     }
+    SECTION("getting dynamic protobuf message object from static library beam divergence object")
+    {
+      GaussianBeamDivergence<OneOverESquaredHalfAngle, t::crad> divergence = 25 * i::mrad;
+
+      msg::Quantity divergence_msg = msg::get_beam_divergence(divergence, msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_HALF_ANGLE);
+
+      CHECK(divergence_msg.value() == Approx(2.5));
+      CHECK(divergence_msg.unit() == "crad");
+
+      divergence_msg = msg::get_beam_divergence(divergence, msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_SQUARED_FULL_ANGLE);
+
+      CHECK(divergence_msg.value() == Approx(5));
+      CHECK(divergence_msg.unit() == "crad");
+
+      divergence_msg = msg::get_beam_divergence(divergence, msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_HALF_ANGLE);
+
+      CHECK(divergence_msg.value() == Approx(2.5 / sqrt(2)));
+      CHECK(divergence_msg.unit() == "crad");
+
+      divergence_msg = msg::get_beam_divergence(divergence, msg::BEAM_DIVERGENCE_TYPE_ONE_OVER_E_FULL_ANGLE);
+
+      CHECK(divergence_msg.value() == Approx(5 / sqrt(2)));
+      CHECK(divergence_msg.unit() == "crad");
+
+      divergence_msg = msg::get_beam_divergence(divergence, msg::BEAM_DIVERGENCE_TYPE_FWHM_HALF_ANGLE);
+
+      CHECK(divergence_msg.value() == Approx(1.25 / 0.8493218));
+      CHECK(divergence_msg.unit() == "crad");
+
+      divergence_msg = msg::get_beam_divergence(divergence, msg::BEAM_DIVERGENCE_TYPE_FWHM_FULL_ANGLE);
+
+      CHECK(divergence_msg.value() == Approx(2.5 / 0.8493218));
+      CHECK(divergence_msg.unit() == "crad");
+    }
+  }
+
+  SECTION("Convert quantity to string")
+  {
+    quantity<t::cm> L = 12 * i::cm;
+    CHECK(boost::lexical_cast<std::string>(L) == "12 cm");
+  }
+
+  SECTION("Stream Quantity")
+  {
+    std::stringstream out;
+    msg::Quantity     L;
+    L << "2.54 cm";
+
+    out << L;
+
+    CHECK(out.str() == "2.54 cm");
+  }
+
+  SECTION("Converting Quantity")
+  {
+    msg::Quantity L;
+    L << "2.54 cm";
+
+    msg::convert(L, "in");
+
+    std::stringstream out;
+
+    out << L;
+
+    CHECK(out.str() == "1 in");
   }
 }

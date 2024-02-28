@@ -41,6 +41,7 @@ message CircularGaussianBeam {
   Quantity beam_waist_position = 4;
   optional Quantity beam_quality_factor = 5;
   optional Quantity beam_divergence = 6;
+  optional BeamDivergenceType beam_divergence_type = 7;
 }
 
 message ThinLens {
@@ -91,8 +92,11 @@ message Propagator_run_Input {
   CircularGaussianBeam beam = 1;
   OpticalSystem system = 2;
   repeated Quantity position = 3;
+  optional BeamWidthType output_beam_width_type = 4;
+  optional string output_beam_width_unit = 5;
 }
 
 message Propagator_run_Output {
   ReturnStatus return_status = 1;
+  repeated Quantity beam_width = 2;
 }
