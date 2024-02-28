@@ -1,4 +1,5 @@
 find_package(protobuf REQUIRED)
+find_package(UnitConvert REQUIRED)
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS Messages.proto)
 
@@ -24,6 +25,6 @@ target_sources(libGBP2-message-api PRIVATE Propagator.cpp Messages.cpp)
 target_include_directories(
   libGBP2-message-api PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
                              $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-target_link_libraries( libGBP2-message-api PUBLIC libGBP2 libGBP2-protobuf)
+                     target_link_libraries( libGBP2-message-api PUBLIC libGBP2 libGBP2-protobuf UnitConvert::UnitConvert)
 
 

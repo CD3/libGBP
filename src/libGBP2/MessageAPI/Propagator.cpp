@@ -1,18 +1,26 @@
-#include "libGBP2/MessageAPI/Propagator.hpp"
-
+#include "libGBP2/Conventions.hpp"
+#define UNITCONVERT_NO_BACKWARD_COMPATIBLE_NAMESPACE
 #include <iostream>
+
+#include <UnitConvert.hpp>
+#include <UnitConvert/GlobalUnitRegistry.hpp>
 
 #include "../CircularGaussianLaserBeam.hpp"
 #include "../OpticalSystem.hpp"
 #include "./Messages.hpp"
 #include "Messages.pb.h"
+#include "libGBP2/MessageAPI/Propagator.hpp"
 
 namespace libGBP2
 {
 struct Propagator::imp {
   CircularGaussianLaserBeam build_laser(const msg::CircularGaussianBeam& a_laser_msg) const
   {
+    auto&                     ureg = UnitConvert::getGlobalUnitRegistry();
     CircularGaussianLaserBeam beam;
+    beam.setWavelength(msg::make_quantity<t::cm>(a_laser_msg.wavelength()));
+    beam.setBeamWaistPosition(msg::make_quantity<t::cm>(a_laser_msg.beam_waist_position()));
+    /* beam.setBeamWaistWidth(this->get_beam_waist_width(a_laser_msg)); */
 
     return beam;
   }
@@ -25,7 +33,7 @@ struct Propagator::imp {
 /**
  * A macro to write the boiler plate for forwarding a function call to the private implementation.
  * Message deserialization/serialization happens here, the implementation only needs to
- * take the input and output message pointer as arguments.
+ * take the input message reference and output message pointer as arguments.
  *
  * Notes:
  *
