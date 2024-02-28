@@ -4,6 +4,7 @@ boost/1.80.0
 eigen/3.3.7
 cd3-boost-unit-definitions/0.2.2
 protobuf/3.21.12
+unitconvert/0.15 # need to export the recipe in conan/recipes/unitconvert/ for this
 
 [options]
 boost/*:header_only=True
