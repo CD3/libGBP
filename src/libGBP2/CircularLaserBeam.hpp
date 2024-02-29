@@ -1,6 +1,7 @@
 #pragma once
 
 #include "./MonochromaticSource.hpp"
+#include "libGBP2/CircularGaussianLaserBeam.hpp"
 
 namespace libGBP2
 {
@@ -30,6 +31,12 @@ class CircularLaserBeam : public MonochromaticSource
   quantity<t::dimensionless> m_beam_quality_factor = 1 * i::dimensionless;
 
  public:
+  CircularLaserBeam()                                    = default;
+  ~CircularLaserBeam()                                   = default;
+  CircularLaserBeam(const CircularLaserBeam&)            = default;
+  CircularLaserBeam(CircularLaserBeam&&)                 = default;
+  CircularLaserBeam& operator=(const CircularLaserBeam&) = default;
+  CircularLaserBeam& operator=(CircularLaserBeam&&)      = default;
   /**
    * Set the second moment width of the beam. This is twice the beam variance
    *

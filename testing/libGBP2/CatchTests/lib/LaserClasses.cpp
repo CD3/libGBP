@@ -16,9 +16,37 @@ using namespace Catch;
 
 TEST_CASE("Monchromatic Source")
 {
+  using namespace libGBP2;
   SECTION("MonochromaticSource")
   {
     libGBP2::MonochromaticSource source;
+    SECTION("Setting Wavelenght, Refractive Index, and Frequency")
+    {
+      SECTION("wavelength -> refractive index")
+      source.setWavelength(532 * i::nm);
+
+      CHECK(source.getFrequency<t::MHz>().value() == Approx(563519657.894737));
+      CHECK(source.getWavelength<t::nm>().value() == Approx(532));
+      CHECK(source.getRefractiveIndex().value() == Approx(1));
+
+      source.setRefractiveIndex(1.5 * i::dimensionless);
+
+      CHECK(source.getFrequency<t::MHz>().value() == Approx(563519657.894737));
+      CHECK(source.getWavelength<t::nm>().value() == Approx(532 / 1.5));
+      CHECK(source.getRefractiveIndex().value() == Approx(1.5));
+
+      source.setFrequency(source.getFrequency() / 2);
+
+      CHECK(source.getFrequency<t::MHz>().value() == Approx(563519657.894737 / 2));
+      CHECK(source.getWavelength<t::nm>().value() == Approx(2 * 532 / 1.5));
+      CHECK(source.getRefractiveIndex().value() == Approx(1.5));
+
+      source.setRefractiveIndex(1);
+
+      CHECK(source.getFrequency<t::MHz>().value() == Approx(563519657.894737 / 2));
+      CHECK(source.getWavelength<t::nm>().value() == Approx(2 * 532));
+      CHECK(source.getRefractiveIndex().value() == Approx(1));
+    }
 
     SECTION("Setting wavelength")
     {
@@ -34,20 +62,35 @@ TEST_CASE("Monchromatic Source")
       SECTION("Setting frequency")
       {
         source.setFrequency(560000000000000. * libGBP2::i::Hz);
-        CHECK(source.getFrequency<libGBP2::t::MHz>().value() ==
-              Approx(560000000));
-        CHECK(source.getRefractiveIndex().value() ==
-              Approx(299792458 / (560000000000000 * 532e-9)));
+        CHECK(source.getFrequency<libGBP2::t::MHz>().value() == Approx(560000000));
+        CHECK(source.getWavelength<t::m>().value() == Approx(299792458. / 560000000000000));
+        CHECK(source.getRefractiveIndex().value() == Approx(1));
       }
 
       SECTION("Setting refractive index")
       {
         source.setRefractiveIndex(1.5);
-        CHECK(source.getFrequency<libGBP2::t::MHz>().value() ==
-              Approx(563519657.894737));
+        CHECK(source.getFrequency<libGBP2::t::MHz>().value() == Approx(563519657.894737));
         CHECK(source.getWavelength<libGBP2::t::nm>().value() < 532);
         CHECK(source.getRefractiveIndex().value() == Approx(1.5));
       }
+    }
+    SECTION("Copy construct and assignment")
+    {
+      // ORDER MATTERS HERE
+      source.setRefractiveIndex(1.5 * libGBP2::i::dimensionless);
+      source.setWavelength(532 * libGBP2::i::nm);
+
+      libGBP2::MonochromaticSource source2(source);
+
+      CHECK(source2.getWavelength().value() == Approx(532));
+      CHECK(source2.getRefractiveIndex().value() == Approx(1.5));
+
+      libGBP2::MonochromaticSource source3;
+
+      source3 = source2;
+      CHECK(source3.getWavelength().value() == Approx(532));
+      CHECK(source3.getRefractiveIndex().value() == Approx(1.5));
     }
   }
 }
@@ -131,6 +174,36 @@ TEST_CASE("CircularLaserBeam")
               .value() == Approx(0.002));
     CHECK(beam.getSecondMomentBeamWidth<libGBP2::t::mm>().value() ==
           Approx(10.07451));
+  }
+  SECTION("Copy construct and assignment")
+  {
+    beam.setRefractiveIndex(1.5 * libGBP2::i::dimensionless);
+    beam.setVacuumWavelength(532 * libGBP2::i::nm);
+    beam.setBeamWaistPosition(2 * libGBP2::i::m);
+    beam.setSecondMomentBeamWaistWidth(100 * libGBP2::i::um);
+
+    CHECK(beam.getWavelength().value() == Approx(532 / 1.5));
+    CHECK(beam.getVacuumWavelength().value() == Approx(532));
+    CHECK(beam.getRefractiveIndex().value() == Approx(1.5));
+    CHECK(beam.getBeamWaistPosition().value() == Approx(200));
+    CHECK(beam.getSecondMomentBeamWaistWidth().value() == Approx(0.01));
+
+    libGBP2::CircularLaserBeam beam2(beam);
+
+    CHECK(beam2.getWavelength().value() == Approx(532 / 1.5));
+    CHECK(beam2.getVacuumWavelength().value() == Approx(532));
+    CHECK(beam2.getRefractiveIndex().value() == Approx(1.5));
+    CHECK(beam2.getBeamWaistPosition().value() == Approx(200));
+    CHECK(beam2.getSecondMomentBeamWaistWidth().value() == Approx(0.01));
+
+    libGBP2::CircularLaserBeam beam3;
+
+    beam3 = beam2;
+    CHECK(beam3.getWavelength().value() == Approx(532 / 1.5));
+    CHECK(beam3.getVacuumWavelength().value() == Approx(532));
+    CHECK(beam3.getRefractiveIndex().value() == Approx(1.5));
+    CHECK(beam3.getBeamWaistPosition().value() == Approx(200));
+    CHECK(beam3.getSecondMomentBeamWaistWidth().value() == Approx(0.01));
   }
 }
 
@@ -282,6 +355,37 @@ TEST_CASE("CircularGaussianLaserBeam")
   CHECK(beam.getBeamWidth<t::mm>(100 * i::mm).get<OneOverEDiameter>().value() == Approx(0.002 * sqrt(2)));
 
   CHECK(beam.getRayleighRange<t::mm>().value() == Approx(0.01985 / 2).epsilon(0.001));
+
+  SECTION("Copy construct and assignment")
+  {
+    beam.setRefractiveIndex(1.5 * libGBP2::i::dimensionless);
+    beam.setVacuumWavelength(532 * libGBP2::i::nm);
+    beam.setBeamWaistPosition(2 * libGBP2::i::m);
+    beam.setBeamWaistWidth(make_width<OneOverERadius>(100 * libGBP2::i::um));
+
+    CHECK(beam.getWavelength().value() == Approx(532 / 1.5));
+    CHECK(beam.getVacuumWavelength().value() == Approx(532));
+    CHECK(beam.getRefractiveIndex().value() == Approx(1.5));
+    CHECK(beam.getBeamWaistPosition().value() == Approx(200));
+    CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(0.01 * sqrt(2)));
+
+    libGBP2::CircularLaserBeam beam2(beam);
+
+    CHECK(beam2.getWavelength().value() == Approx(532 / 1.5));
+    CHECK(beam2.getVacuumWavelength().value() == Approx(532));
+    CHECK(beam2.getRefractiveIndex().value() == Approx(1.5));
+    CHECK(beam2.getBeamWaistPosition().value() == Approx(200));
+    CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(0.01 * sqrt(2)));
+
+    libGBP2::CircularLaserBeam beam3;
+
+    beam3 = beam2;
+    CHECK(beam3.getWavelength().value() == Approx(532 / 1.5));
+    CHECK(beam3.getVacuumWavelength().value() == Approx(532));
+    CHECK(beam3.getRefractiveIndex().value() == Approx(1.5));
+    CHECK(beam3.getBeamWaistPosition().value() == Approx(200));
+    CHECK(beam.getBeamWaistWidth().get<OneOverESquaredRadius>().value() == Approx(0.01 * sqrt(2)));
+  }
 }
 
 TEST_CASE("Complex Beam Parameter")
@@ -330,6 +434,11 @@ TEST_CASE("Embedded Beam")
   beam.setBeamWaistWidth(make_width<OneOverESquaredRadius>(2 * i::um));
   beam.adjustBeamDivergence(make_divergence<OneOverESquaredHalfAngle>(4 * 100.74508 * i::mrad));
 
+  CHECK(beam.getBeamQualityFactor().value() == Approx(4));
+  CHECK(beam.getBeamWaistWidth<t::um>().get<OneOverESquaredRadius>().value() == Approx(2));
+  CHECK(beam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(100.74508));
+  CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(100));
+
   double M2 = beam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() / beam.getDiffractionLimitedBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value();
 
   auto ebeam = beam.getEmbeddedBeam();
@@ -337,6 +446,14 @@ TEST_CASE("Embedded Beam")
   CHECK(M2 == Approx(4));
   CHECK(ebeam.getBeamWaistWidth<t::um>().get<OneOverESquaredRadius>().value() == Approx(2 / 2));
   CHECK(ebeam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(2 * 100.74508));
+  CHECK(ebeam.getBeamWaistPosition<t::mm>().value() == Approx(100));
+
+  CircularGaussianLaserBeam beam2 = ebeam;
+
+  CHECK(beam2.getBeamQualityFactor().value() == Approx(4));
+  CHECK(beam2.getBeamWaistWidth<t::um>().get<OneOverESquaredRadius>().value() == Approx(2));
+  CHECK(beam2.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(100.74508));
+  CHECK(beam2.getBeamWaistPosition<t::mm>().value() == Approx(100));
 }
 
 TEST_CASE("conventions interface")

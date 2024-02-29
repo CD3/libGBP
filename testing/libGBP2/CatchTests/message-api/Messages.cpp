@@ -280,3 +280,29 @@ TEST_CASE("Quantity utility methods")
     CHECK(out.str() == "1 in");
   }
 }
+
+TEST_CASE("Optical Element Messages")
+{
+  using namespace libGBP2;
+  msg::OpticalElement element;
+
+  element.mutable_lens()->mutable_focal_length()->set_value(10);
+  element.mutable_lens()->mutable_focal_length()->set_unit("mm");
+
+  CHECK(element.has_lens());
+  CHECK(!element.has_spherical_refractive_surface());
+  CHECK(!element.has_flat_refractive_surface());
+  CHECK(!element.has_custom());
+
+  element.mutable_spherical_refractive_surface()->mutable_radius_of_curvature()->set_value(10);
+  element.mutable_spherical_refractive_surface()->mutable_radius_of_curvature()->set_unit("mm");
+  element.mutable_spherical_refractive_surface()->mutable_refractive_index()->set_value(1.5);
+  element.mutable_spherical_refractive_surface()->mutable_refractive_index()->set_unit("dimensionless");
+
+  CHECK(!element.has_lens());
+  CHECK(element.has_spherical_refractive_surface());
+  CHECK(!element.has_flat_refractive_surface());
+  CHECK(!element.has_custom());
+
+  /* std::cout << msg::serialize_message(element) << std::endl; */
+}

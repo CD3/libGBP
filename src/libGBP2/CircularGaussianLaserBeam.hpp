@@ -20,6 +20,13 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
 {
  private:
  public:
+  CircularGaussianLaserBeam()                                            = default;
+  ~CircularGaussianLaserBeam()                                           = default;
+  CircularGaussianLaserBeam(const CircularGaussianLaserBeam&)            = default;
+  CircularGaussianLaserBeam(CircularGaussianLaserBeam&&)                 = default;
+  CircularGaussianLaserBeam& operator=(const CircularGaussianLaserBeam&) = default;
+  CircularGaussianLaserBeam& operator=(CircularGaussianLaserBeam&&)      = default;
+
   template<typename U, typename C>
   void setBeamWaistWidth(GaussianBeamWidth<C, U> a_width)
   {
@@ -170,6 +177,23 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
     embedded.setSecondMomentBeamWaistWidth(this->getSecondMomentBeamWaistWidth() / boost::units::root<2>(this->getBeamQualityFactor()));
     embedded.setBeamQualityFactor(quantity<t::dimensionless>::from_value(1));
     return embedded;
+  }
+
+  /**
+   * Set beam parameters from the parameters of a "embedded" Gaussian beam.
+   *
+   * This is used for propagation. To propagate a beam through an optical system,
+   * one can propagate an embedded Gaussian beam instead. So to propagate a real
+   * beam, get the embedded beam, propagate it through a system, and then get
+   * set the real beam using the embedded beam.
+   */
+  inline void
+  setEmbeddedBeam(const CircularGaussianLaserBeam& a_embedded)
+  {
+    quantity<t::dimensionless> M2 = this->getBeamQualityFactor();
+    *this                         = a_embedded;
+    this->setSecondMomentBeamWaistWidth(boost::units::root<2>(M2) * this->getSecondMomentBeamWaistWidth());
+    this->setBeamQualityFactor(M2);
   }
 };
 

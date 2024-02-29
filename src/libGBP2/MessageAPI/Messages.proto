@@ -70,6 +70,7 @@ message OpticalElement {
     ThinLens lens = 1;
     FlatRefractiveSurface flat_refractive_surface = 2;
     SphericalRefractiveSurface spherical_refractive_surface = 3;
+    CustomRayTransferMatrix custom = 4;
   }
 }
 
@@ -78,7 +79,7 @@ message OpticalElement {
  */
 message OpticalElementInSystem {
   Quantity position = 1;
-  OpticalElement elmenet = 2;
+  OpticalElement element = 2;
 }
 
 /**
@@ -90,13 +91,13 @@ message OpticalSystem {
 
 message Propagator_run_Input {
   CircularGaussianBeam beam = 1;
-  OpticalSystem system = 2;
-  repeated Quantity position = 3;
+  OpticalSystem optical_system = 2;
+  repeated Quantity positions = 3;
   optional BeamWidthType output_beam_width_type = 4;
   optional string output_beam_width_unit = 5;
 }
 
 message Propagator_run_Output {
   ReturnStatus return_status = 1;
-  repeated Quantity beam_width = 2;
+  repeated Quantity beam_widths = 2;
 }

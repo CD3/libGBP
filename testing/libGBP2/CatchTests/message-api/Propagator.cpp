@@ -22,18 +22,18 @@ TEST_CASE("Devel")
   input_msg.mutable_beam()->set_beam_waist_width_type(msg::BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_RADIUS);
   *input_msg.mutable_beam()->mutable_beam_waist_position() << "0 cm";
 
-  CHECK(input_msg.position_size() == 0);
+  CHECK(input_msg.positions_size() == 0);
 
-  *input_msg.add_position() << "0 cm";
-  CHECK(input_msg.position_size() == 1);
+  *input_msg.add_positions() << "0 cm";
+  CHECK(input_msg.positions_size() == 1);
 
-  *input_msg.add_position() << "10 cm";
-  CHECK(input_msg.position_size() == 2);
+  *input_msg.add_positions() << "10 cm";
+  CHECK(input_msg.positions_size() == 2);
 
-  CHECK(input_msg.position(0).value() == Approx(0).scale(1));
-  CHECK(input_msg.position(0).unit() == "cm");
-  CHECK(input_msg.position(1).value() == Approx(10));
-  CHECK(input_msg.position(1).unit() == "cm");
+  CHECK(input_msg.positions(0).value() == Approx(0).scale(1));
+  CHECK(input_msg.positions(0).unit() == "cm");
+  CHECK(input_msg.positions(1).value() == Approx(10));
+  CHECK(input_msg.positions(1).unit() == "cm");
 
   msg::deserialize_message(propagator.run(msg::serialize_message(input_msg)), output_msg);
 
@@ -64,49 +64,59 @@ TEST_CASE("running propagation analysis")
   *input_msg.mutable_beam()->mutable_beam_waist_position() << "0 cm";
   *input_msg.mutable_beam()->mutable_beam_quality_factor() << "1";
 
-  *input_msg.add_position() << "0 cm";
-  *input_msg.add_position() << "1 cm";
-  *input_msg.add_position() << "2 cm";
-  *input_msg.add_position() << "3 cm";
-  *input_msg.add_position() << "4 cm";
-  CHECK(input_msg.position_size() == 5);
+  *input_msg.add_positions() << "0 cm";
+  *input_msg.add_positions() << "1 cm";
+  *input_msg.add_positions() << "2 cm";
+  *input_msg.add_positions() << "3 cm";
+  *input_msg.add_positions() << "4 cm";
+  CHECK(input_msg.positions_size() == 5);
 
-  SECTION("Use input width type and units")
+  SECTION("No optical system")
   {
-    msg::deserialize_message(propagator.run(msg::serialize_message(input_msg)), output_msg);
+    SECTION("Use input width type and units")
+    {
+      msg::deserialize_message(propagator.run(msg::serialize_message(input_msg)), output_msg);
 
-    CHECK(!output_msg.return_status().has_error_message());
+      CHECK(!output_msg.return_status().has_error_message());
 
-    REQUIRE(output_msg.beam_width_size() == 5);
-    CHECK(output_msg.beam_width(0).value() == Approx(10e-4));
-    CHECK(output_msg.beam_width(0).unit() == "cm");
-    CHECK(output_msg.beam_width(1).value() == Approx(0.016964).epsilon(0.001));
-    CHECK(output_msg.beam_width(1).unit() == "cm");
-    CHECK(output_msg.beam_width(2).value() == Approx(0.033893).epsilon(0.001));
-    CHECK(output_msg.beam_width(2).unit() == "cm");
-    CHECK(output_msg.beam_width(3).value() == Approx(0.050812).epsilon(0.001));
-    CHECK(output_msg.beam_width(3).unit() == "cm");
-    CHECK(output_msg.beam_width(4).value() == Approx(0.067744).epsilon(0.001));
-    CHECK(output_msg.beam_width(4).unit() == "cm");
+      REQUIRE(output_msg.beam_widths_size() == 5);
+      CHECK(output_msg.beam_widths(0).value() == Approx(10));
+      CHECK(output_msg.beam_widths(0).unit() == "um");
+      CHECK(output_msg.beam_widths(1).value() == Approx(169.64).epsilon(0.001));
+      CHECK(output_msg.beam_widths(1).unit() == "um");
+      CHECK(output_msg.beam_widths(2).value() == Approx(338.93).epsilon(0.001));
+      CHECK(output_msg.beam_widths(2).unit() == "um");
+      CHECK(output_msg.beam_widths(3).value() == Approx(508.12).epsilon(0.001));
+      CHECK(output_msg.beam_widths(3).unit() == "um");
+      CHECK(output_msg.beam_widths(4).value() == Approx(677.44).epsilon(0.001));
+      CHECK(output_msg.beam_widths(4).unit() == "um");
+    }
+
+    SECTION("Specify output unit")
+    {
+      input_msg.set_output_beam_width_unit("mm");
+      msg::deserialize_message(propagator.run(msg::serialize_message(input_msg)), output_msg);
+
+      CHECK(!output_msg.return_status().has_error_message());
+
+      REQUIRE(output_msg.beam_widths_size() == 5);
+      CHECK(output_msg.beam_widths(0).value() == Approx(10e-3));
+      CHECK(output_msg.beam_widths(0).unit() == "mm");
+      CHECK(output_msg.beam_widths(1).value() == Approx(0.16964).epsilon(0.001));
+      CHECK(output_msg.beam_widths(1).unit() == "mm");
+      CHECK(output_msg.beam_widths(2).value() == Approx(0.33893).epsilon(0.001));
+      CHECK(output_msg.beam_widths(2).unit() == "mm");
+      CHECK(output_msg.beam_widths(3).value() == Approx(0.50812).epsilon(0.001));
+      CHECK(output_msg.beam_widths(3).unit() == "mm");
+      CHECK(output_msg.beam_widths(4).value() == Approx(0.67744).epsilon(0.001));
+      CHECK(output_msg.beam_widths(4).unit() == "mm");
+    }
   }
-
-  SECTION("Specify output unit")
+  SECTION("With optical system")
   {
-    input_msg.set_output_beam_width_unit("mm");
-    msg::deserialize_message(propagator.run(msg::serialize_message(input_msg)), output_msg);
-
-    CHECK(!output_msg.return_status().has_error_message());
-
-    REQUIRE(output_msg.beam_width_size() == 5);
-    CHECK(output_msg.beam_width(0).value() == Approx(10e-3));
-    CHECK(output_msg.beam_width(0).unit() == "mm");
-    CHECK(output_msg.beam_width(1).value() == Approx(0.16964).epsilon(0.001));
-    CHECK(output_msg.beam_width(1).unit() == "mm");
-    CHECK(output_msg.beam_width(2).value() == Approx(0.33893).epsilon(0.001));
-    CHECK(output_msg.beam_width(2).unit() == "mm");
-    CHECK(output_msg.beam_width(3).value() == Approx(0.50812).epsilon(0.001));
-    CHECK(output_msg.beam_width(3).unit() == "mm");
-    CHECK(output_msg.beam_width(4).value() == Approx(0.67744).epsilon(0.001));
-    CHECK(output_msg.beam_width(4).unit() == "mm");
+    SECTION("Single Lens")
+    {
+      /* input_msg.mutable_system(); */
+    }
   }
 }

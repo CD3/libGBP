@@ -1,3 +1,5 @@
+#include <BoostUnitDefinitions/Units.hpp>
+
 #include "libGBP2/Conventions.hpp"
 #define UNITCONVERT_NO_BACKWARD_COMPATIBLE_NAMESPACE
 #include <iostream>
@@ -8,6 +10,12 @@
 #include <UnitConvert/GlobalUnitRegistry.hpp>
 
 #include "../CircularGaussianLaserBeam.hpp"
+#include "../OpticalElements/FlatRefractiveSurface.hpp"
+#include "../OpticalElements/FreeSpace.hpp"
+#include "../OpticalElements/OpticalElement.hpp"
+#include "../OpticalElements/SphericalRefractiveSurface.hpp"
+#include "../OpticalElements/ThickLens.hpp"
+#include "../OpticalElements/ThinLens.hpp"
 #include "../OpticalSystem.hpp"
 #include "./Messages.hpp"
 #include "Messages.pb.h"
@@ -40,27 +48,62 @@ struct Propagator::imp {
 
     return beam;
   }
+  OpticalSystem<t::cm> build_optical_system(const msg::OpticalSystem& a_system) const
+  {
+    OpticalSystem<t::cm>       system;
+    quantity<t::dimensionless> current_refractive_index = 1 * i::dimensionless;
+
+    for(int i = 0; i < a_system.elements_size(); ++i) {
+      auto& element = a_system.elements(i).element();
+      if(element.has_lens()) {
+        system.add(msg::make_quantity<t::cm>(a_system.elements(i).position()),
+                   ThinLens<t::cm>(msg::make_quantity<t::cm>(element.lens().focal_length())));
+      }
+      if(element.has_flat_refractive_surface()) {
+        system.add(msg::make_quantity<t::cm>(a_system.elements(i).position()),
+                   FlatRefractiveSurface<t::cm>(msg::make_quantity<t::dimensionless>(element.flat_refractive_surface().refractive_index())));
+      }
+      if(element.has_spherical_refractive_surface()) {
+        quantity<t::dimensionless> refractive_index_scale_factor = msg::make_quantity<t::dimensionless>(element.spherical_refractive_surface().refractive_index()) / current_refractive_index;
+        current_refractive_index                                 = msg::make_quantity<t::dimensionless>(element.spherical_refractive_surface().refractive_index());
+        system.add(msg::make_quantity<t::cm>(a_system.elements(i).position()),
+                   SphericalRefractiveSurface<t::cm>(refractive_index_scale_factor,
+                                                     msg::make_quantity<t::cm>(element.spherical_refractive_surface().radius_of_curvature())));
+      }
+      if(element.has_custom()) {
+      }
+    }
+
+    return system;
+  }
   void run(const msg::Propagator_run_Input& a_input, msg::Propagator_run_Output* a_output) const
   {
+    // build the laser
     auto beam = this->build_laser(a_input.beam());
     // build the system
-    //
+    auto optical_system = this->build_optical_system(a_input.optical_system());
+    // configure output
     msg::BeamWidthType output_beam_width_type = a_input.beam().beam_waist_width_type();
+    std::string        output_beam_width_unit = a_input.beam().beam_waist_width().unit();
+
     if(a_input.has_output_beam_width_type()) {
       output_beam_width_type = a_input.output_beam_width_type();
     }
-    for(int i = 0; i < a_input.position_size(); i++) {
+    if(a_input.has_output_beam_width_unit()) {
+      output_beam_width_unit = a_input.output_beam_width_unit();
+    }
+    for(int i = 0; i < a_input.positions_size(); i++) {
+      auto z = msg::make_quantity<t::cm>(a_input.positions(i));
       // propagate through system
+      auto element = optical_system.build(z);
       // get a beam width object for the given position
-      auto beam_width = beam.getBeamWidth(msg::make_quantity<t::cm>(a_input.position(i)));
+      auto beam_width = beam.getBeamWidth(z);
       // extract the width to msg::Quantity using the specified beam width convention
       auto width = msg::get_beam_width(beam_width, output_beam_width_type);
       // convert the width to the specified units
-      if(a_input.has_output_beam_width_unit()) {
-        msg::convert(width, a_input.output_beam_width_unit());
-      }
+      msg::convert(width, output_beam_width_unit);
       // copy the width to the output message
-      *a_output->add_beam_width() << width;
+      *a_output->add_beam_widths() << width;
     }
   }
 };
