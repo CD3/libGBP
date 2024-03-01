@@ -13,6 +13,7 @@
 #include <libGBP2/OpticalElements/ThickLens.hpp>
 #include <libGBP2/OpticalElements/ThinLens.hpp>
 #include <libGBP2/OpticalSystem.hpp>
+#include <libGBP2/Propagation.hpp>
 
 using namespace Catch;
 TEST_CASE("OpticalElement")
@@ -413,6 +414,61 @@ TEST_CASE("Optical System")
 
       beam.setBeamWaistPosition(beam.getBeamWaistPosition<t::m>() + element.getDisplacement<t::m>());
       CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(-404.9999));
+    }
+  }
+}
+
+TEST_CASE("Propagation")
+{
+  using namespace libGBP2;
+  CircularGaussianLaserBeam beam;
+  beam.setWavelength(532 * i::nm);
+  beam.setBeamWaistWidth(make_width<OneOverESquaredRadius>(10 * i::um));
+  beam.adjustBeamDivergence(make_divergence<OneOverESquaredHalfAngle>(10 * i::mrad));
+
+  SECTION("Through Single Element")
+  {
+    SECTION("Thin Lens")
+    {
+      ThinLens<t::cm> lens(40 * i::mm);
+      beam.setBeamWaistPosition(-10 * i::cm);
+
+      beam = transform_beam(beam, lens);
+
+      CHECK(beam.getBeamWaistPosition().value() == Approx(6.66).epsilon(0.001));
+    }
+
+    SECTION("Collimated beam on thin lens")
+    {
+      beam.setBeamWaistWidth(make_width<OneOverESquaredDiameter>(10 * i::mm));
+      beam.setBeamQualityFactor(4 * i::dimensionless);
+      beam.setBeamWaistPosition(0 * i::cm);
+
+      ThinLens<t::cm> lens(40 * i::mm);
+
+      beam = transform_beam(beam, lens);
+
+      CHECK(beam.getBeamWaistWidth<t::um>().get<OneOverESquaredDiameter>().value() == Approx(10.8).epsilon(0.01));  // result from https://www.lasercalculator.com/laser-spot-size-calculator/
+      CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(40).epsilon(0.0001));
+    }
+  }
+
+  SECTION("Through System")
+  {
+    SECTION("Single thin lens")
+    {
+      /* OpticalSystem<t::cm> system; */
+      /* std::vector<t::cm>   positions; */
+      /* std::vector<t::cm>   widths; */
+      /* for(int i = 0; i < 100; ++i) { */
+      /*   positions.push_back(i * 1. * i::mm); */
+      /* } */
+      /* system.add(0 * i::cm, ThinLens(50 * i ::mm)); */
+      /**/
+      /* for(int i = 0; i < positions.size(); i++) { */
+      /*   auto beam_out = propagate_beam_through_system(beam, system, positions[i]); */
+      /*   std::cout << beam_out.getBeamWidth().get<OneOverESquaredRadius>() << std::endl; */
+      /* } */
     }
   }
 }

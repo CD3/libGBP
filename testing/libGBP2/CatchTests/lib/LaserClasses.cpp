@@ -436,7 +436,8 @@ TEST_CASE("Embedded Beam")
 
   CHECK(beam.getBeamQualityFactor().value() == Approx(4));
   CHECK(beam.getBeamWaistWidth<t::um>().get<OneOverESquaredRadius>().value() == Approx(2));
-  CHECK(beam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(100.74508));
+  CHECK(beam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(4 * 100.74508));
+  CHECK(beam.getDiffractionLimitedBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(100.74508));
   CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(100));
 
   double M2 = beam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() / beam.getDiffractionLimitedBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value();
@@ -448,11 +449,15 @@ TEST_CASE("Embedded Beam")
   CHECK(ebeam.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(2 * 100.74508));
   CHECK(ebeam.getBeamWaistPosition<t::mm>().value() == Approx(100));
 
-  CircularGaussianLaserBeam beam2 = ebeam;
+  CircularGaussianLaserBeam beam2;
+
+  beam2.setBeamQualityFactor(4 * i::dimensionless);
+  beam2.setEmbeddedBeam(ebeam);
 
   CHECK(beam2.getBeamQualityFactor().value() == Approx(4));
   CHECK(beam2.getBeamWaistWidth<t::um>().get<OneOverESquaredRadius>().value() == Approx(2));
-  CHECK(beam2.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(100.74508));
+  CHECK(beam2.getBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(4 * 100.74508));
+  CHECK(beam2.getDiffractionLimitedBeamDivergence<t::mrad>().get<OneOverESquaredHalfAngle>().value() == Approx(100.74508));
   CHECK(beam2.getBeamWaistPosition<t::mm>().value() == Approx(100));
 }
 
