@@ -1,4 +1,6 @@
 
+#include <BoostUnitDefinitions/Units.hpp>
+
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
@@ -448,8 +450,90 @@ TEST_CASE("Propagation")
 
       beam = transform_beam(beam, lens);
 
+      CHECK(beam.getWavelength<t::nm>().value() == Approx(532));
       CHECK(beam.getBeamWaistWidth<t::um>().get<OneOverESquaredDiameter>().value() == Approx(10.8).epsilon(0.01));  // result from https://www.lasercalculator.com/laser-spot-size-calculator/
       CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(40).epsilon(0.0001));
+    }
+
+    SECTION("Focused beam into glass")
+    {
+      beam.setBeamWaistWidth(make_width<OneOverESquaredDiameter>(10 * i::um));
+      beam.setBeamQualityFactor(4 * i::dimensionless);
+      beam.setBeamWaistPosition(10 * i::cm);
+
+      FlatRefractiveSurface<t::cm> glass(1.5 * i::dimensionless);
+
+      beam = transform_beam(beam, glass);
+
+      CHECK(beam.getWavelength<t::nm>().value() == Approx(532 / 1.5));
+      CHECK(beam.getBeamWaistWidth<t::um>().get<OneOverESquaredDiameter>().value() == Approx(10));
+      CHECK(beam.getBeamWaistPosition<t::cm>().value() == Approx(1.5 * 10));
+    }
+
+    SECTION("Spherical Refractive Surface")
+    {
+      beam.setBeamQualityFactor(1 * i::dimensionless);
+
+      beam.setBeamWaistWidth(make_width<OneOverESquaredRadius>(10 * i::mm));
+      beam.setBeamWaistPosition(0 * i::cm);
+
+      CHECK(beam.getBeamWaistWidth<t::um>().get<OneOverESquaredRadius>().value() == Approx(10000));
+      CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(0));
+      CHECK(beam.getRayleighRange<t::m>().value() == Approx(590.524935));
+
+      SphericalRefractiveSurface<t::cm> surface_front(1.5 * i::dimensionless, 40. * i::mm);
+
+      beam = transform_beam(beam, surface_front);
+
+      CHECK(surface_front.getC().value() == Approx(-1. / 12.0));
+      CHECK(beam.getWavelength<t::nm>().value() == Approx(532 / 1.5));
+      CHECK(beam.getBeamWaistWidth<t::um>().get<OneOverESquaredRadius>().value() == Approx(2.032 / 1.5).epsilon(0.001));  // is this right?!?!
+      CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(120).epsilon(0.0001));
+      CHECK(beam.getRayleighRange<t::mm>().value() == Approx(0.0162567));
+
+      SphericalRefractiveSurface<t::cm> surface_back(1 / 1.5 * i::dimensionless, -40. * i::mm);
+
+      beam.setBeamWaistPosition((120 - 4) * i::mm);  // 4 mm thick len
+      beam = transform_beam(beam, surface_back);
+
+      CHECK(surface_back.getC().value() == Approx(-1. / 8.0));
+      CHECK(beam.getWavelength<t::nm>().value() == Approx(532));
+      CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(39.322).epsilon(0.0001));  // this is "back vertex focal length". see http://hyperphysics.phy-astr.gsu.edu/hbase/geoopt/imgpri.html#:~:text=The%20equivalent%20focal%20length%20of,from%20the%20equivalent%20focal%20length.
+    }
+
+    SECTION("Thick lens")
+    {
+      beam.setBeamWaistWidth(make_width<OneOverESquaredDiameter>(10 * i::mm));
+      beam.setBeamQualityFactor(4 * i::dimensionless);
+      beam.setBeamWaistPosition(0 * i::cm);
+
+      ThickLens<t::cm> lens(1.5 * i::dimensionless, 40. * i::mm, 4 * i::mm, -40 * i::mm);
+
+      // For a thick lens, we can calculate the "effective focal length"
+      // for this lens it is
+      // effective focal length is 40.677966 mm
+      // this is the position of the focal point with respect to the back principle
+      // plane. But the ABCD method will put us at the back surface of the lens,
+      // so the waist should be a distance equal to the "back vertix focal length" away.
+      // see http://hyperphysics.phy-astr.gsu.edu/hbase/geoopt/imgpri.html#:~:text=The%20equivalent%20focal%20length%20of,from%20the%20equivalent%20focal%20length.
+      // for details
+
+      SECTION("floating coordinate system")
+      {
+        beam = transform_beam(beam, lens);
+
+        CHECK(beam.getWavelength<t::nm>().value() == Approx(532));
+        CHECK(beam.getBeamWaistWidth<t::um>().get<OneOverESquaredDiameter>().value() == Approx(11.02).epsilon(0.01));
+        CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(39.322));
+      }
+      SECTION("fixed coordinate system")
+      {
+        beam = transform_beam(beam, lens, true);
+
+        CHECK(beam.getWavelength<t::nm>().value() == Approx(532));
+        CHECK(beam.getBeamWaistWidth<t::um>().get<OneOverESquaredDiameter>().value() == Approx(11.02).epsilon(0.01));
+        CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(39.322 + 4));
+      }
     }
   }
 

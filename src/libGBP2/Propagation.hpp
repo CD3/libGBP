@@ -43,7 +43,14 @@ CircularGaussianLaserBeam transform_beam(CircularGaussianLaserBeam a_beam, const
   CircularGaussianLaserBeam ebeam = a_beam.getEmbeddedBeam();
   auto                      q     = ebeam.getComplexBeamParameter();
   q                               = a_element * q;
+  // need to set refractive index FIRST
+
+  ebeam.setRefractiveIndex(ebeam.getRefractiveIndex() * a_element.getRefractiveIndexScale());
   ebeam.setComplexBeamParameter(q);
+  // IF we want to reset coordinate system, we need to do this AFTER
+  if(a_fixed_coordinate_system) {
+    ebeam.setBeamWaistPosition(ebeam.getBeamWaistPosition() + a_element.getDisplacement());
+  }
   a_beam.setEmbeddedBeam(ebeam);
 
   return a_beam;
