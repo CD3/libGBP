@@ -7,11 +7,9 @@ namespace libGBP2
 {
 
 template<typename U1, typename U2>
-CircularGaussianLaserBeam propagate_beam_through_system(const CircularGaussianLaserBeam& a_beam, const OpticalSystem<U1>& a_system, const quantity<U2>& a_position)
+CircularGaussianLaserBeam propagate_beam_through_system(const CircularGaussianLaserBeam& a_beam, const OpticalSystem<U1>& a_system, const quantity<U2>& a_position, bool a_fixed_coordinate_system = false)
 {
-  CircularGaussianLaserBeam beam;
-
-  return beam;
+  return transform_beam(a_beam, a_system.template build<t::cm>(0 * i::cm, a_position), a_fixed_coordinate_system);
 }
 
 /**

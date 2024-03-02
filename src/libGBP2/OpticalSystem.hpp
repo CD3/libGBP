@@ -42,7 +42,7 @@ class OpticalSystem
    * from a position a_z_start to a position a_z_end in the system.
    */
   template<typename UR = L, typename UA1 = L, typename UA2 = L>
-  OpticalElement<UR> build(quantity<UA1> a_z_start, quantity<UA2> a_z_end)
+  OpticalElement<UR> build(quantity<UA1> a_z_start, quantity<UA2> a_z_end) const
   {
     quantity<L>        l_z = quantity<L>(a_z_start);
     OpticalElement<UR> system;
@@ -69,7 +69,7 @@ class OpticalSystem
    * to a position a_z_end in the system.
    */
   template<typename UR = L, typename UA = L>
-  OpticalElement<UR> build(quantity<UA> a_z_end)
+  OpticalElement<UR> build(quantity<UA> a_z_end) const
   {
     return this->build(m_elements.size() > 0 ? m_elements[0].first : 0 * i::cm, a_z_end);
   }
@@ -79,7 +79,7 @@ class OpticalSystem
    * to the position last element in the system.
    */
   template<typename UR = L>
-  OpticalElement<UR> build()
+  OpticalElement<UR> build() const
   {
     return this->build(m_elements.size() > 0 ? m_elements[m_elements.size() - 1].first : 0 * i::cm);
   }

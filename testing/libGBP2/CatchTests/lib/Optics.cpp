@@ -1,4 +1,6 @@
 
+#include <fstream>
+
 #include <BoostUnitDefinitions/Units.hpp>
 
 #include <catch2/catch_approx.hpp>
@@ -426,7 +428,7 @@ TEST_CASE("Propagation")
   CircularGaussianLaserBeam beam;
   beam.setWavelength(532 * i::nm);
   beam.setBeamWaistWidth(make_width<OneOverESquaredRadius>(10 * i::um));
-  beam.adjustBeamDivergence(make_divergence<OneOverESquaredHalfAngle>(10 * i::mrad));
+  beam.setBeamQualityFactor(4 * i::dimensionless);
 
   SECTION("Through Single Element")
   {
@@ -541,18 +543,43 @@ TEST_CASE("Propagation")
   {
     SECTION("Single thin lens")
     {
-      /* OpticalSystem<t::cm> system; */
-      /* std::vector<t::cm>   positions; */
-      /* std::vector<t::cm>   widths; */
-      /* for(int i = 0; i < 100; ++i) { */
-      /*   positions.push_back(i * 1. * i::mm); */
-      /* } */
-      /* system.add(0 * i::cm, ThinLens(50 * i ::mm)); */
-      /**/
-      /* for(int i = 0; i < positions.size(); i++) { */
-      /*   auto beam_out = propagate_beam_through_system(beam, system, positions[i]); */
-      /*   std::cout << beam_out.getBeamWidth().get<OneOverESquaredRadius>() << std::endl; */
-      /* } */
+      OpticalSystem<t::cm> system;
+      system.add(4 * i::cm, ThinLens(10 * i ::mm));
+
+      std::ofstream                out("DL_vs_z-thin_lens.txt");
+      std::vector<quantity<t::cm>> positions;
+      std::vector<quantity<t::cm>> widths;
+      for(int i = 0; i < 100; ++i) {
+        positions.push_back(quantity<t::cm>(i * 1. * i::mm));
+      }
+      for(int i = 0; i < positions.size(); i++) {
+        auto beam_out = propagate_beam_through_system(beam, system, positions[i]);
+        out << positions[i] << " " << beam_out.getBeamWidth().get<OneOverESquaredRadius>() << "\n";
+      }
+    }
+
+    SECTION("Thick lens manually created with two spherical surfaces")
+    {
+      OpticalSystem<t::cm> system;
+      system.add(5 * i::cm, SphericalRefractiveSurface(1.5 * i::dimensionless, 40 * i::mm));
+      system.add(5.4 * i::cm, SphericalRefractiveSurface((1 / 1.5) * i::dimensionless, -40 * i::mm));
+
+      std::ofstream                out("DL_vs_z-thick_lens.txt");
+      std::vector<quantity<t::cm>> positions;
+      std::vector<quantity<t::cm>> widths;
+      for(int i = 0; i < 100; ++i) {
+        positions.push_back(quantity<t::cm>(i * 1. * i::mm));
+      }
+      for(int i = 0; i < positions.size(); i++) {
+        auto beam_out = propagate_beam_through_system(beam, system, positions[i]);
+        out << positions[i] << " " << beam_out.getBeamWidth().get<OneOverESquaredRadius>() << "\n";
+      }
+
+      beam.setBeamWaistWidth(make_width<OneOverESquaredDiameter>(10 * i::mm));
+      beam.setBeamWaistPosition(0 * i::cm);
+      auto beam_out = propagate_beam_through_system(beam, system, 5.4 * i::cm);
+      CHECK(beam_out.getBeamWaistWidth<t::um>().get<OneOverESquaredDiameter>().value() == Approx(11.02).epsilon(0.01));
+      CHECK(beam_out.getBeamWaistPosition<t::mm>().value() == Approx(39.322));
     }
   }
 }
