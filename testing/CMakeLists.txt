@@ -6,7 +6,6 @@ OPTION( BUILD_UNIT_TESTS "Build unit tests for the library" ON )
 if(BUILD_UNIT_TESTS)
 
 set( binDir ${CMAKE_BINARY_DIR}/testBin )
-set( buildDir ${CMAKE_BINARY_DIR} )
 
 # Find all sources for the unit test executable.
 file( GLOB_RECURSE unitTest_SOURCES
@@ -17,38 +16,14 @@ foreach(testSrc ${unitTest_SOURCES})
   message(STATUS "  ${testSrc}" )
 endforeach()
 
-set( testName ${PROJECT_NAME}_CatchTests )
-add_executable(${testName} ${unitTest_SOURCES})
-target_compile_definitions( ${testName} PRIVATE -DTESTING )
-target_link_libraries(${testName} GBP)
-target_include_directories( ${testName} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include" )
-set_target_properties(${testName} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${binDir})
-set_target_properties(${testName} PROPERTIES CXX_STANDARD 17)
+add_executable(libGBP_CatchTests ${unitTest_SOURCES})
+target_compile_definitions( libGBP_CatchTests PRIVATE -DTESTING )
+target_link_libraries(libGBP_CatchTests GBP)
+target_include_directories( libGBP_CatchTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
-add_test(NAME ${testName}
-         WORKING_DIRECTORY ${buildDir}
-         COMMAND ${binDir}/${testName} )
+add_test(NAME libGBP_CatchTests
+         COMMAND libGBP_CatchTests )
 
-# Create a seprate executable for each "applet"
-file( GLOB_RECURSE applet_SOURCES
-      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-      "./Applets/*.cpp" )
-foreach(testSrc ${applet_SOURCES})
-  get_filename_component( testName ${testSrc} NAME_WE )
-  message(STATUS "  Detected Applet ${testSrc}" )
-
-  add_executable(${testName} ${testSrc})
-  target_compile_definitions( ${testName} PRIVATE -DTESTING )
-  target_link_libraries(${testName} GBP)
-  target_include_directories( ${testName} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include" )
-  set_target_properties(${testName} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${binDir})
-  set_target_properties(${testName} PROPERTIES CXX_STANDARD 11)
-
-  add_test(NAME ${testName}
-           WORKING_DIRECTORY ${buildDir}
-           COMMAND ${binDir}/${testName} )
-
-endforeach()
 
 
 
@@ -66,6 +41,8 @@ endforeach()
 add_executable(libGBP2_lib_UnitTests ${SOURCES})
 target_compile_definitions( libGBP2_lib_UnitTests PRIVATE -DTESTING )
 target_link_libraries(libGBP2_lib_UnitTests  libGBP2::libGBP2 Catch2::Catch2WithMain)
+add_test(NAME libGBP2_lib_UnitTests COMMAND libGBP2_lib_UnitTests )
+
 
 
 file( GLOB_RECURSE SOURCES
@@ -79,6 +56,5 @@ endforeach()
 add_executable(libGBP2_message_api_UnitTests ${SOURCES})
 target_compile_definitions( libGBP2_message_api_UnitTests PRIVATE -DTESTING )
 target_link_libraries(libGBP2_message_api_UnitTests  libGBP2::libGBP2-message-api Catch2::Catch2WithMain)
-
-
+add_test(NAME libGBP2_api_UnitTests COMMAND libGBP2_lib_UnitTests )
 endif()

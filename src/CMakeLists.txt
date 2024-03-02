@@ -24,6 +24,8 @@ target_sources(
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libGBP2/OpticalElements/ThickLens.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libGBP2/OpticalElements/ThinLens.hpp>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libGBP2/OpticalElements/FreeSpace.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libGBP2/OpticalSystem.hpp>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libGBP2/Propagation.hpp>
   )
 
 

@@ -1,7 +1,6 @@
 cmake_minimum_required( VERSION 3.20 )
 
 option(PYTHON_BINDINGS "Build Python bindings." OFF)
-
 option( BUILD_TESTS "Build unit tests" ON )
 if( ${BUILD_TESTS} )
 enable_testing()
@@ -11,7 +10,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(libGBP)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(macro-git_version)
+include(TestCompileErrors)
 GIT_VERSION(libGBP)
 message( STATUS "libGBP version: ${libGBP_VERSION}")
 
@@ -21,10 +23,6 @@ configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/src/libGBP/version.h.in"
 configure_file( "${CMAKE_CURRENT_BINARY_DIR}/include/libGBP/version.h"
                 "${CMAKE_CURRENT_BINARY_DIR}/include/libGBP/version.h")
 
-
-set( cxx_needed_features
-     cxx_auto_type
-   )
 
 find_package( Boost REQUIRED )
 find_package( BoostUnitDefinitions REQUIRED )
