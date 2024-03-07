@@ -1,6 +1,8 @@
 #include <BoostUnitDefinitions/Units.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "libGBP2/Conventions.hpp"
+#include "libGBP2/Propagation.hpp"
 #define UNITCONVERT_NO_BACKWARD_COMPATIBLE_NAMESPACE
 #include <iostream>
 #include <string>
@@ -95,15 +97,24 @@ struct Propagator::imp {
     for(int i = 0; i < a_input.positions_size(); i++) {
       auto z = msg::make_quantity<t::cm>(a_input.positions(i));
       // propagate through system
-      auto element = optical_system.build(z);
+      auto new_beam = propagate_beam_through_system(beam, optical_system, z);
       // get a beam width object for the given position
-      auto beam_width = beam.getBeamWidth(z);
+      auto beam_width = new_beam.getBeamWidth();
       // extract the width to msg::Quantity using the specified beam width convention
       auto width = msg::get_beam_width(beam_width, output_beam_width_type);
       // convert the width to the specified units
       msg::convert(width, output_beam_width_unit);
       // copy the width to the output message
       *a_output->add_beam_widths() << width;
+
+      if(a_input.return_full_beam_characterizations()) {
+        auto ptr = a_output->add_beams();
+        ptr->mutable_beam_waist_width() << msg::get_beam_width(new_beam.getBeamWaistWidth(), output_beam_width_type);
+        ptr->set_beam_waist_width_type(output_beam_width_type);
+        ptr->mutable_beam_quality_factor() << new_beam.getBeamQualityFactor();
+        ptr->mutable_beam_waist_position() << new_beam.getBeamWaistPosition();
+        ptr->mutable_wavelength() << new_beam.getWavelength();
+      }
     }
   }
 };

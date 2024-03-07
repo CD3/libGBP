@@ -420,6 +420,16 @@ TEST_CASE("Optical System")
       CHECK(beam.getBeamWaistPosition<t::mm>().value() == Approx(-404.9999));
     }
   }
+
+  SECTION("Building a system with elements that include a thickness")
+  {
+    system.add(0 * i::cm, ThickLens(1.5 * i::dimensionless, 10 * i::cm, 5 * i::cm, -10 * i::cm));
+    auto element = system.build(10 * i::cm);
+    // the build method should create an elment for a 5 cm thick lens with 5 cm of
+    // free space propagation afterward. so the displacement of the element should be
+    // 10 cm.
+    CHECK(element.getDisplacement().value() == Approx(10));
+  }
 }
 
 TEST_CASE("Propagation")

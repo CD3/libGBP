@@ -114,9 +114,53 @@ TEST_CASE("running propagation analysis")
   }
   SECTION("With optical system")
   {
-    SECTION("Single Lens")
+    SECTION("Thick lens built from two spherical refractive surfaces")
     {
-      /* input_msg.mutable_system(); */
+      *input_msg.mutable_beam()->mutable_wavelength() << "532 nm";
+      *input_msg.mutable_beam()->mutable_beam_waist_position() << "10 cm";
+      *input_msg.mutable_beam()->mutable_beam_waist_width() << "10 mm";
+      input_msg.mutable_beam()->set_beam_waist_width_type(msg::BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_DIAMETER);
+      *input_msg.mutable_beam()->mutable_beam_quality_factor() << "4";
+
+      {
+        auto ptr = input_msg.mutable_optical_system()->add_elements();
+        ptr->set_name("Front Surface");
+        *ptr->mutable_position() << "10 cm";
+        *ptr->mutable_element()->mutable_spherical_refractive_surface()->mutable_refractive_index() << "1.5";
+        *ptr->mutable_element()->mutable_spherical_refractive_surface()->mutable_radius_of_curvature() << "40 mm";
+
+        ptr = input_msg.mutable_optical_system()->add_elements();
+        ptr->set_name("Back Surface");
+        *ptr->mutable_position() << "10.4 cm";
+        *ptr->mutable_element()->mutable_spherical_refractive_surface()->mutable_refractive_index() << "1";
+        *ptr->mutable_element()->mutable_spherical_refractive_surface()->mutable_radius_of_curvature() << "-40 mm";
+      }
+
+      {
+        input_msg.clear_positions();
+        *input_msg.add_positions() << "10.4 cm";
+        *input_msg.add_positions() << "14.3322 cm";
+      }
+
+      input_msg.set_output_beam_width_type(msg::BEAM_WIDTH_TYPE_ONE_OVER_E_SQUARED_DIAMETER);
+      input_msg.set_output_beam_width_unit("um");
+      input_msg.set_return_full_beam_characterizations(true);
+
+      msg::deserialize_message(propagator.run(msg::serialize_message(input_msg)), output_msg);
+
+      CHECK(output_msg.beam_widths_size() == 2);
+      CHECK(output_msg.beams(0).wavelength().value() == Approx(532));
+      CHECK(output_msg.beams(0).beam_waist_position().value() == Approx(3.9322));
+      CHECK(output_msg.beams(0).beam_waist_position().unit() == "cm");
+      CHECK(output_msg.beams(0).beam_waist_width().value() == Approx(0.001102).epsilon(0.001));
+      CHECK(output_msg.beams(0).beam_waist_width().unit() == "cm");
+      CHECK(output_msg.beams(1).wavelength().value() == Approx(532));
+      CHECK(output_msg.beams(1).beam_waist_position().value() == Approx(0).scale(1));
+      CHECK(output_msg.beams(1).beam_waist_width().value() == Approx(0.001102).epsilon(0.001));
+      CHECK(output_msg.beam_widths(0).value() == Approx(9666.69));
+      CHECK(output_msg.beam_widths(0).unit() == "um");
+      CHECK(output_msg.beam_widths(1).value() == Approx(11.02).epsilon(0.001));
+      CHECK(output_msg.beam_widths(1).unit() == "um");
     }
   }
 }

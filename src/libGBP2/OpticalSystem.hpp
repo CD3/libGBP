@@ -40,10 +40,14 @@ class OpticalSystem
   /**
    * Build an optical element that will propagate a beam
    * from a position a_z_start to a position a_z_end in the system.
+   *
+   * This will automatically add free space propagation between elements,
+   * and before and after any elements if needed.
    */
   template<typename UR = L, typename UA1 = L, typename UA2 = L>
   OpticalElement<UR> build(quantity<UA1> a_z_start, quantity<UA2> a_z_end) const
   {
+    // track CURRENT z position
     quantity<L>        l_z = quantity<L>(a_z_start);
     OpticalElement<UR> system;
     for(const auto &elem : m_elements) {
@@ -56,7 +60,10 @@ class OpticalSystem
       if(elem.first >= l_z) {
         // add a free space propagation to get to the element
         system = elem.second * FreeSpace(elem.first - l_z) * system;
-        l_z    = elem.first;
+        // need to account for any displacment caused by the element itself.
+        // if the element has a 1 cm displacement for example, then we are
+        // 1 cm past the position of the element.
+        l_z = elem.first + elem.second.template getDisplacement<L>();
       }
     }
     // add a free space propagation to the a_z_end position

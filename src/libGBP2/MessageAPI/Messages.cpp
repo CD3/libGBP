@@ -49,6 +49,13 @@ libgbp2_message_api::Quantity& operator<<(libgbp2_message_api::Quantity& a_quant
   return a_quantity;
 }
 
+libgbp2_message_api::Quantity* operator<<(libgbp2_message_api::Quantity* a_quantity, const libgbp2_message_api::Quantity& a_quantity2)
+{
+  a_quantity->set_value(a_quantity2.value());
+  a_quantity->set_unit(a_quantity2.unit());
+  return a_quantity;
+}
+
 std::ostream& operator<<(std::ostream& a_os, const libgbp2_message_api::Quantity& a_quantity)
 {
   a_os << a_quantity.value() << " " << a_quantity.unit();

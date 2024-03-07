@@ -216,6 +216,20 @@ void convert(msg::Quantity& a_quantity, std::string a_unit);
 
 }  // namespace msg
 }  // namespace libGBP2
+std::ostream&                  operator<<(std::ostream& a_os, const libgbp2_message_api::Quantity& a_quantity);
 libgbp2_message_api::Quantity& operator<<(libgbp2_message_api::Quantity& a_quantity, std::string a_qstring);
 libgbp2_message_api::Quantity& operator<<(libgbp2_message_api::Quantity& a_quantity, const libgbp2_message_api::Quantity& a_quantity2);
-std::ostream&                  operator<<(std::ostream& a_os, const libgbp2_message_api::Quantity& a_quantity);
+libgbp2_message_api::Quantity* operator<<(libgbp2_message_api::Quantity* a_quantity, const libgbp2_message_api::Quantity& a_quantity2);
+
+template<typename U>
+libgbp2_message_api::Quantity& operator<<(libgbp2_message_api::Quantity& a_quantity, const boost::units::quantity<U>& a_quantity2)
+{
+  a_quantity << boost::lexical_cast<std::string>(a_quantity2);
+  return a_quantity;
+}
+template<typename U>
+libgbp2_message_api::Quantity* operator<<(libgbp2_message_api::Quantity* a_quantity, const boost::units::quantity<U>& a_quantity2)
+{
+  *a_quantity << boost::lexical_cast<std::string>(a_quantity2);
+  return a_quantity;
+}

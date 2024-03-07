@@ -78,8 +78,9 @@ message OpticalElement {
  * An element in a system has a position with an element
  */
 message OpticalElementInSystem {
-  Quantity position = 1;
-  OpticalElement element = 2;
+  string name = 1;
+  Quantity position = 2;
+  OpticalElement element = 3;
 }
 
 /**
@@ -95,9 +96,13 @@ message Propagator_run_Input {
   repeated Quantity positions = 3;
   optional BeamWidthType output_beam_width_type = 4;
   optional string output_beam_width_unit = 5;
+  bool return_full_beam_characterizations =
+      6;  // if true, a CircularGaussianBeam message will be returned for each
+          // position.
 }
 
 message Propagator_run_Output {
   ReturnStatus return_status = 1;
   repeated Quantity beam_widths = 2;
+  repeated CircularGaussianBeam beams = 3;
 }
