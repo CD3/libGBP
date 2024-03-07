@@ -305,7 +305,7 @@ double BeamDivergenceConversionFactor()
  * ...etc...
  * and allows us to add new conventiones without modifying the class.
  */
-template<typename C, typename U>
+template<typename C, c::Length U>
 class GaussianBeamWidth
 {
  private:
@@ -317,13 +317,13 @@ class GaussianBeamWidth
   GaussianBeamWidth(const GaussianBeamWidth& a_other)            = default;
   GaussianBeamWidth& operator=(const GaussianBeamWidth& a_other) = default;
 
-  template<typename UU>
+  template<c::Length UU>
   GaussianBeamWidth(quantity<UU> a_width)
       : m_width(quantity<U>(a_width))
   {
   }
 
-  template<typename CC, typename UU = U>
+  template<typename CC, c::Length UU = U>
   quantity<UU> get() const
   {
     return quantity<UU>(
@@ -331,13 +331,13 @@ class GaussianBeamWidth
            BeamWidthConversionFactor<C, CC>();
   }
 
-  template<typename UU>
+  template<c::Length UU>
   GaussianBeamWidth& operator=(quantity<UU> a_width)
   {
     m_width = quantity<U>(a_width);
     return *this;
   }
-  template<typename CC, typename UU>
+  template<typename CC, c::Length UU>
   GaussianBeamWidth& operator=(GaussianBeamWidth<CC, UU> a_width)
   {
     m_width = a_width.template get<C, U>();
@@ -347,7 +347,7 @@ class GaussianBeamWidth
   // allow constructing from a strong quantity
 };
 
-template<typename C, typename U>
+template<typename C, c::Length U>
 GaussianBeamWidth<C, U> make_width(quantity<U> a_width)
 {
   return GaussianBeamWidth<C, U>(a_width);
@@ -368,7 +368,7 @@ GaussianBeamWidth<C, U> make_width(quantity<U> a_width)
  * quantity<t::mrad> omega = my_laser.getOneOverESquaredHalfAngle();
  * ...etc...
  */
-template<typename C, typename U>
+template<typename C, c::Angle U>
 class GaussianBeamDivergence
 {
  private:
@@ -380,13 +380,13 @@ class GaussianBeamDivergence
   GaussianBeamDivergence(const GaussianBeamDivergence& a_other)            = default;
   GaussianBeamDivergence& operator=(const GaussianBeamDivergence& a_other) = default;
 
-  template<typename UU>
+  template<c::Angle UU>
   GaussianBeamDivergence(quantity<UU> a_divergence)
       : m_divergence(quantity<U>(a_divergence))
   {
   }
 
-  template<typename CC, typename UU = U>
+  template<typename CC, c::Angle UU = U>
   quantity<UU> get() const
   {
     return quantity<UU>(
@@ -394,20 +394,20 @@ class GaussianBeamDivergence
            BeamDivergenceConversionFactor<C, CC>();
   }
 
-  template<typename UU>
+  template<c::Angle UU>
   GaussianBeamDivergence& operator=(quantity<UU> a_divergence)
   {
     m_divergence = quantity<U>(a_divergence);
     return *this;
   }
-  template<typename CC, typename UU>
+  template<typename CC, c::Angle UU>
   GaussianBeamDivergence& operator=(GaussianBeamDivergence<CC, UU> a_divergence)
   {
     m_divergence = a_divergence.template get<C, U>();
     return *this;
   }
 };
-template<typename C, typename U>
+template<typename C, c::Angle U>
 GaussianBeamDivergence<C, U> make_divergence(quantity<U> a_divergence)
 {
   return GaussianBeamDivergence<C, U>(a_divergence);

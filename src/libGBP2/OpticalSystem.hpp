@@ -11,7 +11,7 @@ namespace libGBP2
 /**
  * A class for building an optical system.
  */
-template<typename LengthUnit = t::cm>
+template<c::Length LengthUnit = t::cm>
 class OpticalSystem
 {
  public:
@@ -24,7 +24,7 @@ class OpticalSystem
   /**
    * Add an element to the system at a given position.
    */
-  template<typename U1, typename U2>
+  template<c::Length U1, c::Length U2>
   void add(quantity<U1> a_z, OpticalElement<U2> a_element)
   {
     bool sorted = false;
@@ -44,7 +44,7 @@ class OpticalSystem
    * This will automatically add free space propagation between elements,
    * and before and after any elements if needed.
    */
-  template<typename UR = L, typename UA1 = L, typename UA2 = L>
+  template<c::Length UR = L, c::Length UA1 = L, c::Length UA2 = L>
   OpticalElement<UR> build(quantity<UA1> a_z_start, quantity<UA2> a_z_end) const
   {
     // track CURRENT z position
@@ -75,7 +75,7 @@ class OpticalSystem
    * from a position of the first element in the system
    * to a position a_z_end in the system.
    */
-  template<typename UR = L, typename UA = L>
+  template<c::Length UR = L, c::Length UA = L>
   OpticalElement<UR> build(quantity<UA> a_z_end) const
   {
     return this->build(m_elements.size() > 0 ? m_elements[0].first : 0 * i::cm, a_z_end);
@@ -85,7 +85,7 @@ class OpticalSystem
    * from a position of the first element in the system
    * to the position last element in the system.
    */
-  template<typename UR = L>
+  template<c::Length UR = L>
   OpticalElement<UR> build() const
   {
     return this->build(m_elements.size() > 0 ? m_elements[m_elements.size() - 1].first : 0 * i::cm);

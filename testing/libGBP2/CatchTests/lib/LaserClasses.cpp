@@ -20,6 +20,16 @@ TEST_CASE("Monchromatic Source")
   SECTION("MonochromaticSource")
   {
     libGBP2::MonochromaticSource source;
+    CHECK_COMPILE_FAILS(
+        source.setWavelength(1 * i::s););
+    CHECK_COMPILE_FAILS(
+        source.setWavelength(1.););
+    CHECK_COMPILE_FAILS(
+        source.setFrequency(1 * i::s););
+    CHECK_COMPILE_FAILS(
+        source.setVacuumWavelength(1 * i::s););
+    CHECK_COMPILE_FAILS(
+        source.setRefractiveIndex(1 * i::s););
     SECTION("Setting Wavelenght, Refractive Index, and Frequency")
     {
       SECTION("wavelength -> refractive index")

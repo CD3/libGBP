@@ -11,7 +11,7 @@
 namespace libGBP2
 {
 
-template<typename LengthUnit = t::cm>
+template<c::Length LengthUnit = t::cm>
 class OpticalElement
 {
  public:
@@ -74,13 +74,13 @@ class OpticalElement
    * comming out of the element does not correspond to the same
    * position that the q-parameter going in did.
    */
-  template<typename U>
+  template<c::Length U>
   void setDisplacement(quantity<U> a_displacement)
   {
     m_displacement = quantity<L>(a_displacement);
   }
 
-  template<typename U = L>
+  template<c::Length U = L>
   quantity<U> getDisplacement() const
   {
     return quantity<U>(m_displacement);
@@ -92,55 +92,55 @@ class OpticalElement
    * the element will have a different wavelength than the
    * q-parameter going in did.
    */
-  template<typename U>
+  template<c::Dimensionless U>
   void setRefractiveIndexScale(quantity<U> a_refractive_index_scale)
   {
     m_refractive_index_scale =
         quantity<t::dimensionless>(a_refractive_index_scale);
   }
 
-  template<typename U = t::dimensionless>
+  template<c::Dimensionless U = t::dimensionless>
   quantity<U> getRefractiveIndexScale() const
   {
     return quantity<U>(m_refractive_index_scale);
   }
 
-  template<typename U>
+  template<c::Dimensionless U>
   void setA(quantity<U> a_A)
   {
     m_A = quantity<t::dimensionless>(a_A);
   }
-  template<typename U>
+  template<c::Length U>
   void setB(quantity<U> a_B)
   {
     m_B = quantity<L>(a_B);
   }
-  template<typename U>
+  template<c::InverseLength U>
   void setC(quantity<U> a_C)
   {
     m_C = quantity<K>(a_C);
   }
-  template<typename U>
+  template<c::Dimensionless U>
   void setD(quantity<U> a_D)
   {
     m_D = quantity<t::dimensionless>(a_D);
   }
-  template<typename U = t::dimensionless>
+  template<c::Dimensionless U = t::dimensionless>
   quantity<U> getA() const
   {
     return quantity<U>(m_A);
   }
-  template<typename U = L>
+  template<c::Length U = L>
   quantity<U> getB() const
   {
     return quantity<U>(m_B);
   }
-  template<typename U = K>
+  template<c::InverseLength U = K>
   quantity<U> getC() const
   {
     return quantity<U>(m_C);
   }
-  template<typename U = t::dimensionless>
+  template<c::Dimensionless U = t::dimensionless>
   quantity<U> getD() const
   {
     return quantity<U>(m_D);
@@ -149,7 +149,7 @@ class OpticalElement
    * Return the Ray Transfer Matrix for the element expressed in a given length
    * unit.
    */
-  template<typename U = L>
+  template<c::Length U = L>
   MatrixType getRayTransferMatrix() const
   {
     using INVU =
@@ -160,7 +160,7 @@ class OpticalElement
     return mat;
   }
 
-  template<typename U>
+  template<c::Length U>
   OpticalElement<L> operator*(const OpticalElement<U> &a_right) const
   {
     quantity<L> D =
@@ -173,7 +173,7 @@ class OpticalElement
     return OpticalElement<L>(D, N, mat);
   }
 
-  template<typename U>
+  template<c::Length U>
   quantity<U, std::complex<double>> operator*(quantity<U, std::complex<double>> &a_q) const
   {
     auto                 mat         = this->getRayTransferMatrix<U>();

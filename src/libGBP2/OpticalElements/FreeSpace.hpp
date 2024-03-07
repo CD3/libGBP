@@ -5,24 +5,24 @@
 namespace libGBP2
 {
 
-template<typename LengthUnit = t::cm>
+template<c::Length LengthUnit = t::cm>
 class FreeSpace : public OpticalElement<LengthUnit>
 {
  public:
   FreeSpace() = default;
-  template<typename U>
+  template<c::Length U>
   FreeSpace(quantity<U> a_length)
   {
     this->setLength(a_length);
   }
   using L = LengthUnit;
-  template<typename U>
+  template<c::Length U>
   void setLength(quantity<U> a_length)
   {
     this->setDisplacement(a_length);
     this->setB(a_length);
   }
-  template<typename U = L>
+  template<c::Length U = L>
   quantity<U>
   getLength() const
   {

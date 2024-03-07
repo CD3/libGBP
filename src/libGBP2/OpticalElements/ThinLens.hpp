@@ -5,23 +5,23 @@
 namespace libGBP2
 {
 
-template<typename LengthUnit = t::cm>
+template<c::Length LengthUnit = t::cm>
 class ThinLens : public OpticalElement<LengthUnit>
 {
  public:
   ThinLens() = default;
-  template<typename U>
+  template<c::Length U>
   ThinLens(quantity<U> a_focal_length)
   {
     this->setFocalLength(a_focal_length);
   }
   using L = LengthUnit;
-  template<typename U>
+  template<c::Length U>
   void setFocalLength(quantity<U> a_focal_length)
   {
     this->setC(-1 / a_focal_length);
   }
-  template<typename U = L>
+  template<c::Length U = L>
   quantity<U>
   getFocalLength() const
   {

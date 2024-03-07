@@ -46,7 +46,7 @@ class CircularLaserBeam : public MonochromaticSource
    *
    * See Siegman "How to (Maybe) Measure Laser Beam Quality" for details.
    */
-  template<typename U>
+  template<c::Length U>
   void
   setSecondMomentBeamWaistWidth(quantity<U> a_val)
   {
@@ -62,20 +62,20 @@ class CircularLaserBeam : public MonochromaticSource
    *
    * See Siegman "How to (Maybe) Measure Laser Beam Quality" for details.
    */
-  template<typename U = t::cm>
+  template<c::Length U = t::cm>
   quantity<U>
   getSecondMomentBeamWaistWidth() const
   {
     return quantity<U>(m_second_moment_beam_waist_width);
   }
 
-  template<typename U>
+  template<c::Length U>
   void
   setBeamWaistPosition(quantity<U> a_val)
   {
     m_beam_waist_position = quantity<t::cm>(a_val);
   }
-  template<typename U = t::cm>
+  template<c::Length U = t::cm>
   quantity<U>
   getBeamWaistPosition() const
   {
@@ -85,7 +85,7 @@ class CircularLaserBeam : public MonochromaticSource
   /**
    * Set the beam quality factor (M^2).
    */
-  template<typename U>
+  template<c::Dimensionless U>
   void
   setBeamQualityFactor(quantity<U> a_val)
   {
@@ -95,7 +95,7 @@ class CircularLaserBeam : public MonochromaticSource
   /**
    * Return the beam quality factor (M^2).
    */
-  template<typename U = t::dimensionless>
+  template<c::Dimensionless U = t::dimensionless>
   quantity<U>
   getBeamQualityFactor() const
   {
@@ -109,7 +109,7 @@ class CircularLaserBeam : public MonochromaticSource
    * waist size. So, this must be called _after_ the beam waist
    * has been set.
    */
-  template<typename U>
+  template<c::Angle U>
   void
   adjustSecondMomentDivergence(quantity<U> a_val)
   {
@@ -120,7 +120,7 @@ class CircularLaserBeam : public MonochromaticSource
    * Return the second moment divergence
    * of the beam. See Siegman for details.
    */
-  template<typename U = t::mrad>
+  template<c::Angle U = t::mrad>
   quantity<U>
   getSecondMomentDivergence() const
   {
@@ -131,7 +131,7 @@ class CircularLaserBeam : public MonochromaticSource
    * Return the _diffraction limited_ second moment divergence
    * of the beam. The actual divergence will be larger by a factor of M^2.
    */
-  template<typename U = t::mrad>
+  template<c::Angle U = t::mrad>
   quantity<U>
   getDiffractionLimitedSecondMomentDivergence() const
   {
@@ -143,7 +143,7 @@ class CircularLaserBeam : public MonochromaticSource
    * Set the _diffraction limited_ second moment divergence
    * of the beam. The actual divergence will be larger by a factor of M^2.
    */
-  template<typename U = t::mrad>
+  template<c::Angle U = t::mrad>
   void
   setDiffractionLimitedSecondMomentDivergence(quantity<U> a_val)
   {
@@ -153,7 +153,7 @@ class CircularLaserBeam : public MonochromaticSource
   /**
    * Set the D4\sigma width of the beam.
    */
-  template<typename U>
+  template<c::Length U>
   void
   setD4SigmaBeamWaistWidth(quantity<U> a_val)
   {
@@ -163,7 +163,7 @@ class CircularLaserBeam : public MonochromaticSource
   /**
    * Return the D4\sigma width of the beam.
    */
-  template<typename U = t::cm>
+  template<c::Length U = t::cm>
   quantity<U>
   getD4SigmaBeamWaistWidth() const
   {
@@ -173,7 +173,7 @@ class CircularLaserBeam : public MonochromaticSource
   /**
    * Set the D4\sigma divergence of the beam.
    */
-  template<typename U>
+  template<c::Angle U>
   void
   adjustD4SigmaDivergence(quantity<U> a_val)
   {
@@ -183,7 +183,7 @@ class CircularLaserBeam : public MonochromaticSource
   /**
    * Return the D4\sigma divergence of the beam.
    */
-  template<typename U = t::mrad>
+  template<c::Angle U = t::mrad>
   quantity<U>
   getD4SigmaDivergence() const
   {
@@ -193,7 +193,7 @@ class CircularLaserBeam : public MonochromaticSource
   /**
    * Return the D4\sigma diffraction limited divergence of the beam.
    */
-  template<typename U = t::mrad>
+  template<c::Angle U = t::mrad>
   quantity<U>
   getDiffractionLimitedD4SigmaDivergence() const
   {
@@ -203,14 +203,14 @@ class CircularLaserBeam : public MonochromaticSource
   /**
    * Set the D4\sigma diffraction limited divergence of the beam.
    */
-  template<typename U>
+  template<c::Angle U>
   void
   setDiffractionLimitedD4SigmaDivergence(quantity<U> a_val)
   {
     this->setDiffractionLimitedSecondMomentDivergence(a_val / 2);
   }
 
-  template<typename UR = t::cm, typename UA = t::cm>
+  template<c::Length UR = t::cm, c::Length UA = t::cm>
   quantity<UR> getSecondMomentBeamWidth(quantity<UA> a_z) const
   {
     return quantity<UR>(
@@ -223,7 +223,7 @@ class CircularLaserBeam : public MonochromaticSource
                 ));
   }
 
-  template<typename UR = t::cm>
+  template<c::Length UR = t::cm>
   quantity<UR> getSecondMomentBeamWidth() const
   {
     return this->getSecondMomentBeamWidth<UR>(0 * i::cm);

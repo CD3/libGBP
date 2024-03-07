@@ -27,29 +27,29 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
   CircularGaussianLaserBeam& operator=(const CircularGaussianLaserBeam&) = default;
   CircularGaussianLaserBeam& operator=(CircularGaussianLaserBeam&&)      = default;
 
-  template<typename U, typename C>
+  template<c::Length U, typename C>
   void setBeamWaistWidth(GaussianBeamWidth<C, U> a_width)
   {
     this->setSecondMomentBeamWaistWidth(
         a_width.template get<OneOverESquaredRadius>());
   }
-  template<typename U = t::cm, typename C = OneOverESquaredRadius>
+  template<c::Length U = t::cm, typename C = OneOverESquaredRadius>
   GaussianBeamWidth<C, U> getBeamWaistWidth() const
   {
     return GaussianBeamWidth<OneOverESquaredRadius, U>(this->getSecondMomentBeamWaistWidth());
   }
-  template<typename U, typename C>
+  template<c::Angle U, typename C>
   void adjustBeamDivergence(GaussianBeamDivergence<C, U> a_div)
   {
     this->adjustSecondMomentDivergence(a_div.template get<OneOverESquaredHalfAngle>());
   }
-  template<typename U = t::mrad, typename C = OneOverESquaredHalfAngle>
+  template<c::Angle U = t::mrad, typename C = OneOverESquaredHalfAngle>
   GaussianBeamDivergence<C, U> getBeamDivergence() const
   {
     // the GaussianBeamDivergence assignemnt constructor will convert to the return type convention
     return GaussianBeamDivergence<OneOverESquaredHalfAngle, U>(this->getSecondMomentDivergence());
   }
-  template<typename U = t::mrad, typename C = OneOverESquaredHalfAngle>
+  template<c::Angle U = t::mrad, typename C = OneOverESquaredHalfAngle>
   GaussianBeamDivergence<C, U> getDiffractionLimitedBeamDivergence() const
   {
     return GaussianBeamDivergence<OneOverESquaredHalfAngle, U>(this->getDiffractionLimitedSecondMomentDivergence());
@@ -58,7 +58,7 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
   /**
    * Return the beam width at a given position a_z.
    */
-  template<typename UR = t::cm, typename C = OneOverESquaredRadius, typename UA = t::cm>
+  template<c::Length UR = t::cm, typename C = OneOverESquaredRadius, c::Length UA = t::cm>
   GaussianBeamWidth<C, UR> getBeamWidth(quantity<UA> a_z) const
   {
     return GaussianBeamWidth<OneOverESquaredRadius, UR>(this->getSecondMomentBeamWidth(a_z));
@@ -67,40 +67,40 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
   /**
    * Return the beam width at z = 0.
    */
-  template<typename U = t::cm, typename C = OneOverESquaredRadius>
+  template<c::Length U = t::cm, typename C = OneOverESquaredRadius>
   GaussianBeamWidth<C, U> getBeamWidth() const
   {
     return GaussianBeamWidth<OneOverESquaredRadius, U>(this->getSecondMomentBeamWidth());
   }
 
-  template<typename U = t::cm>
+  template<c::Length U = t::cm>
   quantity<U> getRayleighRange() const
   {
     return quantity<U>(this->getSecondMomentBeamWaistWidth<U>() /
                        this->getSecondMomentDivergence<t::rad>().value());
   }
 
-  template<typename UR = t::cm, typename UA = t::cm>
+  template<c::Length UR = t::cm, c::Length UA = t::cm>
   quantity<UR> getRadiusOfCurvature(quantity<UA> a_z) const
   {
     quantity<UR> dz = quantity<UR>(a_z) - this->getBeamWaistPosition<UR>();
     return dz * (1 + boost::units::pow<2>(this->getRayleighRange<UR>() / dz).value());
   }
 
-  template<typename UR = t::cm>
+  template<c::Length UR = t::cm>
   quantity<UR> getRadiusOfCurvature() const
   {
     return this->getRadiusOfCurvature<UR>(0 * i::cm);
   }
 
-  template<typename UR = t::rad, typename UA = t::cm>
+  template<c::Angle UR = t::rad, c::Length UA = t::cm>
   quantity<UR> getGouyPhase(quantity<UA> a_z) const
   {
     quantity<UA> dz = a_z - this->getBeamWaistPosition<UA>();
     return quantity<UR>(atan((dz / this->getRayleighRange<UA>()).value()) * i::rad);
   }
 
-  template<typename UR = t::rad>
+  template<c::Angle UR = t::rad>
   quantity<UR> getGouyPhase() const
   {
     quantity<t::cm> dz = -this->getBeamWaistPosition<t::cm>();
@@ -110,7 +110,7 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
   /**
    * Compute and return the complex beam parameter at a given position a_z.
    */
-  template<typename UR = t::cm, typename UA = t::cm>
+  template<c::Length UR = t::cm, c::Length UA = t::cm>
   quantity<UR, std::complex<double>>
   getComplexBeamParameter(quantity<UA> a_z) const
   {
@@ -125,7 +125,7 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
   /**
    * Compute and return the complex beam parameter at z = 0.
    */
-  template<typename U = t::cm>
+  template<c::Length U = t::cm>
   quantity<U, std::complex<double>>
   getComplexBeamParameter() const
   {
@@ -145,7 +145,7 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
    * We'll see if this is actually useful...
    *
    */
-  template<typename U1, typename U2>
+  template<c::Length U1, c::Length U2>
   void setComplexBeamParameter(quantity<U1, std::complex<double>> a_q, quantity<U2> a_z)
   {
     // real part of q is z - z0, so z0 = z - Re{q}
@@ -154,7 +154,7 @@ class CircularGaussianLaserBeam : public CircularLaserBeam
     // NOTE: for Gaussian beam, \omega == second moment width
     this->setSecondMomentBeamWaistWidth(boost::units::root<2>(this->getBeamQualityFactor<t::dimensionless>().value() * this->getWavelength() * quantity<U1>::from_value(a_q.value().imag()) / M_PI));
   }
-  template<typename U>
+  template<c::Length U>
   void setComplexBeamParameter(quantity<U, std::complex<double>> a_q)
   {
     this->setComplexBeamParameter(a_q, 0 * i::cm);
